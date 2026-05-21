@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brain, Send, User, RotateCcw, Copy, Check } from 'lucide-react'
+import { Brain, Send, User, RotateCcw, Copy, Check, Globe } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import { CoachMessage } from '@/types'
 import { cn } from '@/lib/utils'
@@ -16,7 +16,7 @@ const STARTERS = [
   'What is the strongest meta build right now?',
 ]
 
-function Message({ msg }: { msg: CoachMessage }) {
+function Message({ msg, searched }: { msg: CoachMessage; searched?: string }) {
   const isUser = msg.role === 'user'
   const [copied, setCopied] = useState(false)
 
@@ -46,9 +46,17 @@ function Message({ msg }: { msg: CoachMessage }) {
           ))}
         </div>
         {!isUser && (
-          <button onClick={copy} className="flex items-center gap-1 text-xs text-fg-subtle hover:text-fg-muted mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            {copied ? <><Check className="w-3 h-3 text-emerald-400" /><span className="text-emerald-400">Copied</span></> : <><Copy className="w-3 h-3" /> Copy</>}
-          </button>
+          <div className="flex items-center gap-3 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            {searched && (
+              <span className="flex items-center gap-1 text-xs text-white/25">
+                <Globe className="w-3 h-3 text-sky-400/60" />
+                <span className="text-sky-400/60">searched: {searched}</span>
+              </span>
+            )}
+            <button onClick={copy} className="flex items-center gap-1 text-xs text-fg-subtle hover:text-fg-muted">
+              {copied ? <><Check className="w-3 h-3 text-emerald-400" /><span className="text-emerald-400">Copied</span></> : <><Copy className="w-3 h-3" /> Copy</>}
+            </button>
+          </div>
         )}
       </div>
       {isUser && (
@@ -60,10 +68,12 @@ function Message({ msg }: { msg: CoachMessage }) {
   )
 }
 
+type CoachMessageWithSearch = CoachMessage & { searched?: string }
+
 export default function CoachPage() {
-  const [msgs, setMsgs] = useState<CoachMessage[]>([{
+  const [msgs, setMsgs] = useState<CoachMessageWithSearch[]>([{
     id: '0', role: 'assistant', timestamp: new Date().toISOString(),
-    content: "What's good! I'm your CourtIQ AI coach powered by Groq. Ask me anything — builds, badges, meta, animations, or how to improve your game. Let's get to work. 🏀",
+    content: "What's good! I'm your CourtIQ AI coach powered by Groq + live web search. Ask me anything — builds, badges, meta, animations, or how to improve your game. Let's get to work. 🏀",
   }])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -77,7 +87,7 @@ export default function CoachPage() {
     const content = (text || input).trim()
     if (!content || loading) return
 
-    const userMsg: CoachMessage = { id: Date.now().toString(), role: 'user', content, timestamp: new Date().toISOString() }
+    const userMsg: CoachMessageWithSearch = { id: Date.now().toString(), role: 'user', content, timestamp: new Date().toISOString() }
     setMsgs(p => [...p, userMsg])
     setInput(''); setShowStarters(false); setLoading(true)
 
@@ -88,7 +98,11 @@ export default function CoachPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setMsgs(p => [...p, { id: (Date.now()+1).toString(), role: 'assistant', content: data.message, timestamp: new Date().toISOString() }])
+      setMsgs(p => [...p, {
+        id: (Date.now()+1).toString(), role: 'assistant',
+        content: data.message, timestamp: new Date().toISOString(),
+        searched: data.searched || undefined,
+      }])
     } catch {
       toast.error('Coach unavailable. Try again.')
     } finally {
@@ -135,7 +149,7 @@ export default function CoachPage() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto space-y-4 pr-1 no-scrollbar min-h-0">
-          {msgs.map(m => <Message key={m.id} msg={m} />)}
+          {msgs.map(m => <Message key={m.id} msg={m} searched={m.searched} />)}
 
           {loading && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3">
