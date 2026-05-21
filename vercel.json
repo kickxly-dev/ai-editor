@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npm run build",
+  "buildCommand": "npx drizzle-kit push --yes && npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "crons": [
