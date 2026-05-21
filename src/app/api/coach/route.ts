@@ -5,6 +5,9 @@ export const runtime = 'nodejs'
 export const maxDuration = 30
 
 export async function POST(req: NextRequest) {
+  if (!process.env.GROQ_API_KEY) {
+    return NextResponse.json({ error: 'GROQ_API_KEY is not configured.' }, { status: 503 })
+  }
   try {
     const body = await req.json()
     const { messages, buildContext } = body
