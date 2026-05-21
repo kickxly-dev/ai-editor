@@ -61,9 +61,9 @@ export async function POST(req: NextRequest) {
       const isAdmin = email === process.env.ADMIN_EMAIL
 
       const { rows } = await client.query(
-        `INSERT INTO users (id, email, name, username, password_hash, is_admin)
-         VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5)
-         RETURNING id`,
+        `INSERT INTO users (email, name, username, password_hash, is_admin)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id::text`,
         [email, username, username, passwordHash, isAdmin]
       )
 
