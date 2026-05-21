@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npx drizzle-kit migrate && npm run build",
+  "buildCommand": "node scripts/migrate.mjs && npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "crons": [
