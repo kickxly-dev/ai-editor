@@ -2,22 +2,49 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowLeft, Zap, Brain, Shield, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { signIn } from 'next-auth/react'
 
-export default function LoginPage() {
+export default function SignupPage() {
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    setLoading(true)
 
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.')
+      return
+    }
+
+    setLoading(true)
     try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, username }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || 'Signup failed. Please try again.')
+        setLoading(false)
+        return
+      }
+
+      // Sign in after successful signup
       const result = await signIn('credentials', {
         email,
         password,
@@ -26,13 +53,13 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        setError('Invalid email or password. Please try again.')
+        setError('Account created! Please sign in.')
+        window.location.href = '/login'
       } else if (result?.url) {
         window.location.href = result.url
       }
     } catch {
       setError('Something went wrong. Please try again.')
-    } finally {
       setLoading(false)
     }
   }
@@ -55,8 +82,8 @@ export default function LoginPage() {
       </svg>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 w-full max-w-sm">
-        <Link href="/" className="flex items-center gap-2 text-fg-muted hover:text-fg transition-colors text-sm mb-8">
-          <ArrowLeft className="w-4 h-4" /> Back
+        <Link href="/login" className="flex items-center gap-2 text-fg-muted hover:text-fg transition-colors text-sm mb-8">
+          <ArrowLeft className="w-4 h-4" /> Back to Sign In
         </Link>
 
         <div className="card p-8">
@@ -70,10 +97,23 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <h1 className="text-xl font-bold text-fg text-center mb-1.5">Sign in to CourtIQ</h1>
-          <p className="text-fg-muted text-sm text-center mb-8">Access your builds, AI coach, and saved analysis.</p>
+          <h1 className="text-xl font-bold text-fg text-center mb-1.5">Create your account</h1>
+          <p className="text-fg-muted text-sm text-center mb-8">Join the CourtIQ community and level up your game.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-fg-muted mb-1.5 uppercase tracking-wider">Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="YourGamertag"
+                className="input"
+                required
+                autoComplete="username"
+              />
+            </div>
+
             <div>
               <label className="block text-xs font-semibold text-fg-muted mb-1.5 uppercase tracking-wider">Email</label>
               <input
@@ -94,10 +134,10 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="Min. 8 characters"
                   className="input pr-10"
                   required
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
@@ -105,6 +145,28 @@ export default function LoginPage() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-fg-muted mb-1.5 uppercase tracking-wider">Confirm Password</label>
+              <div className="relative">
+                <input
+                  type={showConfirm ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter password"
+                  className="input pr-10"
+                  required
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg transition-colors"
+                >
+                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -127,28 +189,14 @@ export default function LoginPage() {
               {loading ? (
                 <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
               ) : (
-                'Sign In'
+                'Create Account'
               )}
             </button>
           </form>
 
-          <div className="divider my-6" />
-
-          <div className="space-y-2.5">
-            {[
-              { icon: Zap,    text: 'Unlimited AI build analysis' },
-              { icon: Brain,  text: 'Personalized coaching sessions' },
-              { icon: Shield, text: 'Save and share your builds' },
-            ].map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-2.5 text-xs text-fg-muted">
-                <Icon className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />{text}
-              </div>
-            ))}
-          </div>
-
           <p className="text-fg-subtle text-xs text-center mt-6">
-            Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-rose-400 hover:underline">Sign up</Link>
+            Already have an account?{' '}
+            <Link href="/login" className="text-rose-400 hover:underline">Sign in</Link>
           </p>
         </div>
       </motion.div>

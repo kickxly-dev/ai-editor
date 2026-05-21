@@ -21,6 +21,8 @@ export const users = pgTable('users', {
   bio: text('bio'),
   isVerified: boolean('is_verified').default(false),
   isPremium: boolean('is_premium').default(false),
+  isAdmin: boolean('is_admin').default(false),
+  passwordHash: text('password_hash'),
   totalBuilds: integer('total_builds').default(0),
   totalLikes: integer('total_likes').default(0),
   createdAt: timestamp('created_at').defaultNow(),
@@ -151,6 +153,50 @@ export const follows = pgTable('follows', {
   compoundKey: primaryKey({ columns: [f.followerId, f.followingId] }),
 }))
 
+export const squads = pgTable('squads', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text('name').notNull(),
+  ownerId: text('owner_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  gameMode: text('game_mode').default('Park'),
+  description: text('description'),
+  inviteCode: text('invite_code').unique().$defaultFn(() => Math.random().toString(36).slice(2, 8).toUpperCase()),
+  isOpen: boolean('is_open').default(true),
+  maxMembers: integer('max_members').default(5),
+  aiAnalysis: jsonb('ai_analysis'),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+export const squadMembers = pgTable('squad_members', {
+  squadId: text('squad_id').notNull().references(() => squads.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  build: jsonb('build'),
+  role: text('role').default('member'),
+  joinedAt: timestamp('joined_at').defaultNow(),
+}, (sm) => ({
+  pk: primaryKey({ columns: [sm.squadId, sm.userId] }),
+}))
+
+export const lfgPosts = pgTable('lfg_posts', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  myBuild: jsonb('my_build'),
+  lookingFor: text('looking_for').array(),
+  gameMode: text('game_mode').default('Park'),
+  description: text('description'),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+export const messages = pgTable('messages', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  senderId: text('sender_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  receiverId: text('receiver_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  content: text('content').notNull(),
+  read: boolean('read').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
 // ─── Type exports ─────────────────────────────────────────────────────────────
 
 export type User = typeof users.$inferSelect
@@ -160,3 +206,11 @@ export type NewBuild = typeof builds.$inferInsert
 export type CoachSession = typeof coachSessions.$inferSelect
 export type MetaTrend = typeof metaTrends.$inferSelect
 export type Tutorial = typeof tutorials.$inferSelect
+export type Squad = typeof squads.$inferSelect
+export type NewSquad = typeof squads.$inferInsert
+export type SquadMember = typeof squadMembers.$inferSelect
+export type NewSquadMember = typeof squadMembers.$inferInsert
+export type LfgPost = typeof lfgPosts.$inferSelect
+export type NewLfgPost = typeof lfgPosts.$inferInsert
+export type Message = typeof messages.$inferSelect
+export type NewMessage = typeof messages.$inferInsert
