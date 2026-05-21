@@ -1,118 +1,110 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { db } from '@/lib/db'
-import { messages, users } from '@/lib/schema'
-import { eq, or, and, desc } from 'drizzle-orm'
+import { pool } from '@/lib/db'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+let tableReady = false
+async function ensureTable(client: import('pg').PoolClient) {
+  if (tableReady) return
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id SERIAL PRIMARY KEY,
+      sender_id TEXT NOT NULL,
+      receiver_id TEXT NOT NULL,
+      content TEXT NOT NULL,
+      read BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `)
+  tableReady = true
+}
 
 export async function GET(req: NextRequest) {
+  const session = await auth()
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const withUserId = new URL(req.url).searchParams.get('with')
+  if (!withUserId) return NextResponse.json({ error: 'with parameter required' }, { status: 400 })
+
+  const client = await pool.connect()
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { searchParams } = new URL(req.url)
-    const withUserId = searchParams.get('with')
-
-    if (!withUserId) {
-      return NextResponse.json({ error: 'with parameter required' }, { status: 400 })
-    }
-
-    const conversation = await db
-      .select({
-        id: messages.id,
-        senderId: messages.senderId,
-        receiverId: messages.receiverId,
-        content: messages.content,
-        read: messages.read,
-        createdAt: messages.createdAt,
-        senderName: users.name,
-        senderUsername: users.username,
-        senderImage: users.image,
-      })
-      .from(messages)
-      .innerJoin(users, eq(users.id, messages.senderId))
-      .where(
-        or(
-          and(eq(messages.senderId, session.user.id), eq(messages.receiverId, withUserId)),
-          and(eq(messages.senderId, withUserId), eq(messages.receiverId, session.user.id))
-        )
-      )
-      .orderBy(desc(messages.createdAt))
-      .limit(100)
-
-    return NextResponse.json({ messages: conversation.reverse() })
+    await ensureTable(client)
+    const { rows } = await client.query(
+      `SELECT m.id::text, m.sender_id, m.receiver_id, m.content, m.read, m.created_at,
+              u.name as sender_name, u.username as sender_username, u.image as sender_image
+       FROM messages m
+       LEFT JOIN users u ON u.id::text = m.sender_id
+       WHERE (m.sender_id = $1 AND m.receiver_id = $2)
+          OR (m.sender_id = $2 AND m.receiver_id = $1)
+       ORDER BY m.created_at ASC LIMIT 100`,
+      [session.user.id, withUserId]
+    )
+    return NextResponse.json({
+      messages: rows.map(r => ({
+        id: r.id,
+        senderId: r.sender_id,
+        receiverId: r.receiver_id,
+        content: r.content,
+        read: r.read,
+        createdAt: r.created_at,
+        senderName: r.sender_name,
+        senderUsername: r.sender_username,
+        senderImage: r.sender_image,
+      }))
+    })
   } catch (err) {
     console.error('GET /api/messages error:', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: String(err) }, { status: 500 })
+  } finally {
+    client.release()
   }
 }
 
 export async function POST(req: NextRequest) {
+  const session = await auth()
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { receiverId, content } = await req.json()
+  if (!receiverId || !content?.trim()) return NextResponse.json({ error: 'receiverId and content required' }, { status: 400 })
+  if (receiverId === session.user.id) return NextResponse.json({ error: 'Cannot message yourself' }, { status: 400 })
+
+  const client = await pool.connect()
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const body = await req.json()
-    const { receiverId, content } = body
-
-    if (!receiverId || !content) {
-      return NextResponse.json({ error: 'receiverId and content are required.' }, { status: 400 })
-    }
-
-    if (receiverId === session.user.id) {
-      return NextResponse.json({ error: 'Cannot message yourself.' }, { status: 400 })
-    }
-
-    const [message] = await db
-      .insert(messages)
-      .values({
-        senderId: session.user.id,
-        receiverId,
-        content,
-        read: false,
-      })
-      .returning()
-
-    return NextResponse.json({ message }, { status: 201 })
+    await ensureTable(client)
+    const { rows } = await client.query(
+      `INSERT INTO messages (sender_id, receiver_id, content) VALUES ($1, $2, $3) RETURNING id::text`,
+      [session.user.id, receiverId, content.trim()]
+    )
+    return NextResponse.json({ message: rows[0] }, { status: 201 })
   } catch (err) {
     console.error('POST /api/messages error:', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: String(err) }, { status: 500 })
+  } finally {
+    client.release()
   }
 }
 
 export async function PATCH(req: NextRequest) {
+  const session = await auth()
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const fromUserId = new URL(req.url).searchParams.get('from')
+  if (!fromUserId) return NextResponse.json({ error: 'from parameter required' }, { status: 400 })
+
+  const client = await pool.connect()
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { searchParams } = new URL(req.url)
-    const fromUserId = searchParams.get('from')
-
-    if (!fromUserId) {
-      return NextResponse.json({ error: 'from parameter required' }, { status: 400 })
-    }
-
-    await db
-      .update(messages)
-      .set({ read: true })
-      .where(
-        and(
-          eq(messages.senderId, fromUserId),
-          eq(messages.receiverId, session.user.id),
-          eq(messages.read, false)
-        )
-      )
-
+    await ensureTable(client)
+    await client.query(
+      `UPDATE messages SET read = true WHERE sender_id = $1 AND receiver_id = $2 AND read = false`,
+      [fromUserId, session.user.id]
+    )
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('PATCH /api/messages error:', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: String(err) }, { status: 500 })
+  } finally {
+    client.release()
   }
 }
