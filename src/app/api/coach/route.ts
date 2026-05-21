@@ -5,20 +5,15 @@ import { searchForCoach, formatSearchContext } from '@/lib/web-search'
 export const runtime = 'nodejs'
 export const maxDuration = 45
 
-/* Decide if the latest user question needs a live web search */
-async function shouldSearch(question: string): Promise<boolean> {
-  // Fast heuristic: skip searches for simple conversational replies
-  const low = question.toLowerCase()
-  const alwaysSearch = [
-    'best', 'meta', 'patch', 'update', 'current', 'right now', 'season',
-    'jumpshot', 'jump shot', 'badge', 'build', 'tier', 'op', 'broken',
-    'nerf', 'buff', 'animation', 'dribble', 'after patch', 'latest',
-    'recommended', 'what should', 'how do i', 'tips', 'guide', 'tutorial',
-  ]
-  return alwaysSearch.some(kw => low.includes(kw))
+/* Skip search only for pure small talk */
+function isSmallTalk(question: string): boolean {
+  const q = question.toLowerCase().trim()
+  if (q.length < 15) return true
+  const smallTalk = ['thanks', 'thank you', 'ok', 'okay', 'got it', 'nice', 'cool', 'lol', 'lmao', 'hello', 'hi ', 'hey ']
+  return smallTalk.some(s => q.startsWith(s)) && q.length < 40
 }
 
-/* Use Groq to generate a tight search query from the user's question */
+/* Use Groq to generate a tight search query */
 async function generateSearchQuery(question: string): Promise<string> {
   try {
     const res = await getGroq().chat.completions.create({
@@ -26,15 +21,15 @@ async function generateSearchQuery(question: string): Promise<string> {
       messages: [
         {
           role: 'system',
-          content: 'You output only a short web search query (max 8 words). No explanation, no quotes, just the query.',
+          content: 'Output only a short web search query (max 8 words). No quotes, no explanation. Focus on the specific 2K26 topic.',
         },
         {
           role: 'user',
-          content: `Convert this NBA 2K26 question to a search query: "${question}"`,
+          content: `NBA 2K26 question: "${question}"`,
         },
       ],
       temperature: 0,
-      max_tokens: 30,
+      max_tokens: 25,
     })
     return res.choices[0].message.content?.trim() || question
   } catch {
@@ -65,16 +60,15 @@ export async function POST(req: NextRequest) {
     const lastMessages = validMessages.slice(-10)
     const latestQuestion = lastMessages.filter(m => m.role === 'user').slice(-1)[0]?.content || ''
 
-    // Decide whether to search and fetch live context
+    // Search unless it's pure small talk
     let searchContext = ''
     let searchQuery = ''
-    if (latestQuestion && await shouldSearch(latestQuestion)) {
+    if (latestQuestion && !isSmallTalk(latestQuestion)) {
       searchQuery = await generateSearchQuery(latestQuestion)
       const results = await searchForCoach(searchQuery)
       searchContext = formatSearchContext(results)
     }
 
-    // Combine build context + search context
     const fullContext = [buildContext, searchContext].filter(Boolean).join('\n\n') || undefined
     const response = await chatWithCoach(lastMessages, fullContext)
 
