@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, Brain, TrendingUp, Users, BookOpen, LayoutDashboard, Menu, X, Wand2, Swords } from 'lucide-react'
+import { Zap, Brain, TrendingUp, Users, BookOpen, LayoutDashboard, Menu, X, Wand2, Swords, Users2, Search, MessageSquare, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CourtIQLogo } from '@/components/ui/Logo'
+import { useSession, signOut } from 'next-auth/react'
 
 const links = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -16,18 +17,26 @@ const links = [
   { href: '/builds',    label: 'Builds',    icon: Users },
   { href: '/meta',      label: 'Meta',      icon: TrendingUp },
   { href: '/tutorials', label: 'Learn',     icon: BookOpen },
+  { href: '/squad',     label: 'Squad',     icon: Users2 },
+  { href: '/find',      label: 'Find',      icon: Search },
+  { href: '/messages',  label: 'Messages',  icon: MessageSquare },
 ]
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const path = usePathname()
+  const { data: session } = useSession()
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
+
+  const handleSignOut = () => {
+    signOut({ callbackUrl: '/' })
+  }
 
   return (
     <>
@@ -74,12 +83,33 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Right */}
+          {/* Right — session-aware */}
           <div className="hidden md:flex items-center gap-2">
-            <Link href="/login" className="btn btn-ghost btn-sm text-white/40 hover:text-white">Sign In</Link>
-            <Link href="/analyze" className="btn btn-primary btn-sm gap-1.5">
-              <Zap className="w-3.5 h-3.5"/> Analyze
-            </Link>
+            {session?.user ? (
+              <>
+                <Link href="/dashboard" className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/06 transition-colors">
+                  {session.user.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={session.user.image} alt="" className="w-6 h-6 rounded-full" />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-rose-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold">
+                      {(session.user.name || session.user.email || '?')[0].toUpperCase()}
+                    </div>
+                  )}
+                  <span className="text-sm text-white/70 font-medium">{session.user.name || session.user.email}</span>
+                </Link>
+                <button onClick={handleSignOut} className="btn btn-ghost btn-sm text-white/40 hover:text-white gap-1.5">
+                  <LogOut className="w-3.5 h-3.5" /> Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="btn btn-ghost btn-sm text-white/40 hover:text-white">Sign In</Link>
+                <Link href="/analyze" className="btn btn-primary btn-sm gap-1.5">
+                  <Zap className="w-3.5 h-3.5"/> Analyze
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile toggle */}
@@ -124,11 +154,30 @@ export default function Navbar() {
                   </Link>
                 </motion.div>
               ))}
-              <div className="pt-3 flex gap-2">
-                <Link href="/login" onClick={() => setOpen(false)} className="btn btn-secondary btn-sm flex-1 justify-center">Sign In</Link>
-                <Link href="/analyze" onClick={() => setOpen(false)} className="btn btn-primary btn-sm flex-1 justify-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5"/> Analyze
-                </Link>
+              <div className="pt-3 border-t border-white/08">
+                {session?.user ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 px-4 py-2">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-rose-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold">
+                        {(session.user.name || session.user.email || '?')[0].toUpperCase()}
+                      </div>
+                      <span className="text-sm text-white/70">{session.user.name || session.user.email}</span>
+                    </div>
+                    <button
+                      onClick={() => { setOpen(false); handleSignOut() }}
+                      className="btn btn-secondary btn-sm w-full justify-center gap-1.5"
+                    >
+                      <LogOut className="w-3.5 h-3.5" /> Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Link href="/login" onClick={() => setOpen(false)} className="btn btn-secondary btn-sm flex-1 justify-center">Sign In</Link>
+                    <Link href="/analyze" onClick={() => setOpen(false)} className="btn btn-primary btn-sm flex-1 justify-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5"/> Analyze
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
