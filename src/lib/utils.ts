@@ -6,63 +6,32 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatNumber(n: number): string {
-  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`
+  if (n >= 1_000_000) return `${(n/1_000_000).toFixed(1)}M`
+  if (n >= 1_000)     return `${(n/1_000).toFixed(1)}K`
   return n.toString()
 }
 
-export function getMetaTierColor(tier: string): string {
-  const colors: Record<string, string> = {
-    S: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30',
-    A: 'text-green-400 bg-green-400/10 border-green-400/30',
-    B: 'text-blue-400 bg-blue-400/10 border-blue-400/30',
-    C: 'text-orange-400 bg-orange-400/10 border-orange-400/30',
-    D: 'text-red-400 bg-red-400/10 border-red-400/30',
-  }
-  return colors[tier] || colors.C
-}
-
-export function getBadgeLevelColor(level: string): string {
-  const colors: Record<string, string> = {
-    'Hall of Fame': 'text-purple-400 bg-purple-400/10',
-    Gold: 'text-yellow-400 bg-yellow-400/10',
-    Silver: 'text-gray-300 bg-gray-300/10',
-    Bronze: 'text-orange-700 bg-orange-700/10',
-  }
-  return colors[level] || 'text-gray-400 bg-gray-400/10'
-}
-
-export function truncate(str: string, maxLen: number): string {
-  return str.length > maxLen ? `${str.slice(0, maxLen)}…` : str
-}
-
 export function timeAgo(date: string): string {
-  const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000)
-  if (seconds < 60) return 'just now'
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
-  if (seconds < 2592000) return `${Math.floor(seconds / 86400)}d ago`
-  return `${Math.floor(seconds / 2592000)}mo ago`
+  const s = Math.floor((Date.now() - new Date(date).getTime()) / 1000)
+  if (s < 60)     return 'just now'
+  if (s < 3600)   return `${Math.floor(s/60)}m ago`
+  if (s < 86400)  return `${Math.floor(s/3600)}h ago`
+  if (s < 2592000)return `${Math.floor(s/86400)}d ago`
+  return `${Math.floor(s/2592000)}mo ago`
 }
 
-export function positionColor(position: string): string {
-  const colors: Record<string, string> = {
-    PG: 'text-neon-blue',
-    SG: 'text-green-400',
-    SF: 'text-yellow-400',
-    PF: 'text-orange-400',
-    C: 'text-crimson',
+export function getMetaTierColor(tier: string): string {
+  const m: Record<string,string> = {
+    S: 'text-amber-400  bg-amber-400/8  border-amber-400/25',
+    A: 'text-emerald-400 bg-emerald-400/8 border-emerald-400/25',
+    B: 'text-sky-400    bg-sky-400/8    border-sky-400/25',
+    C: 'text-orange-400 bg-orange-400/8 border-orange-400/25',
+    D: 'text-zinc-400   bg-zinc-400/8   border-zinc-400/25',
   }
-  return colors[position] || 'text-text-secondary'
+  return m[tier] || m.C
 }
 
-export const META_CATEGORIES = [
-  'Park', 'Rec', 'Pro-Am', 'ISO', 'Lock',
-  'Popper', 'Comp Guard', 'Center', 'Stretch', 'Hybrid Defender',
-]
-
-export const POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C']
-
-export const BADGE_CATEGORIES = ['Finishing', 'Shooting', 'Playmaking', 'Defense']
-
-export const BADGE_LEVELS = ['Bronze', 'Silver', 'Gold', 'Hall of Fame']
+export const POSITIONS     = ['PG','SG','SF','PF','C']
+export const META_CATEGORIES = ['Park','Rec','Pro-Am','ISO','Lock','Popper','Comp Guard','Center','Stretch','Hybrid Defender']
+export const BADGE_CATEGORIES = ['Finishing','Shooting','Playmaking','Defense']
+export const BADGE_LEVELS  = ['Bronze','Silver','Gold','Hall of Fame']

@@ -1,193 +1,177 @@
 'use client'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import {
-  Zap, Brain, TrendingUp, Users, BookOpen, BarChart3,
-  ArrowRight, Activity, Star, Clock, CheckCircle2,
-} from 'lucide-react'
+import { Zap, Brain, TrendingUp, Users, BookOpen, ArrowRight, Activity, Star, Clock, BarChart3 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 
-const QUICK_ACTIONS = [
-  { href: '/analyze', icon: Zap, label: 'Analyze Build', desc: 'Get AI breakdown', color: 'text-crimson', bg: 'bg-crimson/10', border: 'border-crimson/20' },
-  { href: '/coach', icon: Brain, label: 'AI Coach', desc: 'Ask anything', color: 'text-neon-blue', bg: 'bg-neon-blue/10', border: 'border-neon-blue/20' },
-  { href: '/meta', icon: TrendingUp, label: 'Meta Tracker', desc: 'Current tier lists', color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/20' },
-  { href: '/builds', icon: Users, label: 'Browse Builds', desc: 'Community builds', color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/20' },
-  { href: '/tutorials', icon: BookOpen, label: 'Tutorials', desc: 'Learn faster', color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/20' },
+const ACTIONS = [
+  { href:'/analyze',   icon:Zap,        label:'Analyze Build',  desc:'AI breakdown in seconds', color:'rose' },
+  { href:'/coach',     icon:Brain,       label:'AI Coach',       desc:'Ask anything',            color:'sky' },
+  { href:'/meta',      icon:TrendingUp,  label:'Meta Tracker',   desc:'Current tier lists',      color:'emerald' },
+  { href:'/builds',    icon:Users,       label:'Browse Builds',  desc:'Community builds',        color:'amber' },
+  { href:'/tutorials', icon:BookOpen,    label:'Tutorials',      desc:'Learn faster',            color:'violet' },
 ]
 
-const RECENT_ACTIVITY = [
-  { icon: Zap, label: 'Build analyzed', detail: 'Shot Creator PG — S-Tier', time: '2h ago', color: 'text-crimson' },
-  { icon: Brain, label: 'AI coaching session', detail: '8 messages', time: '5h ago', color: 'text-neon-blue' },
-  { icon: Star, label: 'Build liked', detail: 'Park God Guard by KingJosiah', time: '1d ago', color: 'text-yellow-400' },
-  { icon: CheckCircle2, label: 'Badge guide completed', detail: 'Limitless Range HOF guide', time: '2d ago', color: 'text-green-400' },
+const COLORS: Record<string,{ icon:string; bg:string; border:string }> = {
+  rose:    { icon:'text-rose-400',    bg:'bg-rose-500/10',    border:'border-rose-500/20' },
+  sky:     { icon:'text-sky-400',     bg:'bg-sky-500/10',     border:'border-sky-500/20' },
+  emerald: { icon:'text-emerald-400', bg:'bg-emerald-500/10', border:'border-emerald-500/20' },
+  amber:   { icon:'text-amber-400',   bg:'bg-amber-500/10',   border:'border-amber-500/20' },
+  violet:  { icon:'text-violet-400',  bg:'bg-violet-500/10',  border:'border-violet-500/20' },
+}
+
+const ACTIVITY = [
+  { icon:Zap,      label:'Build analyzed',       detail:'Shot Creator PG — S-Tier', time:'2h ago',  color:'text-rose-400' },
+  { icon:Brain,    label:'AI coaching session',   detail:'8 messages · Groq',        time:'5h ago',  color:'text-sky-400' },
+  { icon:Star,     label:'Build saved',           detail:'Park God Guard',           time:'1d ago',  color:'text-amber-400' },
+  { icon:TrendingUp,label:'Meta checked',         detail:'Patch 1.08 changes',       time:'2d ago',  color:'text-emerald-400' },
 ]
 
-const STATS = [
-  { label: 'Builds Analyzed', value: '3', icon: BarChart3, color: 'text-crimson' },
-  { label: 'Coach Sessions', value: '7', icon: Brain, color: 'text-neon-blue' },
-  { label: 'Saved Builds', value: '12', icon: Star, color: 'text-yellow-400' },
-  { label: 'Days Active', value: '14', icon: Activity, color: 'text-green-400' },
-]
+/* Inline SVG sparkline */
+function Sparkline({ vals, color }: { vals: number[]; color: string }) {
+  const w = 64, h = 24, pad = 2
+  const max = Math.max(...vals), min = Math.min(...vals)
+  const range = max - min || 1
+  const pts = vals.map((v, i) => {
+    const x = pad + (i / (vals.length - 1)) * (w - 2 * pad)
+    const y = h - pad - ((v - min) / range) * (h - 2 * pad)
+    return `${x},${y}`
+  }).join(' ')
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+      <polyline fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" points={pts} opacity="0.8" />
+    </svg>
+  )
+}
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-bg">
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-16">
-        {/* Welcome header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-10"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-text-muted text-sm">Welcome back</span>
-            <span className="text-xs bg-crimson/10 border border-crimson/20 text-crimson px-2 py-0.5 rounded-full font-medium">Free Plan</span>
+
+        {/* Welcome */}
+        <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} className="mb-8">
+          <div className="flex items-center gap-2.5 mb-1.5">
+            <span className="text-fg-muted text-sm">Welcome back</span>
+            <span className="chip chip-muted">Free Plan</span>
           </div>
-          <h1 className="text-4xl font-black font-display text-text-primary">Your Dashboard</h1>
-          <p className="text-text-secondary mt-1">Here's what's happening with your 2K26 journey.</p>
+          <h1 className="display text-4xl text-fg">Your Dashboard</h1>
         </motion.div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {STATS.map(({ label, value, icon: Icon, color }, i) => (
-            <motion.div
-              key={label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className="glass-card p-5"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <Icon className={`w-5 h-5 ${color}`} />
+        {/* Stat cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {[
+            { label:'Builds Analyzed', value:3,  spark:[1,2,1,3,2,3,3],    color:'#E11D48', icon:BarChart3 },
+            { label:'Coach Sessions',  value:7,  spark:[2,3,4,3,5,6,7],    color:'#38BDF8', icon:Brain },
+            { label:'Saved Builds',    value:12, spark:[4,6,8,9,10,11,12], color:'#F59E0B', icon:Star },
+            { label:'Days Active',     value:14, spark:[1,3,5,7,9,11,14],  color:'#10B981', icon:Activity },
+          ].map(({ label, value, spark, color, icon: Icon }, i) => (
+            <motion.div key={label} initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay: i*0.07 }}
+              className="card p-5">
+              <div className="flex items-start justify-between mb-3">
+                <Icon className="w-4 h-4 text-fg-subtle" />
+                <Sparkline vals={spark} color={color} />
               </div>
-              <p className="text-3xl font-black font-display text-text-primary">{value}</p>
-              <p className="text-xs text-text-muted mt-1">{label}</p>
+              <p className="mono text-3xl font-bold text-fg mb-0.5">{value}</p>
+              <p className="text-fg-subtle text-xs">{label}</p>
             </motion.div>
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Quick Actions */}
-          <div className="lg:col-span-2">
-            <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {QUICK_ACTIONS.map(({ href, icon: Icon, label, desc, color, bg, border }, i) => (
-                <motion.div
-                  key={href}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.06 }}
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <Link
-                    href={href}
-                    className={`glass-card p-5 border ${border} flex items-center gap-4 hover:bg-surface/80 transition-all group block`}
-                  >
-                    <div className={`${bg} ${border} border w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                      <Icon className={`w-5 h-5 ${color}`} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-text-primary font-semibold text-sm">{label}</p>
-                      <p className="text-text-muted text-xs">{desc}</p>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-text-primary group-hover:translate-x-1 transition-all" />
-                  </Link>
-                </motion.div>
-              ))}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-              {/* CTA to analyze */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                className="glass-card p-5 border border-crimson/30 bg-crimson/5 flex flex-col justify-between sm:col-span-2 lg:col-span-1"
-              >
-                <div>
-                  <Badge variant="default" className="mb-3">New Feature</Badge>
-                  <h3 className="text-text-primary font-bold mb-1">Screenshot Analysis</h3>
-                  <p className="text-text-muted text-xs">Upload your build screenshot and AI extracts all your stats automatically.</p>
+          {/* Quick actions */}
+          <div className="lg:col-span-2">
+            <p className="text-xs font-semibold text-fg-muted uppercase tracking-wider mb-4">Quick Actions</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {ACTIONS.map(({ href, icon: Icon, label, desc, color }, i) => {
+                const c = COLORS[color]
+                return (
+                  <motion.div key={href} initial={{ opacity:0, x:-12 }} animate={{ opacity:1, x:0 }} transition={{ delay: i*0.06 }}>
+                    <Link href={href} className={`card flex items-center gap-4 p-5 border ${c.border} hover:border-opacity-60 transition-all group`}>
+                      <div className={`${c.bg} ${c.border} border w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                        <Icon className={`w-5 h-5 ${c.icon}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-fg font-semibold text-sm">{label}</p>
+                        <p className="text-fg-subtle text-xs">{desc}</p>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-fg-subtle group-hover:text-fg group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                    </Link>
+                  </motion.div>
+                )
+              })}
+
+              {/* Screenshot CTA */}
+              <motion.div initial={{ opacity:0, x:-12 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.32 }}
+                className="card p-5 border border-rose-500/20 bg-rose-500/5 sm:col-span-2 lg:col-span-1 flex flex-col">
+                <div className="flex-1">
+                  <span className="chip chip-crimson mb-3">New</span>
+                  <p className="text-fg font-bold mb-1">Screenshot Analysis</p>
+                  <p className="text-fg-muted text-xs">Drop a build screenshot. AI extracts every stat automatically.</p>
                 </div>
-                <Link href="/analyze" className="mt-4">
-                  <Button size="sm" className="gap-2 w-full">
-                    <Zap className="w-3.5 h-3.5" />
-                    Try Now
-                  </Button>
+                <Link href="/analyze" className="btn btn-primary btn-sm mt-4 w-fit gap-1.5">
+                  <Zap className="w-3.5 h-3.5" /> Try Now
                 </Link>
               </motion.div>
             </div>
           </div>
 
-          {/* Activity Feed */}
-          <div>
-            <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-4">Recent Activity</h2>
-            <div className="glass-card divide-y divide-border">
-              {RECENT_ACTIVITY.map(({ icon: Icon, label, detail, time, color }, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: i * 0.08 }}
-                  className="flex items-start gap-3 p-4"
-                >
-                  <div className={`w-8 h-8 rounded-xl bg-surface border border-border flex items-center justify-center flex-shrink-0 mt-0.5`}>
-                    <Icon className={`w-3.5 h-3.5 ${color}`} />
+          {/* Activity + alert */}
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs font-semibold text-fg-muted uppercase tracking-wider mb-4">Recent Activity</p>
+              <div className="card divide-y divide-border">
+                {ACTIVITY.map(({ icon: Icon, label, detail, time, color }) => (
+                  <div key={label} className="flex items-start gap-3 p-4">
+                    <div className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Icon className={cn('w-3.5 h-3.5', color)} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-fg text-sm font-medium">{label}</p>
+                      <p className="text-fg-subtle text-xs truncate">{detail}</p>
+                    </div>
+                    <div className="flex items-center gap-1 text-fg-subtle text-xs flex-shrink-0">
+                      <Clock className="w-3 h-3" />{time}
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-text-primary">{label}</p>
-                    <p className="text-xs text-text-muted truncate">{detail}</p>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-text-muted flex-shrink-0">
-                    <Clock className="w-3 h-3" />
-                    {time}
-                  </div>
-                </motion.div>
-              ))}
-              {RECENT_ACTIVITY.length === 0 && (
-                <p className="text-center text-text-muted text-sm p-8">No activity yet. Start analyzing!</p>
-              )}
+                ))}
+              </div>
             </div>
 
             {/* Meta alert */}
-            <div className="glass-card p-4 mt-4 border border-yellow-400/20 bg-yellow-400/5">
+            <div className="card p-4 border-amber-400/20 bg-amber-400/5">
               <div className="flex items-start gap-3">
-                <TrendingUp className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                <TrendingUp className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-text-primary">Meta Update</p>
-                  <p className="text-xs text-text-muted mt-0.5">Limitless Range HOF buffed in Patch 1.08. Update your badge priority.</p>
-                  <Link href="/meta" className="text-xs text-yellow-400 mt-2 flex items-center gap-1 hover:underline">
-                    View Meta Tracker <ArrowRight className="w-3 h-3" />
+                  <p className="text-fg font-semibold text-sm">Patch 1.08 Live</p>
+                  <p className="text-fg-muted text-xs mt-0.5">Limitless Range HOF buffed. Update your badge priority now.</p>
+                  <Link href="/meta" className="flex items-center gap-1 text-xs text-amber-400 mt-2 hover:underline">
+                    View changes <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
               </div>
             </div>
+
+            {/* Coach CTA */}
+            <div className="card p-4 border-sky-500/20 bg-sky-500/5 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center flex-shrink-0">
+                <Brain className="w-5 h-5 text-sky-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-fg font-semibold text-sm">AI Coach Online</p>
+                <p className="text-fg-muted text-xs">Ask about builds, badges, or meta.</p>
+              </div>
+              <Link href="/coach" className="btn btn-sm flex-shrink-0" style={{ background:'rgba(56,189,248,0.15)', color:'#38BDF8', border:'1px solid rgba(56,189,248,0.25)' }}>
+                Open
+              </Link>
+            </div>
           </div>
         </div>
-
-        {/* AI Coach CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mt-8 glass-card p-6 border border-neon-blue/20 bg-neon-blue/5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
-        >
-          <div className="w-12 h-12 rounded-2xl bg-neon-blue/10 border border-neon-blue/30 flex items-center justify-center flex-shrink-0">
-            <Brain className="w-6 h-6 text-neon-blue" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-text-primary font-bold">Ready to level up?</h3>
-            <p className="text-text-muted text-sm mt-0.5">Your AI coach is online 24/7. Ask about builds, badges, meta, or how to improve your game.</p>
-          </div>
-          <Link href="/coach">
-            <Button variant="neon" className="gap-2 flex-shrink-0">
-              <Brain className="w-4 h-4" />
-              Open AI Coach
-            </Button>
-          </Link>
-        </motion.div>
       </div>
     </div>
   )
 }
+
+function cn(...c: (string | undefined | false)[]) { return c.filter(Boolean).join(' ') }

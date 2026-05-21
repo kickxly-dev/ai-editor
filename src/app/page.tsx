@@ -1,424 +1,366 @@
 'use client'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import Link from 'next/link'
 import {
-  Zap, Brain, BarChart3, Users, TrendingUp, BookOpen,
-  ArrowRight, Star, Shield, Target, ChevronRight,
-  Activity, Cpu, Globe, Award,
+  Zap, Brain, TrendingUp, Users, BookOpen, Shield,
+  ArrowRight, Star, ChevronRight, Activity, Cpu,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import Navbar from '@/components/layout/Navbar'
-import { useRef } from 'react'
 
+/* ── Animated counter ─────────────────────────────────────────── */
+function Counter({ end, suffix = '' }: { end: number; suffix?: string }) {
+  const [val, setVal] = useState(0)
+  const ref = useRef<HTMLSpanElement>(null)
+  const inView = useInView(ref, { once: true })
+
+  useEffect(() => {
+    if (!inView) return
+    const start = Date.now()
+    const duration = 1600
+    const tick = () => {
+      const elapsed = Date.now() - start
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setVal(Math.floor(eased * end))
+      if (progress < 1) requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  }, [inView, end])
+
+  return <span ref={ref}>{val.toLocaleString()}{suffix}</span>
+}
+
+/* ── Grid line background ─────────────────────────────────────── */
+function GridLines() {
+  return (
+    <svg className="absolute inset-0 w-full h-full pointer-events-none select-none" aria-hidden>
+      <defs>
+        <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+          <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(255,255,255,0.025)" strokeWidth="1" />
+        </pattern>
+        <radialGradient id="grid-fade" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stopColor="white" stopOpacity="1" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </radialGradient>
+        <mask id="grid-mask">
+          <rect width="100%" height="100%" fill="url(#grid-fade)" />
+        </mask>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)" mask="url(#grid-mask)" />
+    </svg>
+  )
+}
+
+/* ── Feature card ─────────────────────────────────────────────── */
 const features = [
   {
-    icon: Zap,
-    title: 'Build Analyzer',
-    description: 'Upload your build screenshot and get instant AI analysis — strengths, weaknesses, upgrade paths, and meta viability.',
-    color: 'text-crimson',
-    bg: 'bg-crimson/10',
-    border: 'border-crimson/20',
-    glow: 'hover:shadow-crimson',
+    icon: Zap, title: 'Build Analyzer',
+    desc: 'Upload your build or enter stats manually. AI breaks down archetype, strengths, weaknesses, and exact upgrade paths.',
+    accent: 'crimson', href: '/analyze',
   },
   {
-    icon: Brain,
-    title: 'AI Coach',
-    description: 'Chat with your personal 2K AI coach. Ask anything — from badge priority to how to stop getting cooked on defense.',
-    color: 'text-neon-blue',
-    bg: 'bg-neon-blue/10',
-    border: 'border-neon-blue/20',
-    glow: 'hover:glow-blue',
+    icon: Brain, title: 'AI Coach',
+    desc: 'Your personal Groq-powered 2K coach. Ask anything — badges, animations, meta reads, how to stop getting scored on.',
+    accent: 'sky', href: '/coach',
   },
   {
-    icon: Activity,
-    title: 'Gameplay Analyzer',
-    description: 'Upload your clips. AI breaks down spacing, shot selection, defensive mistakes, and gives you coaching notes.',
-    color: 'text-purple-400',
-    bg: 'bg-purple-400/10',
-    border: 'border-purple-400/20',
-    glow: 'hover:shadow-purple',
+    icon: TrendingUp, title: 'Meta Tracker',
+    desc: 'Real-time tier lists updated after every patch. Know the strongest builds, hottest badges, and best jumpshots.',
+    accent: 'emerald', href: '/meta',
   },
   {
-    icon: TrendingUp,
-    title: 'Meta Tracker',
-    description: 'Stay ahead of every patch. Track the strongest builds, top badges, jumpshot trends, and tier lists in real time.',
-    color: 'text-green-400',
-    bg: 'bg-green-400/10',
-    border: 'border-green-400/20',
-    glow: '',
+    icon: Users, title: 'Build Database',
+    desc: 'Browse thousands of community builds filtered by position, category, and tier. Share yours in one click.',
+    accent: 'amber', href: '/builds',
   },
   {
-    icon: Users,
-    title: 'Build Database',
-    description: 'Browse thousands of community builds. Filter by position, category, tier, and meta viability. Share your own.',
-    color: 'text-yellow-400',
-    bg: 'bg-yellow-400/10',
-    border: 'border-yellow-400/20',
-    glow: '',
+    icon: Activity, title: 'Gameplay Analyzer',
+    desc: 'Upload your clips. AI detects spacing issues, shot selection mistakes, and defensive breakdowns frame by frame.',
+    accent: 'violet', href: '/analyze',
   },
   {
-    icon: BookOpen,
-    title: 'Tutorial Hub',
-    description: 'AI-curated tutorials matched to your build. Dribble guides, jumpshot tutorials, defense breakdowns — all in one place.',
-    color: 'text-orange-400',
-    bg: 'bg-orange-400/10',
-    border: 'border-orange-400/20',
-    glow: '',
+    icon: BookOpen, title: 'Tutorial Hub',
+    desc: 'AI-curated tutorials matched to your build. Dribble guides, jumpshot breakdowns, and comp strategy videos.',
+    accent: 'sky', href: '/tutorials',
   },
 ]
 
-const stats = [
-  { value: '50K+', label: 'Builds Analyzed' },
-  { value: '200K+', label: 'AI Coaching Chats' },
-  { value: '15K+', label: 'Community Builds' },
-  { value: '99.2%', label: 'Uptime' },
-]
-
-const testimonials = [
-  {
-    quote: "CourtIQ told me my guard build was better as a slasher than a shooter. Changed my whole playstyle — went from losing to top 5 in my park.",
-    name: 'KingJosiah',
-    role: 'Park Legend',
-    avatar: 'K',
-    color: 'from-crimson to-purple-600',
-  },
-  {
-    quote: "The AI coach is actually insane. Asked it why I keep getting blocked going to the rim — it analyzed my build and told me exactly which badges I was missing.",
-    name: 'FlightTime2K',
-    role: 'Comp Rec Player',
-    avatar: 'F',
-    color: 'from-blue-500 to-purple-600',
-  },
-  {
-    quote: "Meta tracker is the most useful tool I've used this season. Found out my build was C-tier before wasting VC. Built an S-tier instead.",
-    name: 'DribbleFiend',
-    role: 'Pro-Am Starter',
-    avatar: 'D',
-    color: 'from-green-500 to-blue-600',
-  },
-]
+const accentMap: Record<string, { text: string; bg: string; border: string; glow: string }> = {
+  crimson: { text: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20', glow: 'hover:border-rose-500/30 hover:shadow-[0_8px_24px_rgba(225,29,72,0.12)]' },
+  sky:     { text: 'text-sky-400',  bg: 'bg-sky-500/10',  border: 'border-sky-500/20',  glow: 'hover:border-sky-400/30 hover:shadow-[0_8px_24px_rgba(56,189,248,0.1)]' },
+  emerald: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', glow: 'hover:border-emerald-400/30 hover:shadow-[0_8px_24px_rgba(16,185,129,0.1)]' },
+  amber:   { text: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', glow: 'hover:border-amber-400/30 hover:shadow-[0_8px_24px_rgba(245,158,11,0.1)]' },
+  violet:  { text: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/20', glow: 'hover:border-violet-400/30 hover:shadow-[0_8px_24px_rgba(139,92,246,0.1)]' },
+}
 
 export default function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll()
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0])
-  const heroY = useTransform(scrollYProgress, [0, 0.3], [0, -50])
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 80])
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0])
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-bg overflow-x-hidden">
       <Navbar />
 
-      {/* Hero */}
-      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center hero-bg grid-bg pt-16">
-        {/* Animated orbs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div
-            animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
-            transition={{ duration: 8, repeat: Infinity }}
-            className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-crimson/10 blur-3xl"
-          />
-          <motion.div
-            animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.4, 0.2] }}
-            transition={{ duration: 10, repeat: Infinity }}
-            className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-purple-600/10 blur-3xl"
-          />
-          <motion.div
-            animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.3, 0.15] }}
-            transition={{ duration: 12, repeat: Infinity }}
-            className="absolute top-1/2 right-1/3 w-64 h-64 rounded-full bg-neon-blue/8 blur-3xl"
-          />
+      {/* ── Hero ── */}
+      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+        <GridLines />
+
+        {/* Ambient glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-crimson-radial opacity-60" />
+          <div className="absolute top-1/3 left-1/4 w-96 h-96 rounded-full bg-rose-500/5 blur-3xl" />
+          <div className="absolute top-1/4 right-1/4 w-72 h-72 rounded-full bg-violet-500/4 blur-3xl" />
         </div>
 
-        <motion.div
-          style={{ opacity: heroOpacity, y: heroY }}
-          className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 text-center"
-        >
-          {/* Badge */}
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+          {/* Pill badge */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-crimson/10 border border-crimson/20 text-crimson text-sm font-medium mb-8"
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-500/8 border border-rose-500/20 text-rose-400 text-xs font-semibold tracking-wide mb-10"
           >
-            <span className="w-2 h-2 rounded-full bg-crimson animate-pulse" />
-            NBA 2K26 Season Live — Meta Updated
+            <span className="status-online" />
+            NBA 2K26 Season Active — Meta Updated Patch 1.08
           </motion.div>
 
           {/* Headline */}
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl sm:text-6xl lg:text-8xl font-black tracking-tight font-display mb-6 leading-none"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.08 }}
+            className="display text-6xl sm:text-7xl lg:text-[88px] leading-none mb-6"
           >
-            <span className="text-text-primary">Build Smarter.</span>
+            <span className="text-fg">Build Smarter.</span>
             <br />
-            <span className="bg-gradient-to-r from-crimson via-red-400 to-purple-500 bg-clip-text text-transparent">
-              Play Better.
-            </span>
+            <span className="text-gradient">Play Better.</span>
           </motion.h1>
 
           {/* Sub */}
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg sm:text-xl text-text-secondary max-w-3xl mx-auto mb-10 leading-relaxed"
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}
+            className="text-fg-muted text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            CourtIQ is the AI-powered NBA 2K26 platform trusted by elite players.
-            Analyze builds, get AI coached, track the meta, and dominate your competition.
+            CourtIQ is the AI-powered NBA 2K26 companion for elite players.
+            Analyze builds instantly, get AI coached, and dominate the meta.
           </motion.p>
 
           {/* CTAs */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.22 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3"
           >
-            <Link href="/analyze">
-              <Button size="xl" className="group text-base gap-3 shadow-crimson">
-                <Zap className="w-5 h-5" />
-                Analyze My Build Free
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
+            <Link href="/analyze" className="btn btn-primary btn-xl gap-2.5 group">
+              <Zap className="w-5 h-5" />
+              Analyze My Build — Free
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
-            <Link href="/builds">
-              <Button variant="secondary" size="xl" className="text-base gap-2">
-                <Users className="w-5 h-5" />
-                Explore Builds
-              </Button>
+            <Link href="/coach" className="btn btn-secondary btn-xl gap-2">
+              <Brain className="w-5 h-5 text-sky-400" />
+              Talk to AI Coach
             </Link>
           </motion.div>
 
-          {/* Trust indicators */}
+          {/* Stats */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-text-muted"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+            className="mt-16 flex flex-wrap justify-center gap-12"
           >
-            {stats.map(({ value, label }) => (
-              <div key={label} className="flex flex-col items-center">
-                <span className="text-2xl font-bold text-text-primary font-display">{value}</span>
-                <span>{label}</span>
+            {[
+              { end: 50000, suffix: '+', label: 'Builds Analyzed' },
+              { end: 200000, suffix: '+', label: 'AI Coach Messages' },
+              { end: 15000, suffix: '+', label: 'Community Builds' },
+              { end: 99, suffix: '.2%', label: 'Uptime' },
+            ].map(({ end, suffix, label }) => (
+              <div key={label} className="text-center">
+                <div className="mono text-3xl font-semibold text-fg">
+                  <Counter end={end} suffix={suffix} />
+                </div>
+                <div className="text-fg-subtle text-sm mt-1">{label}</div>
               </div>
             ))}
           </motion.div>
         </motion.div>
 
-        {/* Scroll indicator */}
+        {/* Scroll hint */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         >
-          <span className="text-xs text-text-muted">Scroll to explore</span>
           <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="w-5 h-8 rounded-full border border-border flex items-start justify-center pt-1"
+            animate={{ y: [0, 6, 0] }} transition={{ duration: 1.8, repeat: Infinity }}
+            className="w-5 h-8 rounded-full border border-border flex items-start justify-center pt-1.5"
           >
-            <div className="w-1 h-2 rounded-full bg-crimson" />
+            <div className="w-1 h-2 rounded-full bg-rose-500" />
           </motion.div>
         </motion.div>
       </section>
 
-      {/* Features Grid */}
-      <section className="py-24 px-4 sm:px-6 max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <span className="text-crimson text-sm font-semibold tracking-wider uppercase">Platform Features</span>
-            <h2 className="text-4xl sm:text-5xl font-black font-display mt-3 mb-4 text-text-primary">
-              Everything You Need to
-              <span className="text-gradient"> Level Up</span>
-            </h2>
-            <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-              Six powerful AI-driven tools designed to take your 2K game from average to elite.
-            </p>
-          </motion.div>
-        </div>
+      {/* ── Features ── */}
+      <section className="py-28 px-6 max-w-7xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }} className="text-center mb-16"
+        >
+          <p className="text-rose-400 text-sm font-semibold tracking-widest uppercase mb-3">Platform</p>
+          <h2 className="display text-4xl sm:text-5xl text-fg mb-4">
+            Six tools. One platform.<br />
+            <span className="text-gradient-sky">Zero cap.</span>
+          </h2>
+          <p className="text-fg-muted text-lg max-w-xl mx-auto">
+            Everything you need to go from average to elite — powered by Groq AI.
+          </p>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map(({ icon: Icon, title, description, color, bg, border, glow }, i) => (
-            <motion.div
-              key={title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              whileHover={{ y: -4 }}
-              className={`glass-card p-6 border ${border} transition-all duration-300 ${glow} cursor-default group`}
-            >
-              <div className={`${bg} ${border} border rounded-xl w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                <Icon className={`w-6 h-6 ${color}`} />
-              </div>
-              <h3 className="text-lg font-bold text-text-primary mb-2">{title}</h3>
-              <p className="text-text-secondary text-sm leading-relaxed">{description}</p>
-              <div className={`mt-4 flex items-center gap-1 text-xs font-medium ${color}`}>
-                Learn more <ChevronRight className="w-3.5 h-3.5" />
-              </div>
-            </motion.div>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {features.map(({ icon: Icon, title, desc, accent, href }, i) => {
+            const a = accentMap[accent]
+            return (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.07 }}
+                whileHover={{ y: -4 }}
+              >
+                <Link href={href} className={`card block p-6 h-full border ${a.border} ${a.glow} transition-all duration-300 cursor-pointer group`}>
+                  <div className={`w-11 h-11 rounded-lg ${a.bg} border ${a.border} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-200`}>
+                    <Icon className={`w-5 h-5 ${a.text}`} />
+                  </div>
+                  <h3 className="text-fg font-semibold text-base mb-2">{title}</h3>
+                  <p className="text-fg-muted text-sm leading-relaxed">{desc}</p>
+                  <div className={`flex items-center gap-1 text-xs font-semibold mt-5 ${a.text}`}>
+                    Explore <ChevronRight className="w-3.5 h-3.5" />
+                  </div>
+                </Link>
+              </motion.div>
+            )
+          })}
         </div>
       </section>
 
-      {/* AI Showcase Section */}
-      <section className="py-24 bg-surface/50 border-y border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <span className="text-crimson text-sm font-semibold tracking-wider uppercase">AI Analysis</span>
-              <h2 className="text-4xl sm:text-5xl font-black font-display mt-3 mb-6 text-text-primary">
-                Powered by
-                <span className="text-gradient-blue"> Groq AI</span>
-              </h2>
-              <p className="text-text-secondary text-lg mb-8 leading-relaxed">
-                Our AI analyzes your builds in seconds using Groq's ultra-fast inference. Get detailed archetype breakdowns, badge recommendations, and meta comparisons that would take a pro coach hours to compile.
-              </p>
-              <div className="space-y-4">
-                {[
-                  { icon: Cpu, label: 'Instant Analysis', desc: 'Sub-second AI responses via Groq' },
-                  { icon: Target, label: 'Precision Insights', desc: 'Build-specific, not generic advice' },
-                  { icon: Shield, label: 'Meta Aware', desc: 'Updated with every patch' },
-                  { icon: Globe, label: 'Vision AI', desc: 'Analyze screenshots directly' },
-                ].map(({ icon: Icon, label, desc }) => (
-                  <div key={label} className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-crimson/10 border border-crimson/20 flex items-center justify-center flex-shrink-0">
-                      <Icon className="w-5 h-5 text-crimson" />
-                    </div>
-                    <div>
-                      <p className="text-text-primary font-semibold text-sm">{label}</p>
-                      <p className="text-text-muted text-xs">{desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-8">
-                <Link href="/analyze">
-                  <Button className="gap-2">
-                    Try the Analyzer <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-
-            {/* Mock AI Analysis Card */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="relative"
-            >
-              <div className="glass-card border border-crimson/20 p-6 rounded-2xl shadow-crimson">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-crimson/10 border border-crimson/20 flex items-center justify-center">
-                    <Brain className="w-5 h-5 text-crimson" />
+      {/* ── AI Showcase ── */}
+      <section className="border-y border-border bg-surface/40 py-24 px-6">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+            <p className="text-rose-400 text-sm font-semibold tracking-widest uppercase mb-4">AI Engine</p>
+            <h2 className="display text-4xl sm:text-5xl text-fg mb-5">
+              Powered by<br />
+              <span className="text-gradient-sky">Groq Intelligence</span>
+            </h2>
+            <p className="text-fg-muted leading-relaxed mb-8">
+              Ultra-fast inference via Groq. Build analysis in under a second.
+              Vision AI reads your screenshots directly. Every response is
+              build-specific, meta-aware, and immediately actionable.
+            </p>
+            <div className="space-y-4">
+              {[
+                { icon: Cpu, label: 'Sub-second analysis', desc: 'Groq inference — not just fast, instant' },
+                { icon: Shield, label: 'Meta-aware responses', desc: 'Updated after every patch automatically' },
+                { icon: Activity, label: 'Vision AI support', desc: 'Drop a screenshot, get full analysis' },
+              ].map(({ icon: Icon, label, desc }) => (
+                <div key={label} className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-5 h-5 text-rose-400" />
                   </div>
                   <div>
-                    <p className="text-text-primary font-bold">CourtIQ Analysis</p>
-                    <p className="text-text-muted text-xs">PG • Shot Creator • 6&apos;4&quot;</p>
-                  </div>
-                  <div className="ml-auto px-2.5 py-1 rounded-lg bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 text-xs font-bold">S-Tier</div>
-                </div>
-
-                <p className="text-text-secondary text-sm mb-5 italic border-l-2 border-crimson pl-4">
-                  "This build performs best as a rim-pressure shot creator rather than a pure perimeter scorer due to stronger finishing consistency. The 87 ball handle enables elite dribble packages."
-                </p>
-
-                <div className="space-y-3">
-                  {[
-                    { label: 'Competitiveness', value: 88, color: '#DC143C' },
-                    { label: 'Skill Ceiling', value: 92, color: '#7C3AED' },
-                    { label: 'Meta Viability', value: 95, color: '#00D4FF' },
-                  ].map(({ label, value, color }) => (
-                    <div key={label}>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-text-secondary">{label}</span>
-                        <span className="text-text-primary font-mono font-bold">{value}</span>
-                      </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${value}%` }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 1, delay: 0.3 }}
-                          className="h-full rounded-full"
-                          style={{ background: color }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-5 grid grid-cols-2 gap-3">
-                  <div className="bg-surface rounded-xl p-3 border border-border">
-                    <p className="text-xs text-text-muted mb-1">Top Strength</p>
-                    <p className="text-xs text-green-400 font-medium">Elite ball handling + finishing combo</p>
-                  </div>
-                  <div className="bg-surface rounded-xl p-3 border border-border">
-                    <p className="text-xs text-text-muted mb-1">Weakness</p>
-                    <p className="text-xs text-crimson font-medium">Limited 3PT range</p>
+                    <p className="text-fg font-medium text-sm">{label}</p>
+                    <p className="text-fg-subtle text-xs">{desc}</p>
                   </div>
                 </div>
+              ))}
+            </div>
+            <div className="mt-8">
+              <Link href="/analyze" className="btn btn-primary gap-2">
+                Try the Analyzer <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </motion.div>
+
+          {/* Demo analysis card */}
+          <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="relative">
+            <div className="card card-glow p-6">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
+                    <Brain className="w-4 h-4 text-rose-400" />
+                  </div>
+                  <div>
+                    <p className="text-fg font-semibold text-sm">CourtIQ Analysis</p>
+                    <p className="text-fg-subtle text-xs">Shot Creator · PG · 6&apos;4&quot;</p>
+                  </div>
+                </div>
+                <span className="chip tier-s">S-Tier</span>
               </div>
 
-              {/* Floating badge */}
-              <motion.div
-                animate={{ y: [-4, 4, -4] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute -top-4 -right-4 bg-card border border-border rounded-2xl px-4 py-2 shadow-card"
-              >
-                <p className="text-xs text-text-muted">Analyzed in</p>
-                <p className="text-lg font-bold text-neon-blue font-mono">0.4s</p>
-              </motion.div>
+              <p className="text-fg-muted text-sm leading-relaxed mb-5 italic border-l-2 border-rose-500/40 pl-3">
+                &quot;This build performs best as a rim-pressure shot creator. The 87 ball handle unlocks elite dribble packages while high driving layup enables consistent finishes through contact.&quot;
+              </p>
+
+              {[
+                { label: 'Overall Rating', value: 94, color: '#E11D48' },
+                { label: 'Competitiveness', value: 91, color: '#8B5CF6' },
+                { label: 'Meta Viability', value: 96, color: '#38BDF8' },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="mb-3">
+                  <div className="flex justify-between text-xs mb-1.5">
+                    <span className="text-fg-muted">{label}</span>
+                    <span className="mono font-semibold text-fg">{value}</span>
+                  </div>
+                  <div className="stat-bar">
+                    <motion.div
+                      className="stat-bar-fill" style={{ background: color }}
+                      initial={{ width: 0 }} whileInView={{ width: `${value}%` }}
+                      viewport={{ once: true }} transition={{ duration: 1, delay: 0.3 }}
+                    />
+                  </div>
+                </div>
+              ))}
+
+              <div className="grid grid-cols-2 gap-2.5 mt-4 pt-4 border-t border-border">
+                <div className="bg-bg rounded-lg p-3 border border-border">
+                  <p className="text-fg-subtle text-2xs uppercase tracking-wider mb-1">Strength</p>
+                  <p className="text-emerald-400 text-xs font-medium">Elite handles + rim finishing</p>
+                </div>
+                <div className="bg-bg rounded-lg p-3 border border-border">
+                  <p className="text-fg-subtle text-2xs uppercase tracking-wider mb-1">Weakness</p>
+                  <p className="text-rose-400 text-xs font-medium">Limited 3PT range</p>
+                </div>
+              </div>
+            </div>
+
+            <motion.div
+              animate={{ y: [-4, 4, -4] }} transition={{ duration: 3, repeat: Infinity }}
+              className="absolute -top-4 -right-3 card px-3.5 py-2 shadow-md"
+            >
+              <p className="text-fg-subtle text-2xs">Analyzed in</p>
+              <p className="mono text-sky-400 font-bold text-base">0.4s</p>
             </motion.div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-24 px-4 sm:px-6 max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <span className="text-crimson text-sm font-semibold tracking-wider uppercase">Community</span>
-            <h2 className="text-4xl sm:text-5xl font-black font-display mt-3 text-text-primary">
-              Trusted by Top Players
-            </h2>
-          </motion.div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonials.map(({ quote, name, role, avatar, color }, i) => (
-            <motion.div
-              key={name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="glass-card p-6"
-            >
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, j) => (
-                  <Star key={j} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                ))}
+      {/* ── Testimonials ── */}
+      <section className="py-24 px-6 max-w-6xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+          <h2 className="display text-4xl text-fg">Trusted by Top Players</h2>
+        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            { q: "CourtIQ told me my guard build was better as a slasher than a shooter. Changed my whole playstyle — went from losing every game to top 5 in my park.", name: 'KingJosiah', role: 'Park Legend', init: 'K', color: 'bg-rose-500' },
+            { q: "The AI coach is actually insane. Asked it why I keep getting blocked going to the rim — it pinpointed exactly which badges I was missing. Fixed it that day.", name: 'FlightTime2K', role: 'Comp Rec Player', init: 'F', color: 'bg-sky-500' },
+            { q: "Meta tracker saved me VC. Found out my planned build was C-tier before I spent a dollar. Built an S-tier instead. This tool is essential.", name: 'DribbleFiend', role: 'Pro-Am Starter', init: 'D', color: 'bg-violet-500' },
+          ].map(({ q, name, role, init, color }, i) => (
+            <motion.div key={name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="card p-6">
+              <div className="flex gap-0.5 mb-4">
+                {[...Array(5)].map((_, j) => <Star key={j} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />)}
               </div>
-              <p className="text-text-secondary text-sm leading-relaxed mb-6 italic">"{quote}"</p>
+              <p className="text-fg-muted text-sm leading-relaxed mb-5">&quot;{q}&quot;</p>
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${color} flex items-center justify-center font-bold text-white`}>
-                  {avatar}
-                </div>
+                <div className={`w-9 h-9 rounded-full ${color} flex items-center justify-center font-bold text-sm text-white flex-shrink-0`}>{init}</div>
                 <div>
-                  <p className="text-text-primary font-semibold text-sm">{name}</p>
-                  <p className="text-text-muted text-xs">{role}</p>
+                  <p className="text-fg font-semibold text-sm">{name}</p>
+                  <p className="text-fg-subtle text-xs">{role}</p>
                 </div>
               </div>
             </motion.div>
@@ -426,59 +368,51 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-24 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-crimson/5 via-purple-600/5 to-neon-blue/5" />
-        <div className="absolute inset-0 grid-bg opacity-50" />
-        <div className="relative max-w-4xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <Award className="w-16 h-16 text-crimson mx-auto mb-6" />
-            <h2 className="text-4xl sm:text-6xl font-black font-display mb-6 text-text-primary">
-              Ready to
-              <span className="text-gradient"> Master the Meta?</span>
+      {/* ── CTA ── */}
+      <section className="py-24 px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-crimson-radial opacity-40" />
+        <div className="relative max-w-3xl mx-auto text-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mx-auto mb-6">
+              <Zap className="w-7 h-7 text-rose-400" />
+            </div>
+            <h2 className="display text-5xl sm:text-6xl text-fg mb-5">
+              Ready to<br /><span className="text-gradient">Master the Meta?</span>
             </h2>
-            <p className="text-text-secondary text-xl mb-10 max-w-2xl mx-auto">
-              Join 50,000+ players using CourtIQ to build smarter, play better, and dominate the competition.
+            <p className="text-fg-muted text-lg mb-8 max-w-lg mx-auto">
+              Join 50,000+ players using CourtIQ to build smarter and play better.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/analyze">
-                <Button size="xl" className="text-base gap-3 shadow-crimson">
-                  <Zap className="w-5 h-5" />
-                  Start Free — No Account Needed
-                </Button>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/analyze" className="btn btn-primary btn-xl gap-2.5">
+                <Zap className="w-5 h-5" />
+                Start Free — No Account Needed
               </Link>
-              <Link href="/coach">
-                <Button variant="secondary" size="xl" className="text-base gap-2">
-                  <Brain className="w-5 h-5" />
-                  Talk to AI Coach
-                </Button>
+              <Link href="/builds" className="btn btn-secondary btn-xl gap-2">
+                <Users className="w-5 h-5" />
+                Explore Builds
               </Link>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-12 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-crimson to-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">C</span>
-              </div>
-              <span className="text-xl font-bold font-display">Court<span className="text-crimson">IQ</span></span>
+      {/* ── Footer ── */}
+      <footer className="border-t border-border py-10 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-500 to-violet-600 flex items-center justify-center">
+              <span className="text-white font-bold text-sm display">C</span>
             </div>
-            <div className="flex flex-wrap gap-6 text-sm text-text-muted">
-              {['Dashboard', 'Analyzer', 'AI Coach', 'Builds', 'Meta', 'Tutorials'].map(link => (
-                <Link key={link} href={`/${link.toLowerCase().replace(' ', '-')}`} className="hover:text-text-primary transition-colors">
-                  {link}
-                </Link>
-              ))}
-            </div>
-            <p className="text-text-muted text-sm">
-              © {new Date().getFullYear()} CourtIQ. Not affiliated with NBA 2K or 2K Sports.
-            </p>
+            <span className="display text-lg font-bold text-fg">Court<span className="text-rose-400">IQ</span></span>
           </div>
+          <div className="flex flex-wrap gap-6 text-sm text-fg-muted">
+            {['Dashboard', 'Analyze', 'Coach', 'Builds', 'Meta', 'Tutorials'].map(l => (
+              <Link key={l} href={`/${l.toLowerCase()}`} className="hover:text-fg transition-colors">{l}</Link>
+            ))}
+          </div>
+          <p className="text-fg-subtle text-xs text-center">
+            © {new Date().getFullYear()} CourtIQ · Not affiliated with 2K Sports
+          </p>
         </div>
       </footer>
     </div>
