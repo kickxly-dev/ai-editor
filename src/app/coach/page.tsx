@@ -30,7 +30,8 @@ function Message({ msg }: { msg: CoachMessage }) {
       className={cn('flex gap-3', isUser ? 'justify-end' : 'justify-start')}
     >
       {!isUser && (
-        <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+          style={{ background: 'rgba(225,29,72,0.1)', border: '1px solid rgba(225,29,72,0.2)' }}>
           <Brain className="w-4 h-4 text-rose-400" />
         </div>
       )}
@@ -39,21 +40,24 @@ function Message({ msg }: { msg: CoachMessage }) {
           'px-4 py-3 text-sm leading-relaxed',
           isUser
             ? 'bg-rose-500 text-white rounded-2xl rounded-tr-sm'
-            : 'bg-card border border-border text-fg rounded-2xl rounded-tl-sm'
-        )}>
+            : 'rounded-2xl rounded-tl-sm text-white/80'
+        )}
+          style={!isUser ? { background: '#1C1C22', border: '1px solid rgba(255,255,255,0.06)' } : undefined}
+        >
           {msg.content.split('\n').map((line, i) => (
             <p key={i} className={line === '' ? 'h-3' : undefined}>{line}</p>
           ))}
         </div>
         {!isUser && (
-          <button onClick={copy} className="flex items-center gap-1 text-xs text-fg-subtle hover:text-fg-muted mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onClick={copy} className="flex items-center gap-1 text-xs text-white/25 hover:text-white/50 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
             {copied ? <><Check className="w-3 h-3 text-emerald-400" /><span className="text-emerald-400">Copied</span></> : <><Copy className="w-3 h-3" /> Copy</>}
           </button>
         )}
       </div>
       {isUser && (
-        <div className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center flex-shrink-0 mt-0.5">
-          <User className="w-4 h-4 text-fg-muted" />
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <User className="w-4 h-4 text-white/40" />
         </div>
       )}
     </motion.div>
@@ -100,7 +104,6 @@ export default function CoachPage() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
   }
 
-  // Auto-resize textarea
   useEffect(() => {
     if (textRef.current) {
       textRef.current.style.height = 'auto'
@@ -114,20 +117,23 @@ export default function CoachPage() {
       <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full px-4 sm:px-6 pt-20 pb-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between py-4 border-b border-border mb-4 flex-shrink-0">
+        <div className="flex items-center justify-between py-4 mb-4 flex-shrink-0"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ background: 'rgba(225,29,72,0.1)', border: '1px solid rgba(225,29,72,0.2)' }}>
               <Brain className="w-5 h-5 text-rose-400" />
             </div>
             <div>
-              <p className="text-fg font-semibold">AI Coach</p>
-              <div className="flex items-center gap-1.5">
-                <span className="status-online" />
-                <span className="text-fg-subtle text-xs">Groq — Online</span>
+              <p className="text-white font-semibold text-sm">AI Coach</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="text-white/35 text-xs">Groq — Online</span>
               </div>
             </div>
           </div>
-          <button onClick={() => { setMsgs([{ id:'0', role:'assistant', content:'New session. What do you want to work on?', timestamp: new Date().toISOString() }]); setShowStarters(true) }}
+          <button
+            onClick={() => { setMsgs([{ id:'0', role:'assistant', content:'New session. What do you want to work on?', timestamp: new Date().toISOString() }]); setShowStarters(true) }}
             className="btn btn-ghost btn-sm gap-2">
             <RotateCcw className="w-3.5 h-3.5" /> New Chat
           </button>
@@ -139,10 +145,12 @@ export default function CoachPage() {
 
           {loading && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3">
-              <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: 'rgba(225,29,72,0.1)', border: '1px solid rgba(225,29,72,0.2)' }}>
                 <Brain className="w-4 h-4 text-rose-400 animate-pulse" />
               </div>
-              <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5">
+              <div className="rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5"
+                style={{ background: '#1C1C22', border: '1px solid rgba(255,255,255,0.06)' }}>
                 {[0, 150, 300].map(d => (
                   <span key={d} className="w-1.5 h-1.5 rounded-full bg-rose-400/60 animate-bounce" style={{ animationDelay: `${d}ms` }} />
                 ))}
@@ -156,7 +164,10 @@ export default function CoachPage() {
                 className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                 {STARTERS.map(q => (
                   <button key={q} onClick={() => send(q)}
-                    className="text-left text-xs text-fg-muted hover:text-fg bg-surface hover:bg-card border border-border hover:border-rose-500/20 px-4 py-3 rounded-xl transition-all text-left">
+                    className="text-left text-xs text-white/40 hover:text-white/70 px-4 py-3 rounded-xl transition-all"
+                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(225,29,72,0.2)')}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)')}>
                     {q}
                   </button>
                 ))}
@@ -173,7 +184,7 @@ export default function CoachPage() {
             <textarea
               ref={textRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey}
               placeholder="Ask your AI coach anything about 2K26..."
-              className="flex-1 bg-transparent text-fg text-sm placeholder:text-fg-subtle outline-none resize-none min-h-[40px] max-h-40 leading-relaxed"
+              className="flex-1 bg-transparent text-white text-sm placeholder:text-white/25 outline-none resize-none min-h-[40px] max-h-40 leading-relaxed"
               rows={1}
             />
             <button onClick={() => send()} disabled={!input.trim() || loading}
@@ -182,7 +193,7 @@ export default function CoachPage() {
               <Send className="w-4 h-4" />
             </button>
           </div>
-          <p className="text-fg-subtle text-xs mt-2">Enter to send · Shift+Enter for new line · Powered by Groq</p>
+          <p className="text-white/25 text-xs mt-2">Enter to send · Shift+Enter for new line · Powered by Groq</p>
         </div>
       </div>
     </div>

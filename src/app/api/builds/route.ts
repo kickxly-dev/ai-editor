@@ -1,36 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getScrapedBuilds } from '@/lib/builds-scraper'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+export const maxDuration = 45
 
 export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url)
-    const page     = parseInt(searchParams.get('page')  || '1')
-    const limit    = parseInt(searchParams.get('limit') || '12')
-    const position = searchParams.get('position') || ''
-    const category = searchParams.get('category') || ''
-    const tier     = searchParams.get('tier')     || ''
-
-    // When DATABASE_URL is available, query Render PostgreSQL via drizzle
-    // For now return demo data as graceful fallback
-    const builds: unknown[] = []
-
-    return NextResponse.json({ builds, page, limit, total: 0, hasMore: false })
-  } catch {
-    return NextResponse.json({ error: 'Failed to fetch builds' }, { status: 500 })
+  if (!process.env.GROQ_API_KEY) {
+    return NextResponse.json({ error: 'GROQ_API_KEY not configured' }, { status: 503 })
   }
-}
-
-export async function POST(req: NextRequest) {
+  const force = req.nextUrl.searchParams.get('refresh') === '1'
   try {
-    const body = await req.json()
-    const { name, position, attributes } = body
-    if (!name || !position || !attributes) {
-      return NextResponse.json({ error: 'name, position, and attributes are required' }, { status: 400 })
-    }
-    // Insert into db when DATABASE_URL is set
-    return NextResponse.json({ success: true, build: { id: crypto.randomUUID(), ...body } }, { status: 201 })
-  } catch {
-    return NextResponse.json({ error: 'Failed to create build' }, { status: 500 })
+    const builds = await getScrapedBuilds(force)
+    return NextResponse.json({ success: true, builds })
+  } catch (err) {
+    console.error('Builds API error:', err)
+    return NextResponse.json({ error: 'Failed to fetch builds' }, { status: 500 })
   }
 }

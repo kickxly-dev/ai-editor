@@ -90,19 +90,19 @@ async function searchYouTube(query: string): Promise<YTVideo[]> {
   return renderers
     .map(parseRenderer)
     .filter((v): v is YTVideo => v !== null)
-    .slice(0, 8)
+    .slice(0, 10)
 }
 
 /* ── Queries per category ─────────────────────────────────────── */
 const QUERIES: Record<string, string> = {
-  shooting: 'NBA 2K26 best jumpshot tutorial 2026',
-  dribbling: 'NBA 2K26 best dribble moves tutorial',
-  defense: 'NBA 2K26 defense tips lockdown tutorial',
-  build: 'NBA 2K26 best build creation guide 2026',
-  badges: 'NBA 2K26 badge tier list best badges',
+  shooting:   'NBA 2K26 best jumpshot tutorial 2026',
+  dribbling:  'NBA 2K26 best dribble moves tutorial',
+  defense:    'NBA 2K26 defense tips lockdown tutorial',
+  build:      'NBA 2K26 best build creation guide 2026',
+  badges:     'NBA 2K26 badge tier list best badges',
   playmaking: 'NBA 2K26 playmaking point guard tutorial',
-  park: 'NBA 2K26 park tips beginners guide',
-  meta: 'NBA 2K26 meta guide patch tips',
+  park:       'NBA 2K26 park tips beginners guide',
+  meta:       'NBA 2K26 meta guide patch tips',
 }
 
 export interface TutorialVideo extends YTVideo {
@@ -122,14 +122,14 @@ export async function getTutorials(forceRefresh = false): Promise<TutorialVideo[
   if (!forceRefresh && _cache && now - _cacheTime < TTL) return _cache
 
   try {
-    // Run 4 searches in parallel (stay within rate limits)
-    const categories = ['shooting', 'dribbling', 'build', 'defense']
+    // Run 6 category searches in parallel
+    const categories = ['shooting', 'dribbling', 'build', 'defense', 'badges', 'meta', 'park', 'playmaking']
     const results = await Promise.allSettled(
       categories.map(cat => searchYouTube(QUERIES[cat]).then(vids =>
-        vids.slice(0, 4).map((v, i): TutorialVideo => ({
+        vids.slice(0, 6).map((v, i): TutorialVideo => ({
           ...v,
           category: cat.charAt(0).toUpperCase() + cat.slice(1),
-          difficulty: i === 0 ? 'Beginner' : i === 1 ? 'Intermediate' : 'Advanced',
+          difficulty: i === 0 ? 'Beginner' : i <= 2 ? 'Intermediate' : 'Advanced',
           featured: i === 0,
         }))
       ))
@@ -142,7 +142,7 @@ export async function getTutorials(forceRefresh = false): Promise<TutorialVideo[
 
     // Also grab a general search
     const general = await searchYouTube('NBA 2K26 tutorial tips 2026')
-    const generalVideos: TutorialVideo[] = general.slice(0, 4).map((v, i) => ({
+    const generalVideos: TutorialVideo[] = general.slice(0, 6).map((v, i) => ({
       ...v,
       category: 'Meta',
       difficulty: (['Beginner', 'Intermediate', 'Advanced'][i % 3]) as TutorialVideo['difficulty'],
@@ -157,7 +157,7 @@ export async function getTutorials(forceRefresh = false): Promise<TutorialVideo[
       if (seen.has(v.id)) return false
       seen.add(v.id)
       return true
-    })
+    }).slice(0, 40)
 
     if (deduped.length > 0) {
       _cache = deduped
@@ -180,5 +180,7 @@ function getFallback(): TutorialVideo[] {
     { id: 'o6F_lGFGJnQ', title: 'Advanced Defense Tutorial — Stop Anyone in 2K26', channel: 'Lockdown Defender', views: '98K views', duration: '15:10', thumbnail: 'https://img.youtube.com/vi/o6F_lGFGJnQ/hqdefault.jpg', url: 'https://www.youtube.com/watch?v=o6F_lGFGJnQ', publishedAt: '3 weeks ago', category: 'Defense', difficulty: 'Advanced', featured: false },
     { id: 'gGkNHzPa5M0', title: 'Badge Tier List 2K26 — Every Badge Ranked', channel: 'NBA2KLab', views: '312K views', duration: '22:45', thumbnail: 'https://img.youtube.com/vi/gGkNHzPa5M0/hqdefault.jpg', url: 'https://www.youtube.com/watch?v=gGkNHzPa5M0', publishedAt: '1 month ago', category: 'Badges', difficulty: 'Intermediate', featured: false },
     { id: 'wHkD9B3-MKI', title: 'Park Tips for Beginners NBA 2K26', channel: 'Troydan', views: '67K views', duration: '9:30', thumbnail: 'https://img.youtube.com/vi/wHkD9B3-MKI/hqdefault.jpg', url: 'https://www.youtube.com/watch?v=wHkD9B3-MKI', publishedAt: '2 weeks ago', category: 'Park', difficulty: 'Beginner', featured: false },
+    { id: 'meta1234567', title: 'NBA 2K26 Meta Report — Best Builds Right Now', channel: 'Shakedown2012', views: '198K views', duration: '16:20', thumbnail: 'https://img.youtube.com/vi/meta1234567/hqdefault.jpg', url: 'https://www.youtube.com/watch?v=meta1234567', publishedAt: '1 week ago', category: 'Meta', difficulty: 'Intermediate', featured: false },
+    { id: 'play1234567', title: 'Playmaking Tutorial — HOF Dimer Build Guide', channel: 'NBA2KLab', views: '87K views', duration: '11:45', thumbnail: 'https://img.youtube.com/vi/play1234567/hqdefault.jpg', url: 'https://www.youtube.com/watch?v=play1234567', publishedAt: '3 weeks ago', category: 'Playmaking', difficulty: 'Advanced', featured: false },
   ]
 }

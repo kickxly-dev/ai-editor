@@ -21,13 +21,12 @@ const COLORS: Record<string,{ icon:string; bg:string; border:string }> = {
 }
 
 const ACTIVITY = [
-  { icon:Zap,      label:'Build analyzed',       detail:'Shot Creator PG — S-Tier', time:'2h ago',  color:'text-rose-400' },
-  { icon:Brain,    label:'AI coaching session',   detail:'8 messages · Groq',        time:'5h ago',  color:'text-sky-400' },
-  { icon:Star,     label:'Build saved',           detail:'Park God Guard',           time:'1d ago',  color:'text-amber-400' },
+  { icon:Zap,       label:'Build analyzed',      detail:'Shot Creator PG — S-Tier', time:'2h ago',  color:'text-rose-400' },
+  { icon:Brain,     label:'AI coaching session',  detail:'8 messages · Groq',        time:'5h ago',  color:'text-sky-400' },
+  { icon:Star,      label:'Build saved',          detail:'Park God Guard',           time:'1d ago',  color:'text-amber-400' },
   { icon:TrendingUp,label:'Meta checked',         detail:'Patch 1.08 changes',       time:'2d ago',  color:'text-emerald-400' },
 ]
 
-/* Inline SVG sparkline */
 function Sparkline({ vals, color }: { vals: number[]; color: string }) {
   const w = 64, h = 24, pad = 2
   const max = Math.max(...vals), min = Math.min(...vals)
@@ -44,6 +43,8 @@ function Sparkline({ vals, color }: { vals: number[]; color: string }) {
   )
 }
 
+function cn(...c: (string | undefined | false)[]) { return c.filter(Boolean).join(' ') }
+
 export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-bg">
@@ -53,10 +54,10 @@ export default function DashboardPage() {
         {/* Welcome */}
         <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} className="mb-8">
           <div className="flex items-center gap-2.5 mb-1.5">
-            <span className="text-fg-muted text-sm">Welcome back</span>
+            <span className="text-white/40 text-sm">Welcome back</span>
             <span className="chip chip-muted">Free Plan</span>
           </div>
-          <h1 className="display text-4xl text-fg">Your Dashboard</h1>
+          <h1 className="display text-4xl text-white">Your Dashboard</h1>
         </motion.div>
 
         {/* Stat cards */}
@@ -70,11 +71,11 @@ export default function DashboardPage() {
             <motion.div key={label} initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay: i*0.07 }}
               className="card p-5">
               <div className="flex items-start justify-between mb-3">
-                <Icon className="w-4 h-4 text-fg-subtle" />
+                <Icon className="w-4 h-4 text-white/25" />
                 <Sparkline vals={spark} color={color} />
               </div>
-              <p className="mono text-3xl font-bold text-fg mb-0.5">{value}</p>
-              <p className="text-fg-subtle text-xs">{label}</p>
+              <p className="mono text-3xl font-bold text-white mb-0.5">{value}</p>
+              <p className="text-white/40 text-xs">{label}</p>
             </motion.div>
           ))}
         </div>
@@ -83,7 +84,7 @@ export default function DashboardPage() {
 
           {/* Quick actions */}
           <div className="lg:col-span-2">
-            <p className="text-xs font-semibold text-fg-muted uppercase tracking-wider mb-4">Quick Actions</p>
+            <p className="text-xs font-semibold text-white/25 uppercase tracking-wider mb-4">Quick Actions</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {ACTIONS.map(({ href, icon: Icon, label, desc, color }, i) => {
                 const c = COLORS[color]
@@ -94,10 +95,10 @@ export default function DashboardPage() {
                         <Icon className={`w-5 h-5 ${c.icon}`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-fg font-semibold text-sm">{label}</p>
-                        <p className="text-fg-subtle text-xs">{desc}</p>
+                        <p className="text-white font-semibold text-sm">{label}</p>
+                        <p className="text-white/40 text-xs">{desc}</p>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-fg-subtle group-hover:text-fg group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                      <ArrowRight className="w-4 h-4 text-white/25 group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                     </Link>
                   </motion.div>
                 )
@@ -108,8 +109,8 @@ export default function DashboardPage() {
                 className="card p-5 border border-rose-500/20 bg-rose-500/5 sm:col-span-2 lg:col-span-1 flex flex-col">
                 <div className="flex-1">
                   <span className="chip chip-crimson mb-3">New</span>
-                  <p className="text-fg font-bold mb-1">Screenshot Analysis</p>
-                  <p className="text-fg-muted text-xs">Drop a build screenshot. AI extracts every stat automatically.</p>
+                  <p className="text-white font-bold mb-1">Screenshot Analysis</p>
+                  <p className="text-white/35 text-xs">Drop a build screenshot. AI extracts every stat automatically.</p>
                 </div>
                 <Link href="/analyze" className="btn btn-primary btn-sm mt-4 w-fit gap-1.5">
                   <Zap className="w-3.5 h-3.5" /> Try Now
@@ -121,18 +122,19 @@ export default function DashboardPage() {
           {/* Activity + alert */}
           <div className="space-y-4">
             <div>
-              <p className="text-xs font-semibold text-fg-muted uppercase tracking-wider mb-4">Recent Activity</p>
-              <div className="card divide-y divide-border">
+              <p className="text-xs font-semibold text-white/25 uppercase tracking-wider mb-4">Recent Activity</p>
+              <div className="card divide-y" style={{ '--tw-divide-opacity': 1 } as React.CSSProperties}>
                 {ACTIVITY.map(({ icon: Icon, label, detail, time, color }) => (
-                  <div key={label} className="flex items-start gap-3 p-4">
-                    <div className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div key={label} className="flex items-start gap-3 p-4" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                       <Icon className={cn('w-3.5 h-3.5', color)} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-fg text-sm font-medium">{label}</p>
-                      <p className="text-fg-subtle text-xs truncate">{detail}</p>
+                      <p className="text-white text-sm font-medium">{label}</p>
+                      <p className="text-white/40 text-xs truncate">{detail}</p>
                     </div>
-                    <div className="flex items-center gap-1 text-fg-subtle text-xs flex-shrink-0">
+                    <div className="flex items-center gap-1 text-white/25 text-xs flex-shrink-0">
                       <Clock className="w-3 h-3" />{time}
                     </div>
                   </div>
@@ -145,8 +147,8 @@ export default function DashboardPage() {
               <div className="flex items-start gap-3">
                 <TrendingUp className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-fg font-semibold text-sm">Patch 1.08 Live</p>
-                  <p className="text-fg-muted text-xs mt-0.5">Limitless Range HOF buffed. Update your badge priority now.</p>
+                  <p className="text-white font-semibold text-sm">Patch 1.08 Live</p>
+                  <p className="text-white/35 text-xs mt-0.5">Limitless Range HOF buffed. Update your badge priority now.</p>
                   <Link href="/meta" className="flex items-center gap-1 text-xs text-amber-400 mt-2 hover:underline">
                     View changes <ArrowRight className="w-3 h-3" />
                   </Link>
@@ -160,10 +162,11 @@ export default function DashboardPage() {
                 <Brain className="w-5 h-5 text-sky-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-fg font-semibold text-sm">AI Coach Online</p>
-                <p className="text-fg-muted text-xs">Ask about builds, badges, or meta.</p>
+                <p className="text-white font-semibold text-sm">AI Coach Online</p>
+                <p className="text-white/35 text-xs">Ask about builds, badges, or meta.</p>
               </div>
-              <Link href="/coach" className="btn btn-sm flex-shrink-0" style={{ background:'rgba(56,189,248,0.15)', color:'#38BDF8', border:'1px solid rgba(56,189,248,0.25)' }}>
+              <Link href="/coach" className="btn btn-sm flex-shrink-0"
+                style={{ background:'rgba(56,189,248,0.15)', color:'#38BDF8', border:'1px solid rgba(56,189,248,0.25)' }}>
                 Open
               </Link>
             </div>
@@ -173,5 +176,3 @@ export default function DashboardPage() {
     </div>
   )
 }
-
-function cn(...c: (string | undefined | false)[]) { return c.filter(Boolean).join(' ') }
