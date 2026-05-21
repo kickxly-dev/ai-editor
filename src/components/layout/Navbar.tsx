@@ -43,12 +43,12 @@ export default function Navbar() {
       <motion.nav
         className={cn('fixed top-0 inset-x-0 z-50 transition-all duration-300')}
         animate={scrolled
-          ? { backgroundColor: 'rgba(9,9,11,0.85)', borderBottomColor: 'rgba(255,255,255,0.055)' }
-          : { backgroundColor: 'rgba(9,9,11,0)', borderBottomColor: 'rgba(255,255,255,0)' }
+          ? { backgroundColor: 'rgba(8,8,10,0.88)', borderBottomColor: 'rgba(255,255,255,0.07)' }
+          : { backgroundColor: 'rgba(8,8,10,0)', borderBottomColor: 'rgba(255,255,255,0)' }
         }
-        style={{ backdropFilter: scrolled ? 'blur(24px)' : 'none', borderBottom: '1px solid' }}
+        style={{ backdropFilter: scrolled ? 'blur(32px) saturate(160%)' : 'none', borderBottom: '1px solid' }}
       >
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 h-[60px] flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.96 }}>
@@ -66,8 +66,8 @@ export default function Navbar() {
               return (
                 <Link key={href} href={href}
                   className={cn(
-                    'relative px-3.5 py-2 rounded-lg text-sm font-medium transition-colors duration-150',
-                    active ? 'text-white' : 'text-white/40 hover:text-white/80'
+                    'relative px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors duration-150 tracking-tight',
+                    active ? 'text-white' : 'text-white/35 hover:text-white/75'
                   )}
                 >
                   {active && (

@@ -1,32 +1,35 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
-import { DrizzleAdapter } from '@auth/drizzle-adapter'
-import { db } from '@/lib/db'
-import { users, accounts, sessions, verificationTokens } from '@/lib/schema'
-import { eq } from 'drizzle-orm'
+import { pool } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: DrizzleAdapter(db, {
-    usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
-  }),
+  // No adapter — JWT sessions don't need one, and it avoids id type conflicts
   providers: [
     Credentials({
       credentials: { email: {}, password: {} },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, credentials.email as string))
-          .limit(1)
-        if (!user || !user.passwordHash) return null
-        const valid = await bcrypt.compare(credentials.password as string, user.passwordHash)
-        if (!valid) return null
-        return { id: user.id, email: user.email, name: user.name, image: user.image, isAdmin: user.isAdmin }
+        const client = await pool.connect()
+        try {
+          const { rows } = await client.query(
+            'SELECT id, email, name, username, image, password_hash, is_admin FROM users WHERE email = $1 LIMIT 1',
+            [credentials.email]
+          )
+          const user = rows[0]
+          if (!user || !user.password_hash) return null
+          const valid = await bcrypt.compare(credentials.password as string, user.password_hash)
+          if (!valid) return null
+          return {
+            id: String(user.id),
+            email: user.email,
+            name: user.name || user.username,
+            image: user.image,
+            isAdmin: user.is_admin,
+          }
+        } finally {
+          client.release()
+        }
       },
     }),
   ],
