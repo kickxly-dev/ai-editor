@@ -1,0 +1,14 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "experimentalServices": {
+    "courtiq-2k26": {
+      "type": "web",
+      "routePrefix": "/",
+      "framework": "nextjs",
+      "buildCommand": "npm install && npm run build"
+    }
+  }
+}
