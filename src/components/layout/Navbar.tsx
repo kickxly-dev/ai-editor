@@ -3,12 +3,14 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, Brain, TrendingUp, Users, BookOpen, LayoutDashboard, Menu, X } from 'lucide-react'
+import { Zap, Brain, TrendingUp, Users, BookOpen, LayoutDashboard, Menu, X, Wand2, Swords } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const links = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/analyze',   label: 'Analyzer',  icon: Zap },
+  { href: '/optimize',  label: 'Optimizer', icon: Wand2 },
+  { href: '/matchup',   label: 'Matchup',   icon: Swords },
   { href: '/coach',     label: 'AI Coach',  icon: Brain },
   { href: '/builds',    label: 'Builds',    icon: Users },
   { href: '/meta',      label: 'Meta',      icon: TrendingUp },

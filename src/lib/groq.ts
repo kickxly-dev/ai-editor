@@ -257,4 +257,229 @@ export async function generateBuildDescription(
   return response.choices[0].message.content || ''
 }
 
+export interface OptimizedBuild {
+  name: string
+  position: string
+  height: string
+  weight: number
+  wingspan: string
+  takeover: string
+  archetype: string
+  playstyle_summary: string
+  why_this_build: string
+  attributes: Partial<import('@/types').BuildAttributes>
+  badges: Array<{ name: string; level: string; category: string }>
+  animations: Array<{ type: string; pick: string }>
+  strengths: string[]
+  weaknesses: string[]
+  overall_rating: number
+  meta_viability: string
+  best_game_modes: string[]
+}
+
+export interface MatchupResult {
+  winner: string
+  win_probability_1: number
+  win_probability_2: number
+  key_edges: Array<{ category: string; advantage: string; reason: string }>
+  build1_strategy: string[]
+  build2_strategy: string[]
+  matchup_summary: string
+  verdict: string
+}
+
+export interface ScoutReport {
+  threat_level: 'Low' | 'Medium' | 'High' | 'Elite'
+  primary_threats: string[]
+  exploit_weaknesses: string[]
+  badges_to_equip: string[]
+  defensive_keys: string[]
+  how_to_win: string[]
+  summary: string
+}
+
+export async function optimizeBuild(
+  description: string,
+  position?: string,
+  heightRange?: string,
+  gameMode?: string
+): Promise<OptimizedBuild> {
+  const filters = [
+    position && position !== 'All' ? `Position: ${position}` : null,
+    heightRange && heightRange !== 'Any' ? `Height Range: ${heightRange}` : null,
+    gameMode && gameMode !== 'Any' ? `Game Mode: ${gameMode}` : null,
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  const prompt = `Generate a complete optimized NBA 2K26 build from this player description:
+
+"${description}"
+${filters ? `\nCONSTRAINTS:\n${filters}` : ''}
+
+Return ONLY valid JSON matching this exact schema (no markdown, no explanation):
+{
+  "name": "catchy build name",
+  "position": "PG",
+  "height": "6'4\\"",
+  "weight": 185,
+  "wingspan": "Normal",
+  "takeover": "Limitless Shooter",
+  "archetype": "Shot Creator Guard",
+  "playstyle_summary": "2-3 sentence description of how this build plays",
+  "why_this_build": "2-3 sentences explaining why these choices fit the description",
+  "attributes": {
+    "close_shot": 60,
+    "driving_layup": 78,
+    "driving_dunk": 80,
+    "standing_dunk": 25,
+    "post_control": 30,
+    "mid_range": 75,
+    "three_point": 87,
+    "free_throw": 78,
+    "pass_accuracy": 80,
+    "ball_handle": 92,
+    "speed_with_ball": 85,
+    "interior_defense": 40,
+    "perimeter_defense": 72,
+    "steal": 58,
+    "block": 30,
+    "offensive_rebound": 30,
+    "defensive_rebound": 42,
+    "speed": 85,
+    "acceleration": 87,
+    "strength": 55,
+    "vertical": 78,
+    "stamina": 88
+  },
+  "badges": [
+    { "name": "Limitless Range", "level": "Hall of Fame", "category": "Shooting" },
+    { "name": "Quick Chain", "level": "Gold", "category": "Playmaking" }
+  ],
+  "animations": [
+    { "type": "Jumpshot Base", "pick": "Base 6 (Steph Curry)" },
+    { "type": "Dribble Style", "pick": "Pro 3" }
+  ],
+  "strengths": ["Elite three-point shooting", "Ankle-breaking handles", "Good park defender"],
+  "weaknesses": ["Limited post game", "Below average finishing through contact"],
+  "overall_rating": 86,
+  "meta_viability": "A",
+  "best_game_modes": ["Park", "Rec"]
+}`
+
+  const response = await getGroq().chat.completions.create({
+    model: MODELS.fast,
+    messages: [
+      { role: 'system', content: BUILD_ANALYSIS_SYSTEM + '\n' + NBA2K26_KNOWLEDGE },
+      { role: 'user', content: prompt },
+    ],
+    temperature: 0.5,
+    max_tokens: 2000,
+    response_format: { type: 'json_object' },
+  })
+
+  const content = response.choices[0].message.content || '{}'
+  return JSON.parse(content) as OptimizedBuild
+}
+
+type BuildInput = {
+  name: string
+  position: string
+  height: string
+  attributes: Record<string, number>
+  badges: string[]
+}
+
+export async function simulateMatchup(
+  build1: BuildInput,
+  build2: BuildInput
+): Promise<MatchupResult> {
+  const formatBuild = (b: BuildInput) =>
+    `Name: ${b.name}\nPosition: ${b.position}\nHeight: ${b.height}\nKey Attributes: ${Object.entries(b.attributes).map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`).join(', ')}\nBadges: ${b.badges.join(', ')}`
+
+  const prompt = `Simulate a 1v1 NBA 2K26 matchup between these two builds:
+
+BUILD 1:
+${formatBuild(build1)}
+
+BUILD 2:
+${formatBuild(build2)}
+
+Analyze the matchup deeply — consider attribute matchups, badge synergies, height/position advantages, and current 2K26 meta. Return ONLY valid JSON:
+{
+  "winner": "${build1.name} or ${build2.name} or Toss-Up",
+  "win_probability_1": 55,
+  "win_probability_2": 45,
+  "key_edges": [
+    { "category": "Shooting", "advantage": "${build1.name}", "reason": "15-point three-point advantage plus Limitless Range HoF" },
+    { "category": "Defense", "advantage": "${build2.name}", "reason": "Higher perimeter defense and Clamps badge" }
+  ],
+  "build1_strategy": ["Force mid-range shots", "Use ball-handle advantage to create space", "Attack off the dribble"],
+  "build2_strategy": ["Stay in front on defense", "Exploit size advantage in post", "Contest every jumper"],
+  "matchup_summary": "2-3 sentence overview of the matchup dynamics",
+  "verdict": "1-2 sentence final verdict on the winner and why"
+}`
+
+  const response = await getGroq().chat.completions.create({
+    model: MODELS.fast,
+    messages: [
+      { role: 'system', content: BUILD_ANALYSIS_SYSTEM + '\n' + NBA2K26_KNOWLEDGE },
+      { role: 'user', content: prompt },
+    ],
+    temperature: 0.4,
+    max_tokens: 1200,
+    response_format: { type: 'json_object' },
+  })
+
+  const content = response.choices[0].message.content || '{}'
+  return JSON.parse(content) as MatchupResult
+}
+
+type OpponentInput = {
+  position: string
+  height: string
+  attributes: Record<string, number>
+  badges: string[]
+  notes?: string
+}
+
+export async function scoutOpponent(opponent: OpponentInput): Promise<ScoutReport> {
+  const attrsList = Object.entries(opponent.attributes)
+    .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`)
+    .join(', ')
+
+  const prompt = `Scout this NBA 2K26 opponent and give a defensive scouting report:
+
+Position: ${opponent.position}
+Height: ${opponent.height}
+Key Attributes: ${attrsList}
+Badges: ${opponent.badges.join(', ')}
+${opponent.notes ? `Additional Notes: ${opponent.notes}` : ''}
+
+Return ONLY valid JSON:
+{
+  "threat_level": "High",
+  "primary_threats": ["Elite three-point shooting with Limitless Range HoF", "Explosive first step with Quick Chain"],
+  "exploit_weaknesses": ["Force them left — weak off-hand", "Attack them on defense, low perimeter D", "Body up in post to reduce driving lanes"],
+  "badges_to_equip": ["Clamps", "Intimidator", "Menace"],
+  "defensive_keys": ["Stay in front, no blow-bys", "Contest every shot with a hand up", "Force them into mid-range"],
+  "how_to_win": ["Attack their perimeter defense early", "Make them work on defense", "Force turnovers with ball pressure"],
+  "summary": "2-3 sentence scouting summary"
+}`
+
+  const response = await getGroq().chat.completions.create({
+    model: MODELS.fast,
+    messages: [
+      { role: 'system', content: BUILD_ANALYSIS_SYSTEM + '\n' + NBA2K26_KNOWLEDGE },
+      { role: 'user', content: prompt },
+    ],
+    temperature: 0.3,
+    max_tokens: 1000,
+    response_format: { type: 'json_object' },
+  })
+
+  const content = response.choices[0].message.content || '{}'
+  return JSON.parse(content) as ScoutReport
+}
+
 export { getGroq }
