@@ -12,7 +12,7 @@ function getGroq(): Groq {
 
 export const MODELS = {
   fast: 'llama-3.3-70b-versatile',
-  vision: 'llama-3.2-11b-vision-preview',
+  vision: 'meta-llama/llama-4-scout-17b-16e-instruct',
   reasoning: 'llama-3.3-70b-versatile',
 } as const
 
