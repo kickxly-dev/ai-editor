@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { MessageSquare, Send, Loader2, ArrowLeft } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import AppLayout from '@/components/layout/AppLayout'
 
 interface Message {
   id: string
@@ -166,8 +166,7 @@ export default function MessagesPage() {
 
   if (!session?.user) {
     return (
-      <div className="min-h-screen bg-bg">
-        <Navbar />
+      <AppLayout>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <MessageSquare className="w-12 h-12 text-rose-400 mx-auto mb-4" />
@@ -176,14 +175,13 @@ export default function MessagesPage() {
             <Link href="/login" className="btn btn-primary">Sign In</Link>
           </div>
         </div>
-      </div>
+      </AppLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-bg">
-      <Navbar />
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-8">
+    <AppLayout>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-8">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center gap-2 mb-1">
@@ -342,6 +340,6 @@ export default function MessagesPage() {
           </motion.div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   )
 }

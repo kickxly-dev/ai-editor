@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Zap, Brain, TrendingUp, Users, BookOpen, ArrowRight, Activity, Star, Clock, BarChart3 } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import AppLayout from '@/components/layout/AppLayout'
 
 const ACTIONS = [
   { href:'/analyze',   icon:Zap,        label:'Analyze Build',  desc:'AI breakdown in seconds', color:'rose' },
@@ -47,9 +47,8 @@ function cn(...c: (string | undefined | false)[]) { return c.filter(Boolean).joi
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-bg">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+    <AppLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
 
         {/* Welcome */}
         <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} className="mb-8">
@@ -173,6 +172,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </div>
+      </AppLayout>
   )
 }

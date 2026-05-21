@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Brain, Send, User, RotateCcw, Copy, Check, Globe } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import AppLayout from '@/components/layout/AppLayout'
 import { CoachMessage } from '@/types'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
@@ -123,8 +123,7 @@ export default function CoachPage() {
   }, [input])
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col">
-      <Navbar />
+    <AppLayout><div className="flex flex-col" style={{minHeight:"100vh"}}>
       <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full px-4 sm:px-6 pt-20 pb-6">
 
         {/* Header */}
@@ -200,5 +199,6 @@ export default function CoachPage() {
         </div>
       </div>
     </div>
+    </AppLayout>
   )
 }

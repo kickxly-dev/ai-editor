@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { BookOpen, Play, Search, Clock, Eye, Star, RefreshCw, ExternalLink } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import AppLayout from '@/components/layout/AppLayout'
 import { cn } from '@/lib/utils'
 import type { TutorialVideo } from '@/lib/youtube-scraper'
 
@@ -167,9 +167,8 @@ export default function TutorialsPage() {
   const rest = filtered.filter(t => !t.featured)
 
   return (
-    <div className="min-h-screen bg-bg">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+    <AppLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-8 gap-4">
@@ -276,6 +275,6 @@ export default function TutorialsPage() {
           </AnimatePresence>
         )}
       </div>
-    </div>
+    </AppLayout>
   )
 }

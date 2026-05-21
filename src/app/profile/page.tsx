@@ -5,7 +5,7 @@ import {
   User, Star, Heart, Bookmark, BarChart3, TrendingUp,
   Settings, Share2, CheckCircle, Zap, Brain,
 } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import AppLayout from '@/components/layout/AppLayout'
 import { Button } from '@/components/ui/button'
 import { formatNumber } from '@/lib/utils'
 
@@ -34,9 +34,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+    <AppLayout>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-16">
         {/* Profile header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -192,6 +191,6 @@ export default function ProfilePage() {
           </motion.div>
         )}
       </div>
-    </div>
+    </AppLayout>
   )
 }

@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TrendingUp, TrendingDown, Minus, BarChart3, Star, Play, Zap, RefreshCw, ExternalLink, Clock } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import AppLayout from '@/components/layout/AppLayout'
 import { cn } from '@/lib/utils'
 import type { ScrapedMeta, MetaEntry } from '@/lib/scraper'
 
@@ -141,9 +141,8 @@ export default function MetaPage() {
     : null
 
   return (
-    <div className="min-h-screen bg-bg">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+    <AppLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-8 gap-4">
@@ -323,6 +322,6 @@ export default function MetaPage() {
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   )
 }

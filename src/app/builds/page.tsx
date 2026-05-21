@@ -5,7 +5,7 @@ import {
   Search, RefreshCw, X, ExternalLink, ChevronRight,
   TrendingUp, Shield, Zap, Activity, Target, Users
 } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import AppLayout from '@/components/layout/AppLayout'
 import { cn } from '@/lib/utils'
 import type { ScrapedBuild } from '@/lib/builds-scraper'
 
@@ -407,9 +407,8 @@ export default function BuildsPage() {
   })
 
   return (
-    <div className="min-h-screen bg-bg">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+    <AppLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-8 gap-4">
@@ -512,6 +511,6 @@ export default function BuildsPage() {
           <DetailPanel build={selected} onClose={() => setSelected(null)} />
         )}
       </AnimatePresence>
-    </div>
+    </AppLayout>
   )
 }

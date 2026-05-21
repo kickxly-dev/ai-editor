@@ -5,7 +5,7 @@ import {
   Wand2, Brain, CheckCircle2, AlertTriangle, Copy, Check,
   ChevronDown, ChevronUp, Sparkles,
 } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import AppLayout from '@/components/layout/AppLayout'
 import { cn } from '@/lib/utils'
 import { OptimizedBuild } from '@/lib/groq'
 import toast from 'react-hot-toast'
@@ -168,9 +168,8 @@ export default function OptimizePage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg">
-      <Navbar />
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+    <AppLayout>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-16">
 
         {/* Header */}
         <motion.div
@@ -437,6 +436,6 @@ export default function OptimizePage() {
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </AppLayout>
   )
 }

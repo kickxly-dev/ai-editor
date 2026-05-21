@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, Plus, X, AlertTriangle,
   CheckCircle2, ArrowRight, BarChart2, RefreshCw, ImageIcon,
 } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import AppLayout from '@/components/layout/AppLayout'
 import { AIAnalysis, BuildAttributes } from '@/types'
 import { cn, POSITIONS, META_CATEGORIES, BADGE_CATEGORIES, BADGE_LEVELS } from '@/lib/utils'
 import toast from 'react-hot-toast'
@@ -130,9 +130,8 @@ export default function AnalyzePage() {
   const tier = analysis?.meta_viability || 'C'
 
   return (
-    <div className="min-h-screen bg-bg">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+    <AppLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
 
         {/* Header */}
         <div className="mb-8">
@@ -432,6 +431,6 @@ export default function AnalyzePage() {
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   )
 }

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { Search, ChevronDown, ChevronUp, X, Send, Clock, Loader2 } from 'lucide-react'
-import Navbar from '@/components/layout/Navbar'
+import AppLayout from '@/components/layout/AppLayout'
 
 interface LfgPost {
   id: string
@@ -204,9 +204,8 @@ export default function FindPage() {
   })
 
   return (
-    <div className="min-h-screen bg-bg">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+    <AppLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex items-center gap-2 mb-1">
@@ -444,6 +443,6 @@ export default function FindPage() {
           />
         )}
       </AnimatePresence>
-    </div>
+    </AppLayout>
   )
 }

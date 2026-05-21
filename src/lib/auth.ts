@@ -60,6 +60,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               console.log('Auth: wrong password for', email)
               return null
             }
+            // Always enforce admin status based on ADMIN_EMAIL env var
+            const shouldBeAdmin = email === process.env.ADMIN_EMAIL
+            if (shouldBeAdmin && !user.is_admin) {
+              await client.query('UPDATE users SET is_admin = TRUE WHERE id = $1', [user.id])
+              user.is_admin = true
+            }
             return {
               id: user.id,
               email: user.email,
