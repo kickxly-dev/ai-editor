@@ -214,14 +214,17 @@ Return ONLY this exact JSON structure (no markdown, no explanation):
 }
 
 Rules:
-- Include at least 5 builds (S through C tier), 6 badges, 4 animations, 3 takeovers
+- Include at least 6 builds (S through C tier), 14 badges across all 4 categories (Finishing/Shooting/Playmaking/Defense), 4 animations, 3 takeovers
+- Do NOT duplicate badge names — each badge must appear only once
+- Only include valid NBA 2K26 badge names — do NOT invent badge names
 - Base tiers on actual community consensus from the data
 - usage is estimated % of players using it (0-100)
 - winRate is estimated win rate (48-65)
 - trend is one of: rising, stable, falling
 - Extract actual build/badge names mentioned in the data
+- For animations, only reference 2K26-valid jumpshot bases (e.g. Steph Curry base, KD base) — NOT outdated bases like Base 98 from prior games
 - For patchNotes, extract any actual patch changes mentioned
-- If specific data is missing, use reasonable estimates based on 2K26 meta knowledge`
+- If specific data is missing, use reasonable estimates based on 2K26 meta knowledge (game released September 2025)`
 
   const response = await getGroq().chat.completions.create({
     model: 'llama-3.3-70b-versatile',
@@ -305,18 +308,31 @@ function getFallbackMeta(): ScrapedMeta {
       { name: 'Pure Lock', tier: 'B', category: 'build', usage: 14, winRate: 51, trend: 'falling', description: 'Elite defender but limited offense in current meta.' },
     ],
     badges: [
-      { name: 'Limitless Range', tier: 'S', category: 'badge', usage: 67, winRate: 61, trend: 'rising', description: 'Expands shooting range. Meta-defining badge this season.' },
-      { name: 'Clamps', tier: 'S', category: 'badge', usage: 72, winRate: 61, trend: 'stable', description: 'Best perimeter defense badge. Essential for any lock.' },
-      { name: 'Quick First Step', tier: 'S', category: 'badge', usage: 62, winRate: 59, trend: 'stable', description: 'Enhances blow-by speed. Essential for guards.' },
-      { name: 'Posterizer', tier: 'A', category: 'badge', usage: 39, winRate: 56, trend: 'stable', description: 'Activates on contact dunks. High-percentage plays.' },
-      { name: 'Dream Shake', tier: 'A', category: 'badge', usage: 45, winRate: 57, trend: 'rising', description: 'Post fade is powerful in current meta.' },
-      { name: 'Dimer', tier: 'B', category: 'badge', usage: 29, winRate: 52, trend: 'falling', description: 'Useful in team play but nerfed in 1.08.' },
+      { name: 'Limitless Range', tier: 'S', category: 'badge', usage: 67, winRate: 61, trend: 'rising', description: 'Expands shooting range to near half-court. Meta-defining badge this season.' },
+      { name: 'Clamps', tier: 'S', category: 'badge', usage: 72, winRate: 61, trend: 'stable', description: 'Best perimeter defense badge. Essential for any lockdown build.' },
+      { name: 'Quick First Step', tier: 'S', category: 'badge', usage: 62, winRate: 59, trend: 'stable', description: 'Enhances blow-by speed off the dribble. Essential for guards.' },
+      { name: 'Green Machine', tier: 'S', category: 'badge', usage: 58, winRate: 60, trend: 'rising', description: 'Bonus on back-to-back greens. Snowballs quickly when hot.' },
+      { name: 'Posterizer', tier: 'A', category: 'badge', usage: 39, winRate: 56, trend: 'stable', description: 'Activates on contact dunks. High-percentage plays at the rim.' },
+      { name: 'Catch & Shoot', tier: 'A', category: 'badge', usage: 55, winRate: 57, trend: 'rising', description: 'Shooting boost after catching a pass. Essential for spot-up shooters.' },
+      { name: 'Deadeye', tier: 'A', category: 'badge', usage: 51, winRate: 56, trend: 'stable', description: 'Reduces penalty from contested shots. Strong for pull-up scorers.' },
+      { name: 'Space Creator', tier: 'A', category: 'badge', usage: 44, winRate: 55, trend: 'stable', description: 'Boosts step-back and hop jumpers. Pairs well with handles.' },
+      { name: 'Unpluckable', tier: 'A', category: 'badge', usage: 60, winRate: 55, trend: 'stable', description: 'Prevents steal attempts. Must-have for ball handlers in traffic.' },
+      { name: 'Contact Finisher', tier: 'A', category: 'badge', usage: 42, winRate: 56, trend: 'rising', description: 'Boosts finishing through contact at the rim. Great for slashers.' },
+      { name: 'Intimidator', tier: 'A', category: 'badge', usage: 38, winRate: 55, trend: 'stable', description: 'Lowers opponent shot percentages near the rim. Best on bigs.' },
+      { name: 'Dream Shake', tier: 'A', category: 'badge', usage: 35, winRate: 57, trend: 'rising', description: 'Post fade and drop step combo is powerful in current meta.' },
+      { name: 'Handles For Days', tier: 'B', category: 'badge', usage: 40, winRate: 53, trend: 'stable', description: 'Reduces stamina drain from dribble moves. Good for guards running combos.' },
+      { name: 'Dimer', tier: 'B', category: 'badge', usage: 29, winRate: 52, trend: 'falling', description: 'Boosts teammate shots off your passes. Nerfed in recent patch.' },
+      { name: 'Acrobat', tier: 'B', category: 'badge', usage: 32, winRate: 52, trend: 'stable', description: 'Boosts euro steps and hop steps. Solid for drives to the basket.' },
+      { name: 'Rebound Chaser', tier: 'B', category: 'badge', usage: 26, winRate: 51, trend: 'stable', description: 'Improves pursuit of missed shots. Good for energy big builds.' },
+      { name: 'Hot Zone Hunter', tier: 'C', category: 'badge', usage: 22, winRate: 50, trend: 'falling', description: 'Shooting boost in established hot zones. Situational value only.' },
+      { name: 'Brick Wall', tier: 'C', category: 'badge', usage: 18, winRate: 49, trend: 'falling', description: 'Drains stamina off screen setting. Very niche use case.' },
     ],
     animations: [
-      { name: 'Dribble: Pro 3', tier: 'S', category: 'animation', usage: 58, winRate: 61, trend: 'rising', description: 'Tightest dribble package for guards this patch.' },
-      { name: 'Jumpshot: Base 98', tier: 'S', category: 'animation', usage: 45, winRate: 62, trend: 'rising', description: 'Fastest release window in current meta.' },
-      { name: 'Post Fade: Dream', tier: 'A', category: 'animation', usage: 29, winRate: 57, trend: 'stable', description: 'Most effective post fade animation.' },
-      { name: 'Size Up: Pro 5', tier: 'B', category: 'animation', usage: 18, winRate: 52, trend: 'stable', description: 'Solid size-up package for bigger guards.' },
+      { name: 'Dribble Style: Pro 3', tier: 'S', category: 'animation', usage: 58, winRate: 61, trend: 'rising', description: 'Tightest dribble package for guards this patch in 2K26.' },
+      { name: 'Jumpshot: Steph Curry (Base 6)', tier: 'S', category: 'animation', usage: 48, winRate: 62, trend: 'rising', description: 'Fastest green window for guards under 6\'5" in 2K26 meta.' },
+      { name: 'Jumpshot: KD Base 8', tier: 'A', category: 'animation', usage: 35, winRate: 59, trend: 'stable', description: 'Best jumpshot base for wings and forwards 6\'5"–6\'9".' },
+      { name: 'Post Fade: Dream', tier: 'A', category: 'animation', usage: 29, winRate: 57, trend: 'stable', description: 'Most effective post fade animation for power forwards.' },
+      { name: 'Size Up: Pro 5', tier: 'B', category: 'animation', usage: 18, winRate: 52, trend: 'stable', description: 'Solid size-up package for bigger guards and wings.' },
     ],
     takeovers: [
       { name: 'Limitless Shooter', tier: 'S', category: 'takeover', usage: 39, winRate: 63, trend: 'rising', description: 'Extends range dramatically. Pairs with any shooting build.' },
