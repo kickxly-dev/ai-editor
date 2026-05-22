@@ -6,10 +6,12 @@ import {
   Upload, Zap, Brain, TrendingUp, Shield, Target,
   ChevronDown, ChevronUp, Plus, X, AlertTriangle,
   CheckCircle2, ArrowRight, BarChart2, RefreshCw, ImageIcon,
+  BookmarkPlus, Bookmark, Globe, Lock,
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import { AIAnalysis, BuildAttributes } from '@/types'
 import { cn, POSITIONS, META_CATEGORIES, BADGE_CATEGORIES, BADGE_LEVELS } from '@/lib/utils'
+import { useSession } from 'next-auth/react'
 import toast from 'react-hot-toast'
 
 const DEFAULT_ATTRS: BuildAttributes = {
@@ -78,6 +80,10 @@ export default function AnalyzePage() {
   const [loading, setLoading] = useState(false)
   const [analysis, setAnalysis] = useState<AIAnalysis | null>(null)
   const [expanded, setExpanded] = useState(['Finishing'])
+  const [saving, setSaving] = useState(false)
+  const [savedId, setSavedId] = useState<number | null>(null)
+  const [isPublic, setIsPublic] = useState(false)
+  const { data: session } = useSession()
 
   const onDrop = useCallback((files: File[]) => {
     const f = files[0]; if (!f) return
@@ -121,6 +127,31 @@ export default function AnalyzePage() {
       toast.error(e instanceof Error ? e.message : 'Analysis failed')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const saveBuild = async () => {
+    if (!session?.user) { toast.error('Sign in to save builds'); return }
+    if (!analysis) return
+    setSaving(true)
+    try {
+      const res = await fetch('/api/build', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: buildName || 'My Build',
+          position, height, wingspan, takeover, category,
+          attributes: attrs, badges, analysis, isPublic,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setSavedId(data.id)
+      toast.success('Build saved to your profile!')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to save')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -180,7 +211,22 @@ export default function AnalyzePage() {
                   <>
                     <Upload className="w-10 h-10 text-fg-subtle mb-3" />
                     <p className="text-fg font-medium mb-1">Drop your build screenshot</p>
-                    <p className="text-fg-subtle text-sm">PNG, JPG up to 10MB</p>
+                    <p className="text-fg-subtle text-sm mb-4">PNG, JPG up to 10MB</p>
+                    <div className="text-left bg-white/[0.03] border border-white/[0.06] rounded-lg p-3 max-w-sm">
+                      <p className="text-xs font-semibold text-fg-muted mb-2 uppercase tracking-wider">Best screenshots</p>
+                      <ul className="space-y-1">
+                        {[
+                          'MyCAREER → MyPLAYER → Attributes screen',
+                          'Badge Management screen (shows all equipped)',
+                          'Full build summary before confirming',
+                        ].map((tip) => (
+                          <li key={tip} className="flex items-start gap-1.5 text-xs text-fg-subtle">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400/60 mt-0.5 flex-shrink-0" />
+                            {tip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </>
                 )}
               </div>
@@ -417,11 +463,55 @@ export default function AnalyzePage() {
                     <p className="text-fg font-semibold text-sm">{analysis.takeover_recommendation}</p>
                   </div>
 
+                  {/* Save to Profile */}
+                  {session?.user && (
+                    <div className="card p-4 space-y-3">
+                      <p className="text-xs font-semibold text-fg-muted uppercase tracking-wider">Save Build</p>
+                      <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                        <button
+                          onClick={() => setIsPublic(p => !p)}
+                          className={cn(
+                            'w-9 h-5 rounded-full transition-colors relative flex-shrink-0',
+                            isPublic ? 'bg-emerald-500' : 'bg-white/10'
+                          )}
+                        >
+                          <span className={cn(
+                            'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform',
+                            isPublic ? 'translate-x-4' : 'translate-x-0.5'
+                          )} />
+                        </button>
+                        <span className="flex items-center gap-1.5 text-xs text-fg-muted">
+                          {isPublic ? <Globe className="w-3 h-3 text-emerald-400" /> : <Lock className="w-3 h-3" />}
+                          {isPublic ? 'Public — visible in community builds' : 'Private — only you can see this'}
+                        </span>
+                      </label>
+                      <button
+                        onClick={saveBuild}
+                        disabled={saving || !!savedId}
+                        className={cn(
+                          'btn w-full gap-2',
+                          savedId ? 'btn-secondary text-emerald-400' : 'btn-primary'
+                        )}
+                      >
+                        {saving ? (
+                          <><span className="w-3.5 h-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" /> Saving...</>
+                        ) : savedId ? (
+                          <><Bookmark className="w-4 h-4" /> Saved to Profile</>
+                        ) : (
+                          <><BookmarkPlus className="w-4 h-4" /> Save to Profile</>
+                        )}
+                      </button>
+                    </div>
+                  )}
+
                   <div className="flex gap-2">
-                    <button onClick={() => setAnalysis(null)} className="btn btn-secondary flex-1 gap-2">
+                    <button onClick={() => { setAnalysis(null); setSavedId(null) }} className="btn btn-secondary flex-1 gap-2">
                       <RefreshCw className="w-4 h-4" /> Reset
                     </button>
-                    <button className="btn btn-primary flex-1 gap-2">
+                    <button
+                      onClick={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Link copied!'))}
+                      className="btn btn-secondary flex-1 gap-2"
+                    >
                       Share <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
