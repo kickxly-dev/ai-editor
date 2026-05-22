@@ -1,7 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
-import { Eye, FlaskConical } from 'lucide-react'
-import Link from 'next/link'
+import { Eye } from 'lucide-react'
 
 export default function VisionPage() {
   return (
@@ -36,13 +35,6 @@ export default function VisionPage() {
               transition={{ duration: 1.3, repeat: Infinity, delay: d }} />
           ))}
         </div>
-
-        <Link href="/vision/audio-cue"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-[11px] font-bold uppercase tracking-widest transition-all hover:opacity-80"
-          style={{ background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.25)', color: 'rgba(255,80,100,0.7)' }}>
-          <FlaskConical className="w-3.5 h-3.5" />
-          Try Audio Cue Sniffer
-        </Link>
       </motion.div>
     </div>
   )
