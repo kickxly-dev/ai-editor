@@ -62,8 +62,15 @@ export async function GET(req: NextRequest) {
       },
     }, { headers: corsHeaders() })
   } catch (err) {
+    const msg = String(err)
+    if (msg.includes('relation') && msg.includes('does not exist')) {
+      return NextResponse.json(
+        { data: [], meta: { count: 0, limit, filters: { position: position || null, sort } } },
+        { headers: corsHeaders() }
+      )
+    }
     return NextResponse.json(
-      { error: 'Internal server error', details: String(err) },
+      { error: 'Internal server error' },
       { status: 500, headers: corsHeaders() }
     )
   } finally {

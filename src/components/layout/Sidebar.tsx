@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Zap, Brain, TrendingUp, Users, BookOpen, LayoutDashboard,
   Wand2, Swords, Users2, Search, MessageSquare, LogOut,
-  ChevronLeft, ChevronRight, Shield, Calculator, Flame, Award, Crosshair, ClipboardList, Trophy
+  ChevronLeft, ChevronRight, Shield, Calculator, Flame, Award, Crosshair, ClipboardList, Trophy, User
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CourtIQLogo } from '@/components/ui/Logo'
@@ -150,7 +150,15 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
       {/* Bottom — user + collapse */}
       <div className="flex-shrink-0 p-2 space-y-1" style={{ borderTop: '1px solid rgba(255,255,255,0.045)' }}>
         {session?.user && (
-          <div className={cn('flex items-center gap-2.5 px-2.5 py-2 rounded-lg', collapsed ? 'justify-center' : '')}>
+          <Link
+            href="/profile"
+            title={collapsed ? 'Profile' : undefined}
+            className={cn(
+              'flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-colors hover:bg-white/[0.04]',
+              collapsed ? 'justify-center' : '',
+              path === '/profile' ? 'bg-white/[0.04]' : ''
+            )}
+          >
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-rose-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
               {(session.user.name || session.user.email || '?')[0].toUpperCase()}
             </div>
@@ -161,14 +169,14 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
                   animate={{ opacity: 1, width: 'auto' }}
                   exit={{ opacity: 0, width: 0 }}
                   transition={{ duration: 0.16 }}
-                  className="overflow-hidden min-w-0"
+                  className="overflow-hidden min-w-0 flex-1"
                 >
                   <p className="text-xs text-white/70 font-medium truncate">{session.user.name || session.user.email}</p>
-                  {isAdmin && <p className="text-[10px] text-amber-400/70">Admin</p>}
+                  {isAdmin ? <p className="text-[10px] text-amber-400/70">Admin</p> : <p className="text-[10px] text-white/25">View Profile</p>}
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </Link>
         )}
 
         <button

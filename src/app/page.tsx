@@ -4,7 +4,8 @@ import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'fram
 import Link from 'next/link'
 import {
   Zap, Brain, TrendingUp, Users, ArrowRight, Cpu,
-  Shield, Activity, ChevronRight, Wand2, Swords, Users2, Star
+  Shield, Activity, ChevronRight, Wand2, Swords, Users2, Star,
+  Calculator, Flame, Award, Crosshair, Trophy,
 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import { CourtIQLogo } from '@/components/ui/Logo'
@@ -106,6 +107,31 @@ const FEATURES = [
     icon: Users2, title: 'Squad Builder', accent: '#FB7185',
     desc: 'Build with friends. AI chemistry analysis. Dominate Pro-Am.',
     href: '/squad', tag: 'Social', size: 'normal',
+  },
+  {
+    icon: Calculator, title: 'VC Calculator', accent: '#F97316',
+    desc: 'Exact VC cost to hit your target stats. Finds cheapest PSN/Xbox bundle.',
+    href: '/vc-calc', tag: 'Tool', size: 'normal',
+  },
+  {
+    icon: Award, title: 'Badge Reference', accent: '#FBBF24',
+    desc: 'All Season 5 badges with tier list and attribute thresholds.',
+    href: '/badges', tag: 'Reference', size: 'normal',
+  },
+  {
+    icon: Crosshair, title: 'Jumpshot Finder', accent: '#F472B6',
+    desc: 'Best base + release combos for your height and play style.',
+    href: '/jumpshots', tag: 'Tool', size: 'normal',
+  },
+  {
+    icon: Flame, title: 'Roast My Build', accent: '#EF4444',
+    desc: 'Get savagely roasted by AI. Download the PNG card. Share the damage.',
+    href: '/roast', tag: 'Fun', size: 'normal',
+  },
+  {
+    icon: Trophy, title: 'Leaderboard', accent: '#FCD34D',
+    desc: 'Top community-submitted builds ranked by likes. Get yours on there.',
+    href: '/leaderboard', tag: 'Community', size: 'normal',
   },
 ]
 
