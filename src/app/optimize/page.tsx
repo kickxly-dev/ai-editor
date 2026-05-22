@@ -3,11 +3,12 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Wand2, Brain, CheckCircle2, AlertTriangle, Copy, Check,
-  ChevronDown, ChevronUp, Sparkles,
+  ChevronDown, ChevronUp, Sparkles, BookmarkPlus, Bookmark, Loader2,
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import { cn } from '@/lib/utils'
 import { OptimizedBuild } from '@/lib/groq'
+import { useSession } from 'next-auth/react'
 import toast from 'react-hot-toast'
 
 const POSITIONS_OPTS = ['All', 'PG', 'SG', 'SF', 'PF', 'C']
@@ -97,11 +98,55 @@ export default function OptimizePage() {
   const [build, setBuild] = useState<OptimizedBuild | null>(null)
   const [expandedGroups, setExpandedGroups] = useState(['Finishing', 'Shooting'])
   const [copied, setCopied] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [savedId, setSavedId] = useState<number | null>(null)
+  const { data: session } = useSession()
 
   const toggleGroup = (key: string) =>
     setExpandedGroups(prev =>
       prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
     )
+
+  const saveOptimizedBuild = async () => {
+    if (!session?.user) { toast.error('Sign in to save builds'); return }
+    if (!build) return
+    setSaving(true)
+    try {
+      const res = await fetch('/api/build', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: build.name,
+          position: build.position,
+          height: build.height,
+          wingspan: build.wingspan,
+          weight: build.weight,
+          takeover: build.takeover,
+          category: gameMode !== 'Any' ? gameMode : 'Park',
+          attributes: build.attributes,
+          badges: build.badges,
+          isPublic: false,
+          analysis: {
+            archetype: build.archetype,
+            strengths: build.strengths,
+            weaknesses: build.weaknesses,
+            overall_rating: build.overall_rating,
+            meta_viability: build.meta_viability,
+            playstyle_summary: build.playstyle_summary,
+            takeover_recommendation: build.takeover,
+          },
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setSavedId(data.id)
+      toast.success('Build saved to your profile!')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to save')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const generate = async () => {
     if (!description.trim()) return toast.error('Describe your player first')
@@ -418,19 +463,30 @@ export default function OptimizePage() {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <button
-                  onClick={() => { setBuild(null); setDescription('') }}
-                  className="btn btn-secondary flex-1"
+                  onClick={() => { setBuild(null); setDescription(''); setSavedId(null) }}
+                  className="btn btn-secondary"
                 >
                   New Build
                 </button>
-                <button onClick={copyBuild} className="btn btn-primary flex-1 gap-2">
-                  {copied
-                    ? <><Check className="w-4 h-4" /> Copied!</>
-                    : <><Copy className="w-4 h-4" /> Copy Build</>
-                  }
+                <button onClick={copyBuild} className="btn btn-secondary gap-2 flex-1">
+                  {copied ? <><Check className="w-4 h-4" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy</>}
                 </button>
+                {session?.user && (
+                  <button
+                    onClick={saveOptimizedBuild}
+                    disabled={saving || !!savedId}
+                    className={cn('btn gap-2 flex-1', savedId ? 'btn-secondary text-emerald-400' : 'btn-primary')}
+                  >
+                    {saving
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+                      : savedId
+                      ? <><Bookmark className="w-4 h-4" /> Saved!</>
+                      : <><BookmarkPlus className="w-4 h-4" /> Save to Profile</>
+                    }
+                  </button>
+                )}
               </div>
             </motion.div>
           )}
