@@ -54,8 +54,10 @@ const TICKER_ITEMS = [
   { label: 'Build Analyzer', color: '#E11D48' }, { label: 'AI Coach', color: '#38BDF8' },
   { label: 'Meta Tracker', color: '#10B981' }, { label: 'Build Optimizer', color: '#8B5CF6' },
   { label: '1v1 Simulator', color: '#F59E0B' }, { label: 'Squad Builder', color: '#FB7185' },
-  { label: 'Teammate Finder', color: '#34D399' }, { label: 'Groq Powered', color: '#FAFAFA' },
-  { label: 'NBA 2K26', color: '#FB7185' }, { label: 'Season 5 Meta', color: '#34D399' },
+  { label: 'Teammate Finder', color: '#34D399' }, { label: 'Jumpshot Finder', color: '#F472B6' },
+  { label: 'VC Calculator', color: '#FB923C' }, { label: 'Roast My Build', color: '#EF4444' },
+  { label: 'Badge Reference', color: '#FBBF24' }, { label: 'Public REST API', color: '#A78BFA' },
+  { label: 'Groq Powered', color: '#FAFAFA' }, { label: 'Season 5 Meta', color: '#34D399' },
 ]
 function Ticker() {
   const all = [...TICKER_ITEMS, ...TICKER_ITEMS, ...TICKER_ITEMS]
