@@ -240,7 +240,12 @@ export default function BuildDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
 
                 <div className="flex items-center gap-1.5 text-xs text-fg-subtle">
-                  {build.author && <><User className="w-3 h-3" />{build.author}</>}
+                  {build.author && (
+                    <Link href={`/user/${build.author}`}
+                      className="flex items-center gap-1 hover:text-rose-400 transition-colors">
+                      <User className="w-3 h-3" />{build.author}
+                    </Link>
+                  )}
                   <Calendar className="w-3 h-3 ml-1" />
                   {build.created_at ? new Date(build.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
                 </div>

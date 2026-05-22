@@ -171,9 +171,11 @@ export default function LeaderboardPage() {
                         {build.height && <span className="text-xs text-fg-subtle">· {build.height}</span>}
                         {build.archetype && <span className="text-xs text-fg-subtle truncate">· {build.archetype}</span>}
                         {build.author && (
-                          <span className="text-xs text-fg-subtle flex items-center gap-0.5 ml-1">
+                          <Link href={`/user/${build.author}`}
+                            onClick={e => e.stopPropagation()}
+                            className="text-xs text-fg-subtle flex items-center gap-0.5 ml-1 hover:text-rose-400 transition-colors">
                             <User className="w-2.5 h-2.5" />{build.author}
-                          </span>
+                          </Link>
                         )}
                       </div>
                     </div>
