@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Zap, Brain, TrendingUp, Users, BookOpen, LayoutDashboard,
   Wand2, Swords, Users2, Search, MessageSquare, LogOut,
-  ChevronLeft, ChevronRight, Shield, Calculator, Award, Crosshair, ClipboardList, Trophy, X,
+  ChevronLeft, ChevronRight, Shield, Award, Crosshair, ClipboardList, Trophy, X, Eye,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CourtIQLogo } from '@/components/ui/Logo'
@@ -13,6 +13,7 @@ import { useSession, signOut } from 'next-auth/react'
 
 const links = [
   { href: '/dashboard',    label: 'Dashboard',     icon: LayoutDashboard },
+  { href: '/vision',       label: '2K Vision',     icon: Eye },
   { href: '/analyze',      label: 'Analyzer',      icon: Zap },
   { href: '/optimize',     label: 'Optimizer',     icon: Wand2 },
   { href: '/matchup',      label: 'Matchup',       icon: Swords },
@@ -23,7 +24,6 @@ const links = [
   { href: '/squad',        label: 'Squad',         icon: Users2 },
   { href: '/find',         label: 'Find',          icon: Search },
   { href: '/messages',     label: 'Messages',      icon: MessageSquare },
-  { href: '/vc-calc',      label: 'VC Calc',       icon: Calculator },
   { href: '/badges',       label: 'Badges',        icon: Award },
   { href: '/jumpshots',    label: 'Jumpshots',     icon: Crosshair },
   { href: '/build-planner',label: 'Build Planner', icon: ClipboardList },

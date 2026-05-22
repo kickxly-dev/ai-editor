@@ -7,7 +7,7 @@ import {
   Zap, Brain, TrendingUp, Users, BookOpen, ArrowRight, ArrowUpRight,
   Wand2, Swords, Users2, Search, MessageSquare, Crown, ShieldCheck,
   BarChart3, Flame, Target, Calendar, ChevronRight, Sparkles, Trophy,
-  Calculator, Award, Crosshair, Gamepad2, TrendingDown, Bug,
+  Award, Crosshair, Gamepad2, TrendingDown, Bug, Eye,
   Radio, ExternalLink,
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
@@ -27,18 +27,18 @@ type DashboardData = {
 }
 
 const TOOLS = [
-  { href: '/analyze',   icon: Zap,          label: 'Build Analyzer',   desc: 'Screenshot → instant AI breakdown',   accent: '#E11D48', glow: 'rgba(225,29,72,0.15)' },
-  { href: '/coach',     icon: Brain,         label: 'AI Coach',         desc: 'Live search + Groq answers',          accent: '#38BDF8', glow: 'rgba(56,189,248,0.15)' },
-  { href: '/optimize',  icon: Wand2,         label: 'Build Optimizer',  desc: 'Describe style, get full build',      accent: '#8B5CF6', glow: 'rgba(139,92,246,0.15)' },
-  { href: '/matchup',   icon: Swords,        label: '1v1 Simulator',    desc: 'Win probability + key matchup tips',  accent: '#F59E0B', glow: 'rgba(245,158,11,0.15)' },
-  { href: '/meta',      icon: TrendingUp,    label: 'Meta Tracker',     desc: "S-tier builds, badges, jumpshots",    accent: '#10B981', glow: 'rgba(16,185,129,0.15)' },
+  { href: '/vision',    icon: Eye,           label: '2K Vision',        desc: 'Gamertag recon + in-game build X-Ray', accent: '#E11D48', glow: 'rgba(225,29,72,0.18)', hot: true },
+  { href: '/analyze',   icon: Zap,           label: 'Build Analyzer',   desc: 'Screenshot → instant AI breakdown',   accent: '#F59E0B', glow: 'rgba(245,158,11,0.15)' },
+  { href: '/coach',     icon: Brain,         label: 'AI Coach',         desc: 'Ask anything — searches web live',    accent: '#38BDF8', glow: 'rgba(56,189,248,0.15)' },
+  { href: '/optimize',  icon: Wand2,         label: 'Build Optimizer',  desc: 'Describe your playstyle, get a build', accent: '#8B5CF6', glow: 'rgba(139,92,246,0.15)' },
+  { href: '/matchup',   icon: Swords,        label: '1v1 Simulator',    desc: 'AI win probability + coaching tips',  accent: '#10B981', glow: 'rgba(16,185,129,0.15)' },
+  { href: '/meta',      icon: TrendingUp,    label: 'Meta Tracker',     desc: 'S-tier builds, badges, jumpshots',    accent: '#34D399', glow: 'rgba(52,211,153,0.15)' },
   { href: '/squad',     icon: Users2,        label: 'Squad Builder',    desc: 'AI chemistry report for your crew',   accent: '#FB7185', glow: 'rgba(251,113,133,0.15)' },
-  { href: '/find',      icon: Search,        label: 'Find Players',     desc: 'LFG for Park, Rec, Pro-Am',           accent: '#34D399', glow: 'rgba(52,211,153,0.15)' },
-  { href: '/messages',  icon: MessageSquare, label: 'Messages',         desc: 'Direct messages with teammates',      accent: '#A78BFA', glow: 'rgba(167,139,250,0.15)' },
-  { href: '/vc-calc',   icon: Calculator,    label: 'VC Calculator',    desc: 'Exact upgrade cost to hit your stats', accent: '#F97316', glow: 'rgba(249,115,22,0.15)' },
-  { href: '/badges',    icon: Award,         label: 'Badge Reference',  desc: 'All Season 5 badges with tier list',  accent: '#FBBF24', glow: 'rgba(251,191,36,0.15)' },
-  { href: '/jumpshots',    icon: Crosshair, label: 'Jumpshot Finder',  desc: 'Best base + releases for your build',  accent: '#F472B6', glow: 'rgba(244,114,182,0.15)' },
-  { href: '/leaderboard',  icon: Trophy,    label: 'Leaderboard',      desc: 'Top community builds by likes',        accent: '#FBBF24', glow: 'rgba(251,191,36,0.15)' },
+  { href: '/find',      icon: Search,        label: 'Find Players',     desc: 'LFG for Park, Rec, Pro-Am',           accent: '#A78BFA', glow: 'rgba(167,139,250,0.15)' },
+  { href: '/messages',  icon: MessageSquare, label: 'Messages',         desc: 'Direct messages with teammates',      accent: '#7DD3FC', glow: 'rgba(125,211,252,0.15)' },
+  { href: '/badges',    icon: Award,         label: 'Badge Reference',  desc: 'All Season 7 badges with tier list',  accent: '#FBBF24', glow: 'rgba(251,191,36,0.15)' },
+  { href: '/jumpshots', icon: Crosshair,     label: 'Jumpshot Finder',  desc: 'Best base + releases for your build', accent: '#F472B6', glow: 'rgba(244,114,182,0.15)' },
+  { href: '/leaderboard',icon: Trophy,       label: 'Leaderboard',      desc: 'Top community builds by likes',       accent: '#FCD34D', glow: 'rgba(252,211,77,0.15)' },
 ]
 
 const TIER_COLORS: Record<string, string> = {
@@ -86,8 +86,15 @@ function ToolCard({ tool, i }: { tool: typeof TOOLS[0]; i: number }) {
       transition={{ delay: 0.08 + i * 0.04, type: 'spring', stiffness: 260, damping: 26 }}
     >
       <Link href={tool.href}
-        className="group flex items-center gap-3.5 p-3.5 rounded-xl transition-all duration-200 hover:bg-white/04 border border-transparent hover:border-white/06"
+        className="group flex items-center gap-3.5 p-3.5 rounded-xl transition-all duration-200 hover:bg-white/04 border border-transparent hover:border-white/06 relative"
+        style={tool.hot ? { border: `1px solid ${tool.accent}22`, background: `${tool.accent}06` } : undefined}
       >
+        {tool.hot && (
+          <span className="absolute top-2 right-2 text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded"
+            style={{ background: `${tool.accent}22`, color: tool.accent, border: `1px solid ${tool.accent}33` }}>
+            NEW
+          </span>
+        )}
         <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
           style={{ background: `${tool.accent}14`, border: `1px solid ${tool.accent}20` }}>
           <Icon className="w-4 h-4" style={{ color: tool.accent }} />
