@@ -249,7 +249,7 @@ export default function ProfilePage() {
               {/* Stats strip */}
               <div className="grid grid-cols-4 gap-3 mt-5 pt-5 border-t border-white/[0.05]">
                 {[
-                  { label: 'Builds', value: profile?.totalBuilds ?? builds.length },
+                  { label: 'Builds', value: builds.length },
                   { label: 'Total Likes', value: totalLikes },
                   { label: 'Total Views', value: totalViews },
                   { label: 'Public', value: builds.filter((b) => b.is_public).length },
