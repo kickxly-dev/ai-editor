@@ -134,14 +134,14 @@ function StatSlider({ label, value, onChange, color = '#E11D48', onTouch }: {
 }) {
   return (
     <div>
-      <div className="flex justify-between items-center mb-1">
-        <span className="text-white/35 text-[11px]">{label}</span>
-        <span className="mono text-[11px] font-bold" style={{ color }}>{value}</span>
+      <div className="flex justify-between items-center mb-0.5 sm:mb-1">
+        <span className="text-white/35 text-[9px] sm:text-[11px] leading-none">{label}</span>
+        <span className="mono text-[9px] sm:text-[11px] font-bold leading-none" style={{ color }}>{value}</span>
       </div>
       <input
         type="range" min={25} max={99} value={value}
         onChange={e => { onChange(+e.target.value); onTouch?.() }}
-        style={{ accentColor: color }} className="w-full h-1.5 cursor-pointer"
+        style={{ accentColor: color }} className="w-full h-1 sm:h-1.5 cursor-pointer"
       />
     </div>
   )
@@ -182,27 +182,32 @@ function BuildCard({ form, onChange, label, color, onSliderTouch }: {
   label: string; color: string; onSliderTouch: () => void
 }) {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2.5">
-        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: color, boxShadow: `0 0 8px ${color}80` }} />
-        <span className="text-[11px] font-bold text-white/40 uppercase tracking-widest">{label}</span>
+    <div className="flex flex-col gap-2 sm:gap-4">
+      <div className="flex items-center gap-1.5 sm:gap-2.5">
+        <motion.span
+          className="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5 rounded-full flex-shrink-0"
+          style={{ background: color }}
+          animate={{ boxShadow: [`0 0 4px ${color}60`, `0 0 10px ${color}cc`, `0 0 4px ${color}60`] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <span className="text-[9px] sm:text-[11px] font-bold text-white/40 uppercase tracking-widest">{label}</span>
       </div>
 
-      <input className="input text-sm" placeholder="Build name (e.g. Park God)"
+      <input className="input build-input" placeholder="Name"
         value={form.name} onChange={e => onChange({ name: e.target.value })} />
 
-      <div className="grid grid-cols-2 gap-2">
-        <select className="select text-sm" value={form.position} onChange={e => onChange({ position: e.target.value })}>
+      <div className="grid grid-cols-2 gap-1 sm:gap-2">
+        <select className="select build-input" value={form.position} onChange={e => onChange({ position: e.target.value })}>
           {POSITIONS.map(p => <option key={p}>{p}</option>)}
         </select>
-        <input className="input text-sm" placeholder="Height (e.g. 6'4&quot;)" value={form.height}
+        <input className="input build-input" placeholder="Ht (6'4&quot;)" value={form.height}
           onChange={e => onChange({ height: e.target.value })} />
       </div>
 
       {ATTR_GROUPS.map(({ label: grpLabel, color: grpColor, fields }) => (
         <div key={grpLabel}>
-          <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: grpColor }}>{grpLabel}</p>
-          <div className="space-y-2.5">
+          <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest mb-1 sm:mb-2" style={{ color: grpColor }}>{grpLabel}</p>
+          <div className="space-y-1 sm:space-y-2.5">
             {fields.map(({ key, label: fLabel }) => (
               <StatSlider key={key} label={fLabel} value={form[key] as number} color={grpColor}
                 onChange={v => onChange({ [key]: v })} onTouch={onSliderTouch} />
@@ -212,10 +217,10 @@ function BuildCard({ form, onChange, label, color, onSliderTouch }: {
       ))}
 
       <div>
-        <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5">Badges</p>
-        <input className="input text-sm" placeholder="Deadeye, Shifty Shooter, Lightning Launch..."
+        <p className="text-[8px] sm:text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1 sm:mb-1.5">Badges</p>
+        <input className="input build-input" placeholder="Deadeye, Shifty..."
           value={form.badges} onChange={e => onChange({ badges: e.target.value })} />
-        <p className="text-white/20 text-[10px] mt-1">Comma-separated</p>
+        <p className="text-white/20 text-[8px] sm:text-[10px] mt-0.5">Comma-separated</p>
       </div>
     </div>
   )
@@ -660,31 +665,31 @@ export default function MatchupPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-20">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 pt-6 sm:pt-8 pb-24">
 
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={SPRING_SNAP} className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <motion.div className="w-10 h-10 rounded-xl flex items-center justify-center"
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={SPRING_SNAP} className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-2.5 sm:gap-3 mb-2 sm:mb-3">
+            <motion.div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center"
               style={{ background: 'rgba(225,29,72,0.1)', border: '1px solid rgba(225,29,72,0.2)' }}
               whileHover={{ scale: 1.08 }} transition={SPRING_SNAP}>
-              <Swords className="w-5 h-5 text-rose-400" />
+              <Swords className="w-4 h-4 sm:w-5 sm:h-5 text-rose-400" />
             </motion.div>
-            <span className="text-rose-400 text-[10px] font-bold tracking-[0.2em] uppercase">Matchup Lab</span>
+            <span className="text-rose-400 text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase">Matchup Lab</span>
           </div>
-          <h1 className="display text-4xl text-white mb-1">1v1 Simulator</h1>
-          <p className="text-white/35 text-sm">AI-powered matchup analysis with live mathematical attribute comparison.</p>
+          <h1 className="display text-3xl sm:text-4xl text-white mb-1">1v1 Simulator</h1>
+          <p className="text-white/35 text-xs sm:text-sm">AI-powered matchup analysis with live attribute matrix.</p>
         </motion.div>
 
         {/* Tab switcher — kinetic */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ ...SPRING_SNAP, delay: 0.04 }} className="card p-1.5 flex gap-1 w-fit mb-6">
+          transition={{ ...SPRING_SNAP, delay: 0.04 }} className="card p-1 sm:p-1.5 flex gap-0.5 sm:gap-1 w-fit mb-4 sm:mb-6">
           {TABS.map(({ key, label, icon: Icon }) => (
             <KineticBtn key={key} onClick={() => switchTab(key)}
-              className={cn('flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors',
+              className={cn('flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors',
                 tab === key ? 'bg-rose-500 text-white shadow-[0_2px_10px_rgba(225,29,72,0.4)]' : 'text-white/40 hover:text-white/70'
               )}>
-              <Icon className="w-3.5 h-3.5" />{label}
+              <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />{label}
             </KineticBtn>
           ))}
         </motion.div>
@@ -695,63 +700,62 @@ export default function MatchupPage() {
             <motion.div key="simulate" custom={tabDir}
               initial={{ x: tabDir * 48, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
               exit={{ x: tabDir * -48, opacity: 0 }} transition={SPRING_SOFT}
-              className="space-y-5">
+              className="space-y-3 sm:space-y-5">
 
               {/* Rolling scoreboard */}
               <Scoreboard b1={build1} b2={build2} b1Name={build1.name} b2Name={build2.name} aiResult={matchupResult} />
 
-              {/* Dual input collision */}
-              <div className="relative">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-                  {/* Build 1 */}
-                  <motion.div
-                    className="card rounded-r-none md:rounded-r-none p-5"
-                    style={{ borderRight: 'none' }}
-                    initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ ...SPRING_SNAP, delay: 0.06 }}>
-                    <BuildCard form={build1} onChange={u => setBuild1(p => ({ ...p, ...u }))}
-                      label="Build 1" color="#E11D48" onSliderTouch={() => triggerRipple('left')} />
-                  </motion.div>
+              {/* Dual input collision — always side by side */}
+              <div className="relative" style={{ display: 'grid', gridTemplateColumns: '1fr 2px 1fr' }}>
+                {/* Build 1 — slides in from left */}
+                <motion.div
+                  className="card rounded-r-none p-3 sm:p-5"
+                  style={{ borderRight: 'none' }}
+                  initial={{ opacity: 0, x: -40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ ...SPRING_SNAP, delay: 0.06 }}>
+                  <BuildCard form={build1} onChange={u => setBuild1(p => ({ ...p, ...u }))}
+                    label="Build 1" color="#E11D48" onSliderTouch={() => triggerRipple('left')} />
+                </motion.div>
 
-                  {/* VS + ripple divider */}
-                  <div className="relative hidden md:block" style={{ width: 2, margin: '0 -1px' }}>
-                    <div className="absolute inset-0" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center"
-                        style={{ background: '#0C0C10', border: '1px solid rgba(255,255,255,0.1)' }}>
-                        <span className="display text-xs font-black text-white/40">VS</span>
-                      </div>
-                    </div>
-                    {/* Ripple wave */}
-                    <AnimatePresence>
-                      {ripple && (
-                        <motion.div key={ripple.key}
-                          className="absolute top-0 left-1/2 -translate-x-1/2 w-1 rounded-full pointer-events-none"
-                          style={{ background: ripple.from === 'left' ? '#E11D48' : '#8B5CF6' }}
-                          initial={{ height: 0, opacity: 0.8, top: '50%' }}
-                          animate={{ height: '60%', opacity: 0, top: '20%' }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.6, ease: 'easeOut' }}
-                        />
-                      )}
-                    </AnimatePresence>
+                {/* VS + ripple divider — always visible */}
+                <div className="relative" style={{ zIndex: 10 }}>
+                  <div className="absolute inset-0" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                  <div className="absolute top-8 sm:top-10 left-1/2 -translate-x-1/2 z-10">
+                    <motion.div
+                      className="w-6 h-6 sm:w-9 sm:h-9 rounded-full flex items-center justify-center"
+                      style={{ background: '#0C0C10', border: '1px solid rgba(255,255,255,0.1)' }}
+                      initial={{ scale: 0, rotate: -90 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ ...SPRING_SNAP, delay: 0.15 }}>
+                      <span className="display text-[8px] sm:text-xs font-black text-white/40">VS</span>
+                    </motion.div>
                   </div>
-
-                  {/* Mobile divider */}
-                  <div className="md:hidden flex items-center gap-3 py-3">
-                    <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                    <span className="display text-sm font-black text-white/30">VS</span>
-                    <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                  </div>
-
-                  {/* Build 2 */}
-                  <motion.div
-                    className="card rounded-l-none md:rounded-l-none p-5"
-                    style={{ borderLeft: 'none' }}
-                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ ...SPRING_SNAP, delay: 0.08 }}>
-                    <BuildCard form={build2} onChange={u => setBuild2(p => ({ ...p, ...u }))}
-                      label="Build 2" color="#8B5CF6" onSliderTouch={() => triggerRipple('right')} />
-                  </motion.div>
+                  {/* Ripple wave */}
+                  <AnimatePresence>
+                    {ripple && (
+                      <motion.div key={ripple.key}
+                        className="absolute left-1/2 -translate-x-1/2 w-1 rounded-full pointer-events-none"
+                        style={{ background: ripple.from === 'left' ? '#E11D48' : '#8B5CF6' }}
+                        initial={{ height: 0, opacity: 0.9, top: '50%' }}
+                        animate={{ height: '55%', opacity: 0, top: '22%' }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                      />
+                    )}
+                  </AnimatePresence>
                 </div>
+
+                {/* Build 2 — slides in from right */}
+                <motion.div
+                  className="card rounded-l-none p-3 sm:p-5"
+                  style={{ borderLeft: 'none' }}
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ ...SPRING_SNAP, delay: 0.08 }}>
+                  <BuildCard form={build2} onChange={u => setBuild2(p => ({ ...p, ...u }))}
+                    label="Build 2" color="#8B5CF6" onSliderTouch={() => triggerRipple('right')} />
+                </motion.div>
               </div>
 
               {/* Simulate button — kinetic */}

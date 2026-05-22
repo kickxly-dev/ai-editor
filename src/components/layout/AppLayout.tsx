@@ -60,7 +60,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <motion.main
           animate={{ marginLeft: isMobile ? 0 : (collapsed ? 64 : 220) }}
           transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-          className="flex-1 min-h-screen min-w-0 pb-16 md:pb-0"
+          className="flex-1 min-h-screen min-w-0 pb-20 md:pb-0 overflow-x-hidden"
         >
           {/* Mobile top header */}
           <div className="sticky top-0 z-30 md:hidden flex items-center justify-between px-4 h-14"
