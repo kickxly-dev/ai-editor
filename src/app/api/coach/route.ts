@@ -5,7 +5,6 @@ import { searchForCoach, formatSearchContext } from '@/lib/web-search'
 export const runtime = 'nodejs'
 export const maxDuration = 45
 
-/* Skip search only for pure small talk */
 function isSmallTalk(question: string): boolean {
   const q = question.toLowerCase().trim()
   if (q.length < 15) return true
@@ -13,7 +12,6 @@ function isSmallTalk(question: string): boolean {
   return smallTalk.some(s => q.startsWith(s)) && q.length < 40
 }
 
-/* Use Groq to generate a tight search query */
 async function generateSearchQuery(question: string): Promise<string> {
   try {
     const res = await getGroq().chat.completions.create({
@@ -60,12 +58,21 @@ export async function POST(req: NextRequest) {
     const lastMessages = validMessages.slice(-10)
     const latestQuestion = lastMessages.filter(m => m.role === 'user').slice(-1)[0]?.content || ''
 
-    // Search unless it's pure small talk
+    // Skip search for small talk; otherwise query-optimize then search (cache-aware)
     let searchContext = ''
     let searchQuery = ''
+    let searchCached = false
+
     if (latestQuestion && !isSmallTalk(latestQuestion)) {
       searchQuery = await generateSearchQuery(latestQuestion)
+
+      // searchForCoach returns cached results transparently when available
+      const before = Date.now()
       const results = await searchForCoach(searchQuery)
+      const elapsed = Date.now() - before
+
+      // If results returned in <20ms they almost certainly came from cache
+      searchCached = elapsed < 20 && results.length > 0
       searchContext = formatSearchContext(results)
     }
 
@@ -76,6 +83,7 @@ export async function POST(req: NextRequest) {
       success: true,
       message: response,
       searched: searchQuery || null,
+      cached: searchCached,
     })
   } catch (err) {
     console.error('Coach chat error:', err)
