@@ -58,7 +58,7 @@ const TICKER_ITEMS = [
   { label: 'Teammate Finder', color: '#34D399' }, { label: 'Jumpshot Finder', color: '#F472B6' },
   { label: 'VC Calculator', color: '#FB923C' },
   { label: 'Badge Reference', color: '#FBBF24' }, { label: 'Public REST API', color: '#A78BFA' },
-  { label: 'Groq Powered', color: '#FAFAFA' }, { label: 'Season 5 Meta', color: '#34D399' },
+  { label: 'CourtIQ v1', color: '#FAFAFA' }, { label: 'Season 7 Meta', color: '#34D399' },
 ]
 function Ticker() {
   const all = [...TICKER_ITEMS, ...TICKER_ITEMS, ...TICKER_ITEMS]
@@ -85,7 +85,7 @@ const FEATURES = [
   },
   {
     icon: Brain, title: 'AI Coach', accent: '#38BDF8',
-    desc: 'Ask anything. Answers from live web search + Groq — not stale training data.',
+    desc: 'Ask anything. Answers from live web search + CourtIQ v1 — not stale training data.',
     href: '/coach', tag: 'AI + Search', size: 'normal',
   },
   {
@@ -115,7 +115,7 @@ const FEATURES = [
   },
   {
     icon: Award, title: 'Badge Reference', accent: '#FBBF24',
-    desc: 'All Season 5 badges with tier list and attribute thresholds.',
+    desc: 'All Season 7 badges with tier list and attribute thresholds.',
     href: '/badges', tag: 'Reference', size: 'normal',
   },
   {
@@ -187,8 +187,8 @@ function BentoCard({ f, i }: { f: typeof FEATURES[0]; i: number }) {
 /* ── How it works ── */
 const STEPS = [
   { n: '01', title: 'Input Your Build', desc: 'Screenshot, type stats manually, or describe your playstyle in plain English.', color: '#E11D48' },
-  { n: '02', title: 'AI Analyzes', desc: 'Groq processes your build, searches live 2K sites for current meta data, and reasons from real sources.', color: '#8B5CF6' },
-  { n: '03', title: 'Get Real Answers', desc: 'Tier rating, badge priorities, upgrade paths, matchup tips — all based on Season 5 facts.', color: '#38BDF8' },
+  { n: '02', title: 'AI Analyzes', desc: 'CourtIQ v1 processes your build, searches live 2K sites for current meta data, and reasons from real sources.', color: '#8B5CF6' },
+  { n: '03', title: 'Get Real Answers', desc: 'Tier rating, badge priorities, upgrade paths, matchup tips — all based on Season 7 facts.', color: '#38BDF8' },
 ]
 
 export default function Page() {
@@ -238,7 +238,7 @@ export default function Page() {
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
           >
             <span className="status-online"/>
-            <span className="text-xs font-medium text-white/45 tracking-wide">NBA 2K26 · Season 5 Meta</span>
+            <span className="text-xs font-medium text-white/45 tracking-wide">NBA 2K26 · Season 7 Meta</span>
             <span className="w-px h-3 bg-white/10"/>
             <span className="text-xs font-bold text-rose-400">Patch 1.08 Live</span>
           </motion.div>
@@ -382,16 +382,16 @@ export default function Page() {
             transition={{ type: 'spring', stiffness: 90, damping: 22 }}>
             <p className="section-label mb-6">AI Engine</p>
             <h2 className="display text-white mb-6" style={{ fontSize: 'clamp(34px, 5vw, 58px)', lineHeight: '0.95' }}>
-              Groq-powered.<br/>
+              CourtIQ v1.<br/>
               <span className="text-gradient-sky">Live search.<br/>Real answers.</span>
             </h2>
             <p className="text-white/38 leading-relaxed mb-10 font-light text-[17px]">
               Every question searches live 2K sites before hitting the AI.
-              No hallucinations. No training cutoff. Just accurate Season 5 data.
+              No hallucinations. No training cutoff. Just accurate Season 7 data.
             </p>
             <div className="space-y-5 mb-10">
               {[
-                { icon: Cpu,      label: 'Sub-second responses',  desc: 'Groq inference — not just fast, instant' },
+                { icon: Cpu,      label: 'Sub-second responses',  desc: 'CourtIQ v1 — not just fast, instant' },
                 { icon: Shield,   label: 'Live web search',       desc: 'Searches NBA2KW, Reddit, Operation Sports per query' },
                 { icon: Activity, label: 'Vision AI support',     desc: 'Drop a screenshot → full build analysis' },
               ].map(({ icon: Icon, label, desc }, i) => (

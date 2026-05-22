@@ -44,7 +44,7 @@ const BADGE_REQS: Record<string, { attr: string; reqs: number[]; cat: string }> 
 const ATTR_LABELS: Record<string, string> = {
   three_point: 'Three-Point', ball_handle: 'Ball Handle', pass_accuracy: 'Pass Accuracy',
   driving_dunk: 'Driving Dunk', standing_dunk: 'Standing Dunk', driving_layup: 'Driving Layup',
-  speed: 'Speed', acceleration: 'Acceleration', perimeter_defense: 'Perimeter Defense',
+  speed: 'Speed', agility: 'Agility', perimeter_defense: 'Perimeter Defense',
   interior_defense: 'Interior Defense', steal: 'Steal', block: 'Block',
   defensive_rebound: 'Def. Rebound', strength: 'Strength', post_control: 'Post Control',
 }

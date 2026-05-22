@@ -1,4 +1,5 @@
 import Groq from 'groq-sdk'
+import { searchForCoach, formatSearchContext } from '@/lib/web-search'
 
 let _groq: Groq | null = null
 function getGroq() {
@@ -23,7 +24,7 @@ export interface ScrapedBuild {
     pass_accuracy: number; ball_handle: number; speed_with_ball: number
     interior_defense: number; perimeter_defense: number; steal: number; block: number
     offensive_rebound: number; defensive_rebound: number
-    speed: number; acceleration: number; strength: number; vertical: number; stamina: number
+    speed: number; agility: number; strength: number; vertical: number
   }
   badges: { name: string; level: 'HOF' | 'Gold' | 'Silver' | 'Bronze' }[]
   description: string
@@ -57,16 +58,20 @@ async function fetchRedditPosts(sub: string, query?: string) {
     }))
 }
 
-async function extractBuildsWithGroq(posts: { title: string; body: string; score: number; url: string; created: string }[]): Promise<ScrapedBuild[]> {
+async function extractBuildsWithGroq(posts: { title: string; body: string; score: number; url: string; created: string }[], webContext: string): Promise<ScrapedBuild[]> {
   const raw = posts.slice(0, 12).map((p, i) => `[POST ${i+1}] ${p.title}\n${p.body}\nURL: ${p.url}\nUpvotes: ${p.score}`).join('\n\n---\n\n')
 
   const resp = await getGroq().chat.completions.create({
     model: 'llama-3.3-70b-versatile',
     messages: [
-      { role: 'system', content: 'You are a NBA 2K26 expert. Extract build information from Reddit posts and return structured JSON.' },
-      { role: 'user', content: `Extract NBA 2K26 builds from these Reddit posts. For each post that describes a real build, extract all the info. Return JSON:
+      { role: 'system', content: 'You are a NBA 2K26 Season 7 expert. Extract and generate real build information from community sources and return structured JSON. The correct athleticism attributes in 2K26 are: speed, agility, strength, vertical. There is NO acceleration or stamina.' },
+      { role: 'user', content: `Extract NBA 2K26 builds from these sources. For each real build found, return full details. Return JSON:
 
+REDDIT POSTS:
 ${raw}
+
+2K COMMUNITY SITES DATA:
+${webContext || 'No additional web data.'}
 
 Return ONLY this JSON (no markdown):
 {
@@ -87,22 +92,23 @@ Return ONLY this JSON (no markdown):
         "pass_accuracy": 75, "ball_handle": 87, "speed_with_ball": 82,
         "interior_defense": 40, "perimeter_defense": 65, "steal": 55, "block": 30,
         "offensive_rebound": 30, "defensive_rebound": 40,
-        "speed": 85, "acceleration": 87, "strength": 55, "vertical": 75, "stamina": 90
+        "speed": 85, "agility": 87, "strength": 55, "vertical": 75
       },
       "badges": [
         {"name": "Limitless Range", "level": "HOF"},
         {"name": "Quick First Step", "level": "Gold"},
-        {"name": "Clamps", "level": "Silver"}
+        {"name": "Challenger", "level": "Silver"}
       ],
       "description": "2-sentence description of why this build is good",
       "strengths": ["strength 1", "strength 2", "strength 3"],
       "weaknesses": ["weakness 1", "weakness 2"],
       "howToMake": [
-        "Step 1: Select Point Guard position at 6'4\\" height",
-        "Step 2: Maximize Ball Handle to 87 — this unlocks HOF dribble packages",
-        "Step 3: Push Three Point to 82 for consistent shooting",
-        "Step 4: Equip Limitless Range HOF and Quick First Step Gold as your top badges",
-        "Step 5: Use Pro 3 dribble package and Base 98 jumpshot"
+        "Step 1: Select Point Guard position at 6'4\\" height with Above Average wingspan",
+        "Step 2: Maximize Ball Handle to 87 first — this unlocks HOF dribble packages",
+        "Step 3: Push Three Point to 82 for consistent deep shooting",
+        "Step 4: Set Agility to 87 for maximum blow-by speed",
+        "Step 5: Equip Limitless Range HOF and Quick First Step HOF as anchor badges",
+        "Step 6: Use Patty Mills jumpshot base for best green window at this height"
       ],
       "sourceUrl": "https://reddit.com/...",
       "sourceTitle": "original post title",
@@ -113,12 +119,14 @@ Return ONLY this JSON (no markdown):
 }
 
 Rules:
-- Extract up to 8 builds from the posts
-- If a post doesn't describe a specific build, skip it
+- Extract up to 8 builds total from all sources combined
+- If a source doesn't describe a specific build, skip it
 - Infer missing attribute values from context (position, archetype, described playstyle)
-- howToMake must have 5-7 actionable steps specific to the build
-- Make names catchy if the post title is boring
-- tier based on upvotes + described effectiveness: S(>500 upvotes or very hyped), A(200-500), B(50-200), C(<50)` },
+- howToMake must have 5-7 actionable, numbered steps specific to this exact build
+- Each howToMake step should explain WHY (e.g. "Push Ball Handle to 91 — this unlocks HOF Quick First Step")
+- Make names catchy if the source title is boring
+- tier based on community reception: S(meta-dominant), A(solid choice), B(niche viable), C(situational)
+- NEVER use acceleration or stamina — use agility instead` },
     ],
     temperature: 0.2,
     max_tokens: 4000,
@@ -141,7 +149,7 @@ function getDefaultAttrs(): ScrapedBuild['attributes'] {
     pass_accuracy:70, ball_handle:80, speed_with_ball:75,
     interior_defense:40, perimeter_defense:60, steal:50, block:30,
     offensive_rebound:30, defensive_rebound:40,
-    speed:80, acceleration:82, strength:55, vertical:72, stamina:85,
+    speed:80, agility:82, strength:55, vertical:72,
   }
 }
 
@@ -154,10 +162,11 @@ export async function getScrapedBuilds(forceRefresh = false): Promise<ScrapedBui
   if (!forceRefresh && _cache && now - _cacheTime < TTL) return _cache
 
   try {
-    const [hot, top, search] = await Promise.allSettled([
+    const [hot, top, search, webSearch] = await Promise.allSettled([
       fetchRedditPosts('NBA2kBuilds'),
-      fetchRedditPosts('NBA2kBuilds', 'best build 2k26'),
-      fetchRedditPosts('NBA2k', 'build guide 2k26 attributes badges'),
+      fetchRedditPosts('NBA2kBuilds', 'best build 2k26 Season 7'),
+      fetchRedditPosts('NBA2k', 'build guide 2k26 attributes badges Season 7'),
+      searchForCoach('NBA 2K26 Season 7 best builds attributes how to make 2klab'),
     ])
 
     const allPosts = [
@@ -166,9 +175,11 @@ export async function getScrapedBuilds(forceRefresh = false): Promise<ScrapedBui
       ...(search.status === 'fulfilled' ? search.value : []),
     ]
 
-    if (!allPosts.length) return _cache || getFallback()
+    const webContext = webSearch.status === 'fulfilled' ? formatSearchContext(webSearch.value) : ''
 
-    const builds = await extractBuildsWithGroq(allPosts)
+    if (!allPosts.length && !webContext) return _cache || getFallback()
+
+    const builds = await extractBuildsWithGroq(allPosts, webContext)
     if (builds.length > 0) {
       _cache = builds
       _cacheTime = now
@@ -185,7 +196,7 @@ function getFallback(): ScrapedBuild[] {
     {
       id: 'fallback-1', name: 'Park God Guard', position: 'PG', height: "6'4\"", wingspan: 'Above Average',
       archetype: 'Playmaking Shot Creator', category: 'Park', tier: 'S', overallRating: 94, competitiveness: 91,
-      attributes: { close_shot:55, driving_layup:82, driving_dunk:78, standing_dunk:25, post_control:25, mid_range:75, three_point:85, free_throw:80, pass_accuracy:85, ball_handle:91, speed_with_ball:86, interior_defense:40, perimeter_defense:65, steal:58, block:30, offensive_rebound:30, defensive_rebound:42, speed:88, acceleration:90, strength:50, vertical:78, stamina:92 },
+      attributes: { close_shot:55, driving_layup:82, driving_dunk:78, standing_dunk:25, post_control:25, mid_range:75, three_point:85, free_throw:80, pass_accuracy:85, ball_handle:91, speed_with_ball:86, interior_defense:40, perimeter_defense:65, steal:58, block:30, offensive_rebound:30, defensive_rebound:42, speed:88, agility:90, strength:50, vertical:78 },
       badges: [{ name:'Limitless Range', level:'HOF' },{ name:'Quick First Step', level:'HOF' },{ name:'Dimer', level:'Gold' },{ name:'Clamps', level:'Silver' }],
       description: 'The premier park guard build dominating this season. Elite handles combined with a reliable mid-range and three creates separation at every level.',
       strengths: ['Elite dribble combos from 91 ball handle', 'Consistent 3PT shooting from deep', 'Fast enough to blow by any defender'],
@@ -196,7 +207,7 @@ function getFallback(): ScrapedBuild[] {
     {
       id: 'fallback-2', name: 'Rim Destroyer C', position: 'C', height: "7'0\"", wingspan: 'Maximum',
       archetype: 'Glass Cleaner Finisher', category: 'Rec', tier: 'S', overallRating: 92, competitiveness: 94,
-      attributes: { close_shot:75, driving_layup:80, driving_dunk:92, standing_dunk:95, post_control:75, mid_range:45, three_point:25, free_throw:55, pass_accuracy:50, ball_handle:45, speed_with_ball:40, interior_defense:90, perimeter_defense:45, steal:40, block:88, offensive_rebound:90, defensive_rebound:92, speed:55, acceleration:52, strength:90, vertical:80, stamina:88 },
+      attributes: { close_shot:75, driving_layup:80, driving_dunk:92, standing_dunk:95, post_control:75, mid_range:45, three_point:25, free_throw:55, pass_accuracy:50, ball_handle:45, speed_with_ball:40, interior_defense:90, perimeter_defense:45, steal:40, block:88, offensive_rebound:90, defensive_rebound:92, speed:55, agility:52, strength:90, vertical:80 },
       badges: [{ name:'Posterizer', level:'HOF' },{ name:'Glass Cleaner', level:'HOF' },{ name:'Rim Protector', level:'Gold' },{ name:'Post Spin Technician', level:'Gold' }],
       description: 'The most dominant big man build in current meta. Maximum wingspan + elite finishing makes this a nightmare to guard in the paint.',
       strengths: ['Unguardable contact dunks with Posterizer HOF', 'Elite rebounding on both ends', 'Rim protection shuts down guards driving to the basket'],
@@ -207,7 +218,7 @@ function getFallback(): ScrapedBuild[] {
     {
       id: 'fallback-3', name: 'Two-Way Lock', position: 'SF', height: "6'7\"", wingspan: 'Maximum',
       archetype: 'Two-Way Slasher', category: 'Pro-Am', tier: 'A', overallRating: 88, competitiveness: 91,
-      attributes: { close_shot:65, driving_layup:85, driving_dunk:88, standing_dunk:40, post_control:45, mid_range:72, three_point:78, free_throw:72, pass_accuracy:65, ball_handle:78, speed_with_ball:75, interior_defense:72, perimeter_defense:88, steal:82, block:65, offensive_rebound:50, defensive_rebound:65, speed:82, acceleration:85, strength:65, vertical:80, stamina:90 },
+      attributes: { close_shot:65, driving_layup:85, driving_dunk:88, standing_dunk:40, post_control:45, mid_range:72, three_point:78, free_throw:72, pass_accuracy:65, ball_handle:78, speed_with_ball:75, interior_defense:72, perimeter_defense:88, steal:82, block:65, offensive_rebound:50, defensive_rebound:65, speed:82, agility:85, strength:65, vertical:80 },
       badges: [{ name:'Clamps', level:'HOF' },{ name:'Posterizer', level:'Gold' },{ name:'Limitless Range', level:'Silver' },{ name:'Pick Dodger', level:'HOF' }],
       description: 'The perfect Pro-Am wing. Does everything — can guard 1-4, finish through contact, and knock down open threes when left alone.',
       strengths: ['Elite perimeter defense with Clamps HOF', 'Versatile scorer from mid-range and at rim', 'Can guard multiple positions effectively'],

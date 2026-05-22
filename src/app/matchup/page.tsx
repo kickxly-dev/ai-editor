@@ -20,7 +20,7 @@ interface BuildForm {
   driving_layup: number; close_shot: number; standing_dunk: number; post_control: number
   ball_handle: number; speed_with_ball: number; pass_accuracy: number
   perimeter_defense: number; interior_defense: number; steal: number; block: number; defensive_rebound: number
-  speed: number; acceleration: number; strength: number; vertical: number; offensive_rebound: number
+  speed: number; agility: number; strength: number; vertical: number; offensive_rebound: number
   badges: string
 }
 
@@ -30,7 +30,7 @@ interface OpponentForm {
   driving_layup: number; close_shot: number; standing_dunk: number; post_control: number
   ball_handle: number; speed_with_ball: number; pass_accuracy: number
   perimeter_defense: number; interior_defense: number; steal: number; block: number; defensive_rebound: number
-  speed: number; acceleration: number; strength: number; vertical: number; offensive_rebound: number
+  speed: number; agility: number; strength: number; vertical: number; offensive_rebound: number
   badges: string; notes: string
 }
 
@@ -44,7 +44,7 @@ const MATRIX_ROWS: Array<{
   { offense:'driving_dunk',     defense:'interior_defense',  category:'Paint Attack',       offLabel:'Driving Dunk',   defLabel:'Interior D',   weight:1.3 },
   { offense:'speed_with_ball',  defense:'perimeter_defense', category:'Drive Penetration',  offLabel:'Speed w/ Ball',  defLabel:'Perimeter D',  weight:1.2 },
   { offense:'driving_layup',    defense:'interior_defense',  category:'Layup vs Paint',     offLabel:'Driving Layup',  defLabel:'Interior D',   weight:1.1 },
-  { offense:'acceleration',     defense:'perimeter_defense', category:'First Step',         offLabel:'Acceleration',   defLabel:'Perimeter D',  weight:1.1 },
+  { offense:'agility',          defense:'perimeter_defense', category:'First Step',         offLabel:'Agility',        defLabel:'Perimeter D',  weight:1.1 },
   { offense:'standing_dunk',    defense:'interior_defense',  category:'Standing Dunk',      offLabel:'Standing Dunk',  defLabel:'Interior D',   weight:1.0 },
   { offense:'speed',            defense:'speed',             category:'Speed Matchup',      offLabel:'Speed',          defLabel:'Speed',        weight:1.0 },
   { offense:'mid_range',        defense:'perimeter_defense', category:'Mid-Range',          offLabel:'Mid-Range',      defLabel:'Perimeter D',  weight:0.9 },
@@ -153,7 +153,7 @@ const BASE_ATTRS = {
   three_point: 80, mid_range: 72, driving_dunk: 78, driving_layup: 75, close_shot: 55,
   standing_dunk: 30, post_control: 35, ball_handle: 82, speed_with_ball: 78, pass_accuracy: 75,
   perimeter_defense: 65, interior_defense: 45, steal: 50, block: 35, defensive_rebound: 42,
-  speed: 82, acceleration: 84, strength: 55, vertical: 72, offensive_rebound: 32,
+  speed: 82, agility: 84, strength: 55, vertical: 72, offensive_rebound: 32,
 }
 const DEFAULT_BUILD: BuildForm = { name: '', position: 'PG', height: "6'4\"", ...BASE_ATTRS, badges: '' }
 const DEFAULT_OPP: OpponentForm = { position: 'PG', height: "6'4\"", ...BASE_ATTRS, badges: '', notes: '' }
@@ -163,7 +163,7 @@ const ATTR_GROUPS: Array<{ label: string; color: string; fields: Array<{ key: ke
   { label: 'Finishing',  color: '#E11D48', fields: [{ key:'driving_dunk', label:'Driving Dunk' }, { key:'driving_layup', label:'Driving Layup' }, { key:'standing_dunk', label:'Standing Dunk' }, { key:'close_shot', label:'Close Shot' }, { key:'post_control', label:'Post Control' }] },
   { label: 'Playmaking', color: '#8B5CF6', fields: [{ key:'ball_handle', label:'Ball Handle' }, { key:'speed_with_ball', label:'Speed w/ Ball' }, { key:'pass_accuracy', label:'Pass Accuracy' }] },
   { label: 'Defense',    color: '#10B981', fields: [{ key:'perimeter_defense', label:'Perimeter D' }, { key:'interior_defense', label:'Interior D' }, { key:'steal', label:'Steal' }, { key:'block', label:'Block' }, { key:'defensive_rebound', label:'Def. Reb' }] },
-  { label: 'Athleticism',color: '#F59E0B', fields: [{ key:'speed', label:'Speed' }, { key:'acceleration', label:'Acceleration' }, { key:'strength', label:'Strength' }, { key:'vertical', label:'Vertical' }, { key:'offensive_rebound', label:'Off. Reb' }] },
+  { label: 'Athleticism',color: '#F59E0B', fields: [{ key:'speed', label:'Speed' }, { key:'agility', label:'Agility' }, { key:'strength', label:'Strength' }, { key:'vertical', label:'Vertical' }, { key:'offensive_rebound', label:'Off. Reb' }] },
 ]
 
 function buildToPayload(b: BuildForm) {

@@ -128,7 +128,7 @@ ATTRIBUTE PRIORITIES:
   C:  interior_defense > driving_dunk/standing_dunk > block > strength > close_shot
 
 TAKEOVERS: Limitless Shooter (S), Rim Protector (A), Playmaker (A), Slasher (B), Lockdown Defender (B)
-META: stamina 90+ important for Park/Rec · guards 6'4" and under: standing_dunk near-useless
+META: agility 85+ important for blow-by potential in Park/Rec · guards 6'4" and under: standing_dunk near-useless
 `
 
 // ─── Assembles the full knowledge prompt from config + static data ─────────────
@@ -439,7 +439,7 @@ Return ONLY valid JSON matching this exact schema (no markdown, no explanation):
     "pass_accuracy": 80, "ball_handle": 92, "speed_with_ball": 85,
     "interior_defense": 40, "perimeter_defense": 72, "steal": 58, "block": 30,
     "offensive_rebound": 30, "defensive_rebound": 42,
-    "speed": 85, "acceleration": 87, "strength": 55, "vertical": 78, "stamina": 88
+    "speed": 85, "agility": 87, "strength": 55, "vertical": 78
   },
   "badges": [{ "name": "Limitless Range", "level": "Hall of Fame", "category": "Shooting" }],
   "animations": [{ "type": "Jumpshot Base", "pick": "Patty Mills" }],

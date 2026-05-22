@@ -20,7 +20,7 @@ const DEFAULT_ATTRS: BuildAttributes = {
   pass_accuracy: 75, ball_handle: 87, speed_with_ball: 80,
   interior_defense: 40, perimeter_defense: 60, steal: 50, block: 30,
   offensive_rebound: 30, defensive_rebound: 40,
-  speed: 82, acceleration: 84, strength: 55, vertical: 72, stamina: 85,
+  speed: 82, agility: 84, strength: 55, vertical: 72,
 }
 
 const ATTR_GROUPS = [
@@ -28,7 +28,7 @@ const ATTR_GROUPS = [
   { key: 'Shooting',  color: '#38BDF8', keys: ['mid_range','three_point','free_throw'] },
   { key: 'Playmaking',color: '#8B5CF6', keys: ['pass_accuracy','ball_handle','speed_with_ball'] },
   { key: 'Defense',   color: '#10B981', keys: ['interior_defense','perimeter_defense','steal','block','offensive_rebound','defensive_rebound'] },
-  { key: 'Athleticism',color: '#F59E0B', keys: ['speed','acceleration','strength','vertical','stamina'] },
+  { key: 'Athleticism',color: '#F59E0B', keys: ['speed','agility','strength','vertical'] },
 ]
 
 function StatBar({ value, color }: { value: number; color: string }) {

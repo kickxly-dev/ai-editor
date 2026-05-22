@@ -72,7 +72,7 @@ const ATTR_GROUPS = [
   { label: 'Shooting',     color: '#38BDF8', keys: ['mid_range','three_point','free_throw'] },
   { label: 'Playmaking',   color: '#8B5CF6', keys: ['pass_accuracy','ball_handle','speed_with_ball'] },
   { label: 'Defense',      color: '#10B981', keys: ['interior_defense','perimeter_defense','steal','block','offensive_rebound','defensive_rebound'] },
-  { label: 'Athleticism',  color: '#F59E0B', keys: ['speed','acceleration','strength','vertical','stamina'] },
+  { label: 'Athleticism',  color: '#F59E0B', keys: ['speed','agility','strength','vertical'] },
 ]
 
 function StatBar({ value, color }: { value: number; color: string }) {

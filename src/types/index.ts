@@ -48,10 +48,9 @@ export interface BuildAttributes {
   defensive_rebound: number
   // Athleticism
   speed: number
-  acceleration: number
+  agility: number
   strength: number
   vertical: number
-  stamina: number
 }
 
 export interface Badge {

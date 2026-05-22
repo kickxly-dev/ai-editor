@@ -20,7 +20,7 @@ const ATTR_GROUPS = [
   { key: 'Shooting',    color: '#38BDF8', keys: ['mid_range','three_point','free_throw'] },
   { key: 'Playmaking',  color: '#8B5CF6', keys: ['pass_accuracy','ball_handle','speed_with_ball'] },
   { key: 'Defense',     color: '#10B981', keys: ['interior_defense','perimeter_defense','steal','block','offensive_rebound','defensive_rebound'] },
-  { key: 'Athleticism', color: '#F59E0B', keys: ['speed','acceleration','strength','vertical','stamina'] },
+  { key: 'Athleticism', color: '#F59E0B', keys: ['speed','agility','strength','vertical'] },
 ]
 
 const TIER_CLASS: Record<string, string> = {

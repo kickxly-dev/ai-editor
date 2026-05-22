@@ -66,8 +66,8 @@ const ATTR_GROUPS = [
     label: 'Athleticism',
     icon: Activity,
     color: '#F59E0B',
-    keys: ['speed', 'acceleration', 'strength', 'vertical', 'stamina'] as const,
-    labels: ['Speed', 'Accel', 'Strength', 'Vertical', 'Stamina'],
+    keys: ['speed', 'agility', 'strength', 'vertical'] as const,
+    labels: ['Speed', 'Agility', 'Strength', 'Vertical'],
   },
 ]
 
