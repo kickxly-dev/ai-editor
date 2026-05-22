@@ -6,6 +6,178 @@ import { useSession } from 'next-auth/react'
 import { Users2, Copy, Check, RefreshCw, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 
+// ─── Synergy Radar Chart ─────────────────────────────────────────────────────
+
+const RADAR_DIMS = ['Scoring', 'Defense', 'Playmaking', 'Rebounding', 'Versatility', 'Athleticism']
+
+function computeSynergyScores(members: SquadMemberData[]): number[] {
+  if (!members.length) return [0, 0, 0, 0, 0, 0]
+  let scoring = 0, defense = 0, playmaking = 0, rebounding = 0, versatility = 0, athleticism = 0
+  const n = members.length
+
+  for (const m of members) {
+    const pos = m.build?.position?.toUpperCase() || ''
+    const arch = (m.build?.archetype || '').toLowerCase()
+    const badges = (m.build?.badges || []).map((b) => b.toLowerCase())
+
+    // Scoring
+    if (['SG', 'SF', 'PG'].includes(pos)) scoring += 70
+    if (arch.includes('shot') || arch.includes('scorer') || arch.includes('slash')) scoring += 20
+    if (badges.some((b) => b.includes('deadeye') || b.includes('shifty') || b.includes('set shot'))) scoring += 10
+
+    // Defense
+    if (['PF', 'C', 'SF'].includes(pos)) defense += 60
+    if (arch.includes('lock') || arch.includes('two-way') || arch.includes('defender')) defense += 25
+    if (badges.some((b) => b.includes('challenger') || b.includes('interceptor') || b.includes('menace'))) defense += 15
+
+    // Playmaking
+    if (pos === 'PG') playmaking += 80
+    if (arch.includes('playmaker') || arch.includes('pass') || arch.includes('point')) playmaking += 20
+    if (badges.some((b) => b.includes('dimer') || b.includes('visionary') || b.includes('handle'))) playmaking += 10
+
+    // Rebounding
+    if (['C', 'PF'].includes(pos)) rebounding += 75
+    if (arch.includes('glass') || arch.includes('rebound') || arch.includes('stretch')) rebounding += 20
+    if (badges.some((b) => b.includes('rebound') || b.includes('pogo') || b.includes('boxout'))) rebounding += 15
+
+    // Versatility
+    if (arch.includes('two-way') || arch.includes('versatile') || arch.includes('forward')) versatility += 60
+    if (['SF', 'PF'].includes(pos)) versatility += 25
+    if (badges.length >= 4) versatility += 15
+
+    // Athleticism
+    if (['PG', 'SG', 'SF'].includes(pos)) athleticism += 70
+    if (arch.includes('athletic') || arch.includes('slasher') || arch.includes('dunk')) athleticism += 20
+    if (badges.some((b) => b.includes('lightning') || b.includes('posterizer') || b.includes('rise up'))) athleticism += 10
+  }
+
+  const cap = (v: number) => Math.min(Math.round(v / n), 100)
+  return [cap(scoring), cap(defense), cap(playmaking), cap(rebounding), cap(versatility), cap(athleticism)]
+}
+
+function SynergyRadar({ members }: { members: SquadMemberData[] }) {
+  const scores = computeSynergyScores(members)
+  const size = 220
+  const cx = size / 2
+  const cy = size / 2
+  const r = 80
+  const n = RADAR_DIMS.length
+
+  const points = (values: number[], radius: number) =>
+    values.map((v, i) => {
+      const angle = (Math.PI * 2 * i) / n - Math.PI / 2
+      const dist = (v / 100) * radius
+      return { x: cx + dist * Math.cos(angle), y: cy + dist * Math.sin(angle) }
+    })
+
+  const toPath = (pts: { x: number; y: number }[]) =>
+    pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ') + ' Z'
+
+  const gridLevels = [25, 50, 75, 100]
+  const dataPts = points(scores, r)
+  const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / n)
+
+  return (
+    <div className="flex flex-col items-center">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {/* Grid rings */}
+        {gridLevels.map((lvl) => {
+          const gPts = points(Array(n).fill(lvl), r)
+          return (
+            <path
+              key={lvl}
+              d={toPath(gPts)}
+              fill="none"
+              stroke="rgba(255,255,255,0.07)"
+              strokeWidth="1"
+            />
+          )
+        })}
+
+        {/* Spokes */}
+        {RADAR_DIMS.map((_, i) => {
+          const angle = (Math.PI * 2 * i) / n - Math.PI / 2
+          return (
+            <line
+              key={i}
+              x1={cx}
+              y1={cy}
+              x2={cx + r * Math.cos(angle)}
+              y2={cy + r * Math.sin(angle)}
+              stroke="rgba(255,255,255,0.08)"
+              strokeWidth="1"
+            />
+          )
+        })}
+
+        {/* Data fill */}
+        <motion.path
+          d={toPath(dataPts)}
+          fill="rgba(225,29,72,0.15)"
+          stroke="rgba(225,29,72,0.6)"
+          strokeWidth="1.5"
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          style={{ transformOrigin: `${cx}px ${cy}px` }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        />
+
+        {/* Data points */}
+        {dataPts.map((p, i) => (
+          <motion.circle
+            key={i}
+            cx={p.x}
+            cy={p.y}
+            r="3.5"
+            fill="#E11D48"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 + i * 0.05 }}
+          />
+        ))}
+
+        {/* Labels */}
+        {RADAR_DIMS.map((dim, i) => {
+          const angle = (Math.PI * 2 * i) / n - Math.PI / 2
+          const labelR = r + 18
+          const lx = cx + labelR * Math.cos(angle)
+          const ly = cy + labelR * Math.sin(angle)
+          const anchor = Math.abs(lx - cx) < 5 ? 'middle' : lx > cx ? 'start' : 'end'
+          return (
+            <text
+              key={i}
+              x={lx}
+              y={ly + 4}
+              textAnchor={anchor}
+              fontSize="9"
+              fill="rgba(255,255,255,0.45)"
+              fontFamily="system-ui, sans-serif"
+            >
+              {dim}
+            </text>
+          )
+        })}
+
+        {/* Center score */}
+        <text x={cx} y={cy - 6} textAnchor="middle" fontSize="18" fontWeight="bold" fill="white" fontFamily="system-ui, sans-serif">
+          {avgScore}
+        </text>
+        <text x={cx} y={cy + 10} textAnchor="middle" fontSize="8" fill="rgba(255,255,255,0.35)" fontFamily="system-ui, sans-serif">
+          AVG
+        </text>
+      </svg>
+      <div className="grid grid-cols-3 gap-x-4 gap-y-1 mt-1 w-full max-w-[200px]">
+        {RADAR_DIMS.map((dim, i) => (
+          <div key={dim} className="flex items-center gap-1">
+            <span className="text-[9px] text-fg-subtle truncate">{dim.slice(0, 4)}</span>
+            <span className="text-[9px] font-bold text-rose-400 ml-auto">{scores[i]}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 interface SquadMemberData {
   userId: string
   name: string | null
@@ -157,22 +329,30 @@ function BuildUpdateForm({ squadId, userId, currentBuild, onUpdated }: {
   )
 }
 
-function AIAnalysisPanel({ analysis, onAnalyze, analyzing }: {
+function AIAnalysisPanel({ analysis, onAnalyze, analyzing, members }: {
   analysis: SquadData['aiAnalysis']
   onAnalyze: () => void
   analyzing: boolean
+  members: SquadMemberData[]
 }) {
   const score = analysis?.chemistry_score ?? 0
 
   return (
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-fg">AI Analysis</h3>
+        <h3 className="font-semibold text-fg">Squad Synergy</h3>
         <button onClick={onAnalyze} disabled={analyzing} className="btn btn-primary btn-sm gap-1.5">
           {analyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
           {analyzing ? 'Analyzing...' : 'Run AI Analysis'}
         </button>
       </div>
+
+      {/* Radar chart always visible when members have builds */}
+      {members.some((m) => m.build?.position) && (
+        <div className="flex justify-center mb-4">
+          <SynergyRadar members={members} />
+        </div>
+      )}
 
       {analysis ? (
         <div className="space-y-4">
@@ -572,6 +752,7 @@ export default function SquadPage() {
                   analysis={selectedSquad.aiAnalysis}
                   onAnalyze={handleAnalyze}
                   analyzing={analyzing}
+                  members={selectedMembers}
                 />
               </motion.div>
             ) : (

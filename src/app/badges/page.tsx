@@ -1,9 +1,46 @@
 'use client'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Award, Search, Filter } from 'lucide-react'
+import { Award, Search, Filter, Lock } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import { cn } from '@/lib/utils'
+
+// Badge attribute thresholds (Bronze / Silver / Gold / HoF / Legend)
+const BADGE_THRESHOLDS = [
+  { name: 'Deadeye', attr: 'Three-Point', thresholds: [60, 70, 80, 88, 95], cat: 'Shooting' },
+  { name: 'Set Shot Specialist', attr: 'Three-Point', thresholds: [60, 70, 80, 88, 95], cat: 'Shooting' },
+  { name: 'Shifty Shooter', attr: 'Ball Handle + 3PT', thresholds: [65, 73, 82, 90, 96], cat: 'Shooting' },
+  { name: 'Limitless Range', attr: 'Three-Point', thresholds: [68, 76, 84, 92, 97], cat: 'Shooting' },
+  { name: 'Mini Marksman', attr: 'Three-Point', thresholds: [55, 65, 75, 85, 92], cat: 'Shooting' },
+  { name: 'Lightning Launch', attr: 'Speed + Acc.', thresholds: [60, 70, 78, 86, 93], cat: 'Finishing' },
+  { name: 'Posterizer', attr: 'Driving Dunk', thresholds: [70, 78, 85, 92, 97], cat: 'Finishing' },
+  { name: 'Rise Up', attr: 'Standing Dunk', thresholds: [65, 75, 83, 90, 96], cat: 'Finishing' },
+  { name: 'Float Game', attr: 'Driving Layup', thresholds: [60, 70, 78, 86, 93], cat: 'Finishing' },
+  { name: 'Layup Mixmaster', attr: 'Driving Layup', thresholds: [55, 65, 75, 85, 92], cat: 'Finishing' },
+  { name: 'Dimer', attr: 'Pass Accuracy', thresholds: [65, 73, 82, 90, 96], cat: 'Playmaking' },
+  { name: 'Strong Handle', attr: 'Ball Handle', thresholds: [65, 73, 82, 90, 96], cat: 'Playmaking' },
+  { name: 'Handles for Days', attr: 'Ball Handle', thresholds: [70, 78, 86, 93, 98], cat: 'Playmaking' },
+  { name: 'Break Starter', attr: 'Pass Accuracy', thresholds: [60, 70, 78, 86, 93], cat: 'Playmaking' },
+  { name: 'Versatile Visionary', attr: 'Pass Accuracy', thresholds: [65, 75, 83, 90, 96], cat: 'Playmaking' },
+  { name: 'Ankle Assassin', attr: 'Ball Handle', thresholds: [65, 73, 82, 90, 96], cat: 'Playmaking' },
+  { name: 'Challenger', attr: 'Perimeter Def', thresholds: [60, 70, 78, 86, 93], cat: 'Defense' },
+  { name: 'Interceptor', attr: 'Steal', thresholds: [55, 65, 75, 85, 92], cat: 'Defense' },
+  { name: 'Pogo Stick', attr: 'Block + Vertical', thresholds: [65, 73, 82, 90, 96], cat: 'Defense' },
+  { name: 'Rebound Chaser', attr: 'Def. Rebound', thresholds: [60, 70, 78, 86, 93], cat: 'Defense' },
+  { name: 'On-Ball Menace', attr: 'Perimeter Def', thresholds: [60, 70, 78, 86, 93], cat: 'Defense' },
+  { name: 'Immovable Enforcer', attr: 'Interior Def + Str', thresholds: [65, 73, 82, 90, 96], cat: 'Defense' },
+  { name: 'Boxout Beast', attr: 'Def. Rebound', thresholds: [55, 65, 75, 85, 92], cat: 'Defense' },
+  { name: 'Brick Wall', attr: 'Strength', thresholds: [60, 70, 78, 86, 93], cat: 'Defense' },
+]
+
+const LEVEL_LABELS = ['Bronze', 'Silver', 'Gold', 'HoF', 'Legend']
+const LEVEL_COLORS = [
+  'bg-amber-700/40 text-amber-400',
+  'bg-zinc-500/40 text-zinc-300',
+  'bg-yellow-500/40 text-yellow-300',
+  'bg-violet-500/40 text-violet-300',
+  'bg-rose-500/40 text-rose-300',
+]
 
 const BADGES = [
   // FINISHING
@@ -71,9 +108,12 @@ const CAT_COLORS: Record<string, string> = {
   Defense: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
 }
 
+type PageTab = 'tier-list' | 'thresholds'
+
 export default function BadgesPage() {
   const [search, setSearch] = useState('')
   const [catFilter, setCatFilter] = useState('All')
+  const [tab, setTab] = useState<PageTab>('tier-list')
 
   const filtered = BADGES.filter((b) => {
     if (catFilter !== 'All' && b.cat !== catFilter) return false
@@ -88,7 +128,7 @@ export default function BadgesPage() {
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-16">
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center gap-2 mb-1">
             <Award className="w-5 h-5 text-rose-400" />
             <span className="text-xs font-semibold text-rose-400 uppercase tracking-wider">Badge Reference</span>
@@ -97,96 +137,173 @@ export default function BadgesPage() {
           <p className="text-fg-muted mt-1">All verified NBA 2K26 Season 5 badges — tier rankings, categories, and coaching notes.</p>
         </motion.div>
 
-        {/* Stats */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="grid grid-cols-5 gap-2 mb-6">
-          {TIERS.map((t) => {
-            const count = BADGES.filter((b) => b.tier === t).length
-            const cfg = TIER_CONFIG[t]
-            return (
-              <div key={t} className={cn('card p-3 text-center border', cfg.border, cfg.bg)}>
-                <p className={cn('text-xl font-black', cfg.color)}>{t}</p>
-                <p className="text-xs text-fg-muted mt-0.5">{count} badges</p>
+        {/* Tabs */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }} className="card p-1.5 flex gap-1 w-fit mb-6">
+          {([
+            { key: 'tier-list', label: 'Tier List' },
+            { key: 'thresholds', label: 'Attr. Thresholds' },
+          ] as const).map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all',
+                tab === key
+                  ? 'bg-rose-500 text-white shadow-[0_2px_8px_rgba(225,29,72,0.35)]'
+                  : 'text-fg-muted hover:text-fg'
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </motion.div>
+
+        {tab === 'tier-list' && (
+          <>
+            {/* Stats */}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="grid grid-cols-5 gap-2 mb-6">
+              {TIERS.map((t) => {
+                const count = BADGES.filter((b) => b.tier === t).length
+                const cfg = TIER_CONFIG[t]
+                return (
+                  <div key={t} className={cn('card p-3 text-center border', cfg.border, cfg.bg)}>
+                    <p className={cn('text-xl font-black', cfg.color)}>{t}</p>
+                    <p className="text-xs text-fg-muted mt-0.5">{count} badges</p>
+                  </div>
+                )
+              })}
+            </motion.div>
+
+            {/* Filters */}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="flex flex-wrap gap-3 mb-6">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-subtle" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search badges..."
+                  className="input pl-9"
+                />
               </div>
-            )
-          })}
-        </motion.div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Filter className="w-4 h-4 text-fg-subtle" />
+                {CATS.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCatFilter(c)}
+                    className={cn(
+                      'chip cursor-pointer transition-all text-xs',
+                      catFilter === c
+                        ? 'text-rose-400 border-rose-500/40 bg-rose-500/15'
+                        : 'hover:border-white/20'
+                    )}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
 
-        {/* Filters */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="flex flex-wrap gap-3 mb-6">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-subtle" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search badges..."
-              className="input pl-9"
-            />
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <Filter className="w-4 h-4 text-fg-subtle" />
-            {CATS.map((c) => (
-              <button
-                key={c}
-                onClick={() => setCatFilter(c)}
-                className={cn(
-                  'chip cursor-pointer transition-all text-xs',
-                  catFilter === c
-                    ? 'text-rose-400 border-rose-500/40 bg-rose-500/15'
-                    : 'hover:border-white/20'
-                )}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </motion.div>
+            {/* Tier groups */}
+            <div className="space-y-5">
+              {byTier.map(({ tier, badges }, gi) => {
+                const cfg = TIER_CONFIG[tier]
+                return (
+                  <motion.div
+                    key={tier}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: gi * 0.07 }}
+                    className={cn('card overflow-hidden border-l-[3px]', cfg.border)}
+                  >
+                    <div className={cn('flex items-center gap-3 px-5 py-3 border-b border-white/[0.04]', cfg.bg)}>
+                      <span className={cn('text-2xl font-black', cfg.color)}>{tier}</span>
+                      <span className="font-semibold text-fg">{cfg.label}</span>
+                      <span className="text-fg-subtle text-xs ml-auto">{badges.length} badges</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-0">
+                      {badges.map((badge, i) => (
+                        <motion.div
+                          key={badge.name}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: i * 0.04 }}
+                          className="p-4 hover:bg-white/[0.02] transition-colors border-b border-r border-white/[0.04]"
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <p className="font-semibold text-sm text-fg">{badge.name}</p>
+                            <span className={cn('chip text-2xs flex-shrink-0', CAT_COLORS[badge.cat])}>
+                              {badge.cat}
+                            </span>
+                          </div>
+                          <p className="text-xs text-fg-muted leading-relaxed">{badge.desc}</p>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
 
-        {/* Tier groups */}
-        <div className="space-y-5">
-          {byTier.map(({ tier, badges }, gi) => {
-            const cfg = TIER_CONFIG[tier]
-            return (
-              <motion.div
-                key={tier}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: gi * 0.07 }}
-                className={cn('card overflow-hidden border-l-[3px]', cfg.border)}
-              >
-                <div className={cn('flex items-center gap-3 px-5 py-3 border-b border-white/[0.04]', cfg.bg)}>
-                  <span className={cn('text-2xl font-black', cfg.color)}>{tier}</span>
-                  <span className="font-semibold text-fg">{cfg.label}</span>
-                  <span className="text-fg-subtle text-xs ml-auto">{badges.length} badges</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.04]">
-                  {badges.map((badge, i) => (
-                    <motion.div
-                      key={badge.name}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: i * 0.04 }}
-                      className="p-4 hover:bg-white/[0.02] transition-colors border-b border-white/[0.04] last:border-0"
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <p className="font-semibold text-sm text-fg">{badge.name}</p>
-                        <span className={cn('chip text-2xs flex-shrink-0', CAT_COLORS[badge.cat])}>
-                          {badge.cat}
-                        </span>
-                      </div>
-                      <p className="text-xs text-fg-muted leading-relaxed">{badge.desc}</p>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            )
-          })}
-        </div>
+            {filtered.length === 0 && (
+              <div className="text-center py-20">
+                <Award className="w-10 h-10 text-fg-subtle mx-auto mb-3" />
+                <p className="text-fg-muted">No badges match your search.</p>
+              </div>
+            )}
+          </>
+        )}
 
-        {filtered.length === 0 && (
-          <div className="text-center py-20">
-            <Award className="w-10 h-10 text-fg-subtle mx-auto mb-3" />
-            <p className="text-fg-muted">No badges match your search.</p>
-          </div>
+        {tab === 'thresholds' && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="card overflow-hidden mb-4">
+              <div className="flex items-center gap-3 px-5 py-3 border-b border-white/[0.04] bg-violet-500/5">
+                <Lock className="w-4 h-4 text-violet-400" />
+                <span className="text-sm font-semibold text-fg">Badge Unlock Thresholds</span>
+                <span className="text-xs text-fg-muted ml-auto">Approximate Season 5 requirements</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-white/[0.04]">
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wider w-44">Badge</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-fg-muted uppercase tracking-wider w-32">Attribute</th>
+                      {LEVEL_LABELS.map((l, i) => (
+                        <th key={l} className="text-center px-3 py-3 text-xs font-semibold uppercase tracking-wider">
+                          <span className={cn('chip text-2xs', LEVEL_COLORS[i])}>{l}</span>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {BADGE_THRESHOLDS.map((b, i) => (
+                      <motion.tr
+                        key={b.name}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.02 }}
+                        className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                      >
+                        <td className="px-4 py-3">
+                          <p className="font-semibold text-fg text-xs">{b.name}</p>
+                          <span className={cn('chip text-2xs mt-0.5', CAT_COLORS[b.cat])}>{b.cat}</span>
+                        </td>
+                        <td className="px-4 py-3 text-xs text-fg-muted">{b.attr}</td>
+                        {b.thresholds.map((val, li) => (
+                          <td key={li} className="px-3 py-3 text-center">
+                            <span className="font-bold text-xs text-fg">{val}+</span>
+                          </td>
+                        ))}
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <p className="text-xs text-fg-subtle text-center mt-2">
+              Thresholds are approximate. Exact values may vary by height and position. Check NBA2KLab for precise caps.
+            </p>
+          </motion.div>
         )}
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-8 card p-4 bg-amber-500/5 border-amber-500/20">
