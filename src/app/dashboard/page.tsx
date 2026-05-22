@@ -243,7 +243,7 @@ function DiscordCTA() {
 
         <div className="text-center flex-1">
           <p className="text-white font-black text-lg sm:text-xl tracking-tight leading-tight">
-            ⚡ JOIN THE COURT IQ DISCORD SQUAD
+            JOIN THE COURT IQ DISCORD SQUAD
           </p>
           <p className="text-white/60 text-xs mt-1 font-medium">Patch alerts · build drops · meta discussions · giveaways</p>
         </div>
