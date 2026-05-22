@@ -13,7 +13,6 @@ import { useSession, signOut } from 'next-auth/react'
 
 const links = [
   { href: '/dashboard',    label: 'Dashboard',     icon: LayoutDashboard },
-  { href: '/vision',       label: '2K Vision',     icon: Eye },
   { href: '/analyze',      label: 'Analyzer',      icon: Zap },
   { href: '/optimize',     label: 'Optimizer',     icon: Wand2 },
   { href: '/matchup',      label: 'Matchup',       icon: Swords },
@@ -89,8 +88,58 @@ export default function Sidebar({ collapsed, onCollapse, mobileOpen, onMobileClo
         )}
       </div>
 
+      {/* Vision — featured entry */}
+      <div className="px-2 pt-2 pb-0">
+        <Link href="/vision"
+          title={(!showLabels) ? 'Vision' : undefined}
+          onClick={isMobile ? onMobileClose : undefined}
+          className={cn(
+            'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative overflow-hidden',
+            path.startsWith('/vision') ? '' : 'hover:opacity-90'
+          )}
+          style={{
+            background: path.startsWith('/vision') ? 'rgba(225,29,72,0.1)' : 'rgba(255,255,255,0.03)',
+            border: `1px solid ${path.startsWith('/vision') ? 'rgba(225,29,72,0.28)' : 'rgba(255,255,255,0.07)'}`,
+            boxShadow: path.startsWith('/vision') ? '0 0 18px rgba(225,29,72,0.12)' : 'none',
+          }}
+        >
+          {path.startsWith('/vision') && (
+            <motion.div layoutId="vision-pill" className="absolute inset-0 rounded-xl"
+              style={{ background: 'rgba(225,29,72,0.06)' }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }} />
+          )}
+          <motion.div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 relative z-10"
+            style={{ background: 'rgba(225,29,72,0.14)', border: '1px solid rgba(225,29,72,0.3)' }}
+            animate={path.startsWith('/vision') ? { boxShadow: ['0 0 0px rgba(225,29,72,0)', '0 0 10px rgba(225,29,72,0.45)', '0 0 0px rgba(225,29,72,0)'] } : {}}
+            transition={{ duration: 2.2, repeat: Infinity }}>
+            <Eye className="w-3.5 h-3.5 text-rose-400" />
+          </motion.div>
+          <AnimatePresence>
+            {showLabels && (
+              <motion.div
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.16 }}
+                className="flex-1 min-w-0 overflow-hidden relative z-10"
+              >
+                <p className="text-[12px] font-black text-white leading-none tracking-wide">VISION</p>
+                <p className="text-[9px] font-mono text-white/25 uppercase tracking-wider mt-0.5">Intelligence Suite</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {showLabels && (
+            <span className="relative z-10 flex-shrink-0 font-mono text-[8px] font-black px-1.5 py-0.5 rounded"
+              style={{ background: 'rgba(225,29,72,0.15)', border: '1px solid rgba(225,29,72,0.28)', color: '#FF5F6D' }}>
+              NEW
+            </span>
+          )}
+        </Link>
+        <div className="mt-2 mx-1" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }} />
+      </div>
+
       {/* Nav links */}
-      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5 scrollbar-hide">
+      <nav className="flex-1 overflow-y-auto py-1.5 px-2 space-y-0.5 scrollbar-hide">
         {links.map(({ href, label, icon: Icon }) => {
           const active = path === href || (href !== '/dashboard' && path.startsWith(href + '/'))
           return (

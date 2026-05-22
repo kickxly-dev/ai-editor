@@ -156,6 +156,111 @@ Be as specific as possible. Reference the actual observations. Higher observatio
       return NextResponse.json({ success: true, profile })
     }
 
+    // ── Weakness Scanner: find every exploit on any build ─────────────────────
+    if (mode === 'weakness') {
+      const { build_description = '' } = body
+      if (!build_description.trim()) return NextResponse.json({ error: 'Build description required.' }, { status: 400 })
+
+      const res = await getGroq().chat.completions.create({
+        model: MODELS.fast,
+        messages: [
+          {
+            role: 'system',
+            content: `You are the world's most elite NBA 2K26 exploitation specialist. Given any build description, identify every weakness and produce an actionable exploit guide. Respond ONLY with this JSON:
+{
+  "build_summary": "1-sentence description of what this build is",
+  "core_weaknesses": [
+    { "area": "e.g. Interior Defense", "description": "specific exploitation technique", "severity": <1-10> }
+  ],
+  "best_counters": [
+    { "build_type": "string", "why": "why it hard-counters this build", "key_stats": "e.g. 90+ Perimeter D, 85+ Speed" }
+  ],
+  "badge_punishments": ["Badge that hard-counters this build", "...2-3 total"],
+  "kill_sequence": "Step by step: exactly how to destroy this build in 2-3 sentences. Be brutally specific.",
+  "defensive_scheme": "How to guard this specific build type",
+  "one_liner": "The brutal one-liner truth about why this build type loses to a smart player"
+}
+Include 3-5 weaknesses and 2-3 counters. Be specific to NBA 2K26 Season 7 mechanics.`,
+          },
+          {
+            role: 'user',
+            content: `BUILD TO EXPLOIT:\n${build_description}`,
+          },
+        ],
+        temperature: 0.3,
+        max_tokens: 1200,
+        response_format: { type: 'json_object' },
+      })
+
+      const raw = res.choices[0].message.content || '{}'
+      const report = await parseVisionJSON(raw, {
+        build_summary: 'Unknown build type.',
+        core_weaknesses: [{ area: 'Unknown', description: 'Add more detail to your build description.', severity: 5 }],
+        best_counters: [{ build_type: 'Athletic Finisher', why: 'Versatile counter to most builds', key_stats: '85+ Speed, 88+ Driving Dunk' }],
+        badge_punishments: ['Clamp Breaker'],
+        kill_sequence: 'Be more specific about the build to get a precise kill sequence.',
+        defensive_scheme: 'Play fundamentally sound defense.',
+        one_liner: 'Every build has a weakness — describe it better to find it.',
+      })
+
+      return NextResponse.json({ success: true, report })
+    }
+
+    // ── Meta Pulse: real-time meta intelligence report ─────────────────────────
+    if (mode === 'meta') {
+      const { platform = 'All' } = body
+
+      const searchQuery = `NBA 2K26 Season 7 best builds meta tier list ${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`
+      const results = await searchForCoach(searchQuery)
+      const searchContext = formatSearchContext(results)
+
+      const res = await getGroq().chat.completions.create({
+        model: MODELS.fast,
+        messages: [
+          {
+            role: 'system',
+            content: `You are the NBA 2K26 meta analyst. Generate the definitive Season 7 meta intelligence report based on community data. Respond ONLY with this JSON:
+{
+  "tier_s": [
+    { "name": "Build archetype name", "why": "Why it's S tier — be specific to Season 7 mechanics", "threat": "Elite" }
+  ],
+  "tier_a": [
+    { "name": "Build archetype name", "why": "Why it's solid A tier" }
+  ],
+  "trending_up": ["Build/playstyle trending up this week", "...3 total"],
+  "trending_down": ["Build/archetype being phased out", "...3 total"],
+  "most_abused_badges": ["Badge1", "Badge2", "Badge3", "Badge4"],
+  "current_meta_summary": "2-sentence summary of current Season 7 meta state.",
+  "biggest_threat": "The single most oppressive build archetype dominating lobbies right now",
+  "analyst_note": "2-sentence coaching note on how to navigate and win in the current meta"
+}
+Include 2-3 S tier entries, 3-4 A tier. Base on Season 7 (May 2026) NBA 2K26 data. Platform: ${platform}.`,
+          },
+          {
+            role: 'user',
+            content: `PLATFORM: ${platform}\nCOMMUNITY DATA:\n${searchContext || 'No real-time data available — generate based on Season 7 meta knowledge.'}`,
+          },
+        ],
+        temperature: 0.4,
+        max_tokens: 1300,
+        response_format: { type: 'json_object' },
+      })
+
+      const raw = res.choices[0].message.content || '{}'
+      const report = await parseVisionJSON(raw, {
+        tier_s: [{ name: 'Playmaking Shot Creator', why: 'Unmatched offensive versatility in Season 7', threat: 'Elite' }],
+        tier_a: [{ name: 'Two-Way Slasher', why: 'Solid all-around build with minimal weaknesses' }],
+        trending_up: ['Interior Dominators', 'Two-Way Wings', 'Spot-Up Shooters'],
+        trending_down: ['Pure Lockdowns', 'Stretch Fours', 'Old-school Pure Points'],
+        most_abused_badges: ['Deadeye', 'Clamps', 'Posterizer', 'Ankle Breaker'],
+        current_meta_summary: 'Season 7 meta heavily favors versatile two-way builds with high speed and shooting. Pure specialists are struggling.',
+        biggest_threat: 'Playmaking Shot Creator at 6\'4"–6\'6" with max Speed Boost',
+        analyst_note: 'Prioritize Perimeter Defense and Speed to stay competitive. Two-way builds dominate — pure offense will get exploited.',
+      })
+
+      return NextResponse.json({ success: true, report, searched: searchQuery })
+    }
+
     return NextResponse.json({ error: 'Invalid mode.' }, { status: 400 })
   } catch (err) {
     console.error('Vision error:', err)
