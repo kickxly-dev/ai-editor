@@ -203,7 +203,7 @@ function BuildCard({
         <p className="text-xs font-semibold text-fg-muted uppercase tracking-wider mb-1.5">Badges</p>
         <input
           className="input"
-          placeholder="Limitless Range, Clamps, Quick First Step..."
+          placeholder="Deadeye, Shifty Shooter, Lightning Launch..."
           value={form.badges}
           onChange={e => onChange({ badges: e.target.value })}
         />
@@ -664,7 +664,7 @@ export default function MatchupPage() {
                   <p className="text-xs font-semibold text-fg-muted uppercase tracking-wider mb-1.5">Badges</p>
                   <input
                     className="input"
-                    placeholder="Limitless Range, Clamps, Posterizer..."
+                    placeholder="Challenger, Interceptor, On-Ball Menace..."
                     value={opponent.badges}
                     onChange={e => setOpponent(prev => ({ ...prev, badges: e.target.value }))}
                   />

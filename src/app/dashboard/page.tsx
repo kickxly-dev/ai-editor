@@ -6,7 +6,8 @@ import { useSession } from 'next-auth/react'
 import {
   Zap, Brain, TrendingUp, Users, BookOpen, ArrowRight, ArrowUpRight,
   Wand2, Swords, Users2, Search, MessageSquare, Crown, ShieldCheck,
-  BarChart3, Flame, Target, Calendar, ChevronRight, Sparkles, Trophy
+  BarChart3, Flame, Target, Calendar, ChevronRight, Sparkles, Trophy,
+  Calculator, Award
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 
@@ -33,6 +34,9 @@ const TOOLS = [
   { href: '/squad',     icon: Users2,        label: 'Squad Builder',    desc: 'AI chemistry report for your crew',   accent: '#FB7185', glow: 'rgba(251,113,133,0.15)' },
   { href: '/find',      icon: Search,        label: 'Find Players',     desc: 'LFG for Park, Rec, Pro-Am',           accent: '#34D399', glow: 'rgba(52,211,153,0.15)' },
   { href: '/messages',  icon: MessageSquare, label: 'Messages',         desc: 'Direct messages with teammates',      accent: '#A78BFA', glow: 'rgba(167,139,250,0.15)' },
+  { href: '/vc-calc',   icon: Calculator,    label: 'VC Calculator',    desc: 'Exact upgrade cost to hit your stats', accent: '#F97316', glow: 'rgba(249,115,22,0.15)' },
+  { href: '/badges',    icon: Award,         label: 'Badge Reference',  desc: 'All Season 5 badges with tier list',  accent: '#FBBF24', glow: 'rgba(251,191,36,0.15)' },
+  { href: '/roast',     icon: Flame,         label: 'Roast My Build',   desc: 'AI roasts + shareable PNG card',      accent: '#EF4444', glow: 'rgba(239,68,68,0.15)' },
 ]
 
 const TIER_COLORS: Record<string, string> = {
