@@ -312,6 +312,41 @@ input[type='range']::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px rgba(225
 @media (min-width: 640px) { .page-header { padding: 2rem 1.5rem 1.5rem; } }
 @media (min-width: 1024px) { .page-header { padding: 2.5rem 2rem 2rem; } }
 
+/* ── Vision page: intel terminal aesthetics ───────────────────── */
+@keyframes vision-scan {
+  0% { transform: translateY(-120px); }
+  100% { transform: translateY(100vh); }
+}
+.vision-scanline {
+  position: fixed; top: 0; left: 0; right: 0; height: 120px;
+  pointer-events: none; z-index: 3;
+  background: linear-gradient(transparent, rgba(225,29,72,0.025), transparent);
+  animation: vision-scan 6s linear infinite;
+}
+
+.vision-hex {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='48' viewBox='0 0 56 48'%3E%3Cpolygon points='28,2 54,16 54,32 28,46 2,32 2,16' fill='none' stroke='rgba(225%2C29%2C72%2C0.055)' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-size: 56px 48px;
+}
+
+@keyframes cursor-blink { 0%,49%{ opacity:1 } 50%,100%{ opacity:0 } }
+.cursor::after { content: '_'; animation: cursor-blink 1s step-start infinite; color: #E11D48; margin-left: 1px; }
+
+@keyframes glitch-h {
+  0%,100% { clip-path: inset(0 0 100% 0); transform: translateX(0); }
+  20%      { clip-path: inset(20% 0 60% 0); transform: translateX(-4px); }
+  40%      { clip-path: inset(50% 0 30% 0); transform: translateX(4px); }
+  60%      { clip-path: inset(70% 0 5% 0); transform: translateX(-2px); }
+  80%      { clip-path: inset(10% 0 80% 0); transform: translateX(3px); }
+}
+
+@keyframes access-flash {
+  0%   { opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 /* ── Number input hide arrows ─────────────────────────────────── */
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
