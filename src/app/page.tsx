@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   Zap, Brain, TrendingUp, Users, ArrowRight, Cpu,
   Shield, Activity, ChevronRight, Wand2, Swords, Users2, Star,
-  Calculator, Flame, Award, Crosshair, Trophy,
+  Calculator, Award, Crosshair, Trophy,
 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import { CourtIQLogo } from '@/components/ui/Logo'
@@ -56,7 +56,7 @@ const TICKER_ITEMS = [
   { label: 'Meta Tracker', color: '#10B981' }, { label: 'Build Optimizer', color: '#8B5CF6' },
   { label: '1v1 Simulator', color: '#F59E0B' }, { label: 'Squad Builder', color: '#FB7185' },
   { label: 'Teammate Finder', color: '#34D399' }, { label: 'Jumpshot Finder', color: '#F472B6' },
-  { label: 'VC Calculator', color: '#FB923C' }, { label: 'Roast My Build', color: '#EF4444' },
+  { label: 'VC Calculator', color: '#FB923C' },
   { label: 'Badge Reference', color: '#FBBF24' }, { label: 'Public REST API', color: '#A78BFA' },
   { label: 'Groq Powered', color: '#FAFAFA' }, { label: 'Season 5 Meta', color: '#34D399' },
 ]
@@ -122,11 +122,6 @@ const FEATURES = [
     icon: Crosshair, title: 'Jumpshot Finder', accent: '#F472B6',
     desc: 'Best base + release combos for your height and play style.',
     href: '/jumpshots', tag: 'Tool', size: 'normal',
-  },
-  {
-    icon: Flame, title: 'Roast My Build', accent: '#EF4444',
-    desc: 'Get savagely roasted by AI. Download the PNG card. Share the damage.',
-    href: '/roast', tag: 'Fun', size: 'normal',
   },
   {
     icon: Trophy, title: 'Leaderboard', accent: '#FCD34D',

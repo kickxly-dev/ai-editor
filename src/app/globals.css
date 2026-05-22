@@ -290,6 +290,9 @@ input[type='range']::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px rgba(225
 .marquee-track { display: flex; width: max-content; animation: marquee 38s linear infinite; }
 .marquee-track:hover { animation-play-state: paused; }
 
+/* ── Mobile safe area ─────────────────────────────────────────── */
+.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
 /* ── Number input hide arrows ─────────────────────────────────── */
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }

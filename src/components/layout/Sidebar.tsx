@@ -5,57 +5,68 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Zap, Brain, TrendingUp, Users, BookOpen, LayoutDashboard,
   Wand2, Swords, Users2, Search, MessageSquare, LogOut,
-  ChevronLeft, ChevronRight, Shield, Calculator, Flame, Award, Crosshair, ClipboardList, Trophy, User
+  ChevronLeft, ChevronRight, Shield, Calculator, Award, Crosshair, ClipboardList, Trophy, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CourtIQLogo } from '@/components/ui/Logo'
 import { useSession, signOut } from 'next-auth/react'
 
 const links = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/analyze',   label: 'Analyzer',  icon: Zap },
-  { href: '/optimize',  label: 'Optimizer', icon: Wand2 },
-  { href: '/matchup',   label: 'Matchup',   icon: Swords },
-  { href: '/coach',     label: 'AI Coach',  icon: Brain },
-  { href: '/builds',    label: 'Builds',    icon: Users },
-  { href: '/meta',      label: 'Meta',      icon: TrendingUp },
-  { href: '/tutorials', label: 'Learn',     icon: BookOpen },
-  { href: '/squad',     label: 'Squad',     icon: Users2 },
-  { href: '/find',      label: 'Find',      icon: Search },
-  { href: '/messages',  label: 'Messages',  icon: MessageSquare },
-  { href: '/vc-calc',   label: 'VC Calc',   icon: Calculator },
-  { href: '/roast',     label: 'Roast',     icon: Flame },
-  { href: '/badges',    label: 'Badges',    icon: Award },
-  { href: '/jumpshots',     label: 'Jumpshots',    icon: Crosshair },
-  { href: '/build-planner', label: 'Build Planner', icon: ClipboardList },
-  { href: '/leaderboard',   label: 'Leaderboard',   icon: Trophy },
+  { href: '/dashboard',    label: 'Dashboard',     icon: LayoutDashboard },
+  { href: '/analyze',      label: 'Analyzer',      icon: Zap },
+  { href: '/optimize',     label: 'Optimizer',     icon: Wand2 },
+  { href: '/matchup',      label: 'Matchup',       icon: Swords },
+  { href: '/coach',        label: 'AI Coach',      icon: Brain },
+  { href: '/builds',       label: 'Builds',        icon: Users },
+  { href: '/meta',         label: 'Meta',          icon: TrendingUp },
+  { href: '/tutorials',    label: 'Learn',         icon: BookOpen },
+  { href: '/squad',        label: 'Squad',         icon: Users2 },
+  { href: '/find',         label: 'Find',          icon: Search },
+  { href: '/messages',     label: 'Messages',      icon: MessageSquare },
+  { href: '/vc-calc',      label: 'VC Calc',       icon: Calculator },
+  { href: '/badges',       label: 'Badges',        icon: Award },
+  { href: '/jumpshots',    label: 'Jumpshots',     icon: Crosshair },
+  { href: '/build-planner',label: 'Build Planner', icon: ClipboardList },
+  { href: '/leaderboard',  label: 'Leaderboard',   icon: Trophy },
 ]
 
 interface Props {
   collapsed: boolean
   onCollapse: (v: boolean) => void
+  mobileOpen: boolean
+  onMobileClose: () => void
+  isMobile: boolean
 }
 
-export default function Sidebar({ collapsed, onCollapse }: Props) {
+export default function Sidebar({ collapsed, onCollapse, mobileOpen, onMobileClose, isMobile }: Props) {
   const path = usePathname()
   const { data: session } = useSession()
   const isAdmin = (session?.user as { isAdmin?: boolean })?.isAdmin
 
+  const showLabels = isMobile || !collapsed
+
   return (
     <motion.aside
-      animate={{ width: collapsed ? 64 : 220 }}
+      animate={
+        isMobile
+          ? { x: mobileOpen ? 0 : '-100%', width: 260 }
+          : { x: 0, width: collapsed ? 64 : 220 }
+      }
       transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-      className="fixed left-0 top-0 h-screen z-50 flex flex-col overflow-hidden"
+      className={cn(
+        'fixed left-0 top-0 h-screen z-50 flex flex-col overflow-hidden',
+        isMobile && !mobileOpen ? 'pointer-events-none' : ''
+      )}
       style={{ background: '#0C0C10', borderRight: '1px solid rgba(255,255,255,0.055)' }}
     >
       {/* Header */}
-      <div className="h-16 flex items-center px-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.045)' }}>
-        <Link href="/" className="flex items-center gap-2.5 min-w-0">
+      <div className="h-16 flex items-center px-4 flex-shrink-0 justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.045)' }}>
+        <Link href="/" className="flex items-center gap-2.5 min-w-0" onClick={isMobile ? onMobileClose : undefined}>
           <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.96 }} className="flex-shrink-0">
             <CourtIQLogo className="w-7 h-7" />
           </motion.div>
           <AnimatePresence>
-            {!collapsed && (
+            {showLabels && (
               <motion.span
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: 'auto' }}
@@ -68,6 +79,14 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
             )}
           </AnimatePresence>
         </Link>
+
+        {/* Mobile close button */}
+        {isMobile && (
+          <button onClick={onMobileClose}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors flex-shrink-0">
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Nav links */}
@@ -76,7 +95,8 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
           const active = path === href || (href !== '/dashboard' && path.startsWith(href + '/'))
           return (
             <Link key={href} href={href}
-              title={collapsed ? label : undefined}
+              title={(!showLabels) ? label : undefined}
+              onClick={isMobile ? onMobileClose : undefined}
               className={cn(
                 'flex items-center gap-3 px-2.5 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 relative',
                 active
@@ -93,7 +113,7 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
               )}
               <Icon className={cn('w-4 h-4 flex-shrink-0 relative z-10', active ? 'text-rose-400' : '')} />
               <AnimatePresence>
-                {!collapsed && (
+                {showLabels && (
                   <motion.span
                     initial={{ opacity: 0, width: 0 }}
                     animate={{ opacity: 1, width: 'auto' }}
@@ -113,7 +133,8 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
           <>
             <div className="my-2 mx-1" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} />
             <Link href="/admin"
-              title={collapsed ? 'Admin' : undefined}
+              title={(!showLabels) ? 'Admin' : undefined}
+              onClick={isMobile ? onMobileClose : undefined}
               className={cn(
                 'flex items-center gap-3 px-2.5 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 relative',
                 path.startsWith('/admin')
@@ -122,7 +143,7 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
               )}
             >
               {path.startsWith('/admin') && (
-                <motion.div layoutId="sidebar-pill"
+                <motion.div layoutId="sidebar-pill-admin"
                   className="absolute inset-0 rounded-lg"
                   style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.16)' }}
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
@@ -130,7 +151,7 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
               )}
               <Shield className="w-4 h-4 flex-shrink-0 relative z-10" />
               <AnimatePresence>
-                {!collapsed && (
+                {showLabels && (
                   <motion.span
                     initial={{ opacity: 0, width: 0 }}
                     animate={{ opacity: 1, width: 'auto' }}
@@ -152,10 +173,11 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
         {session?.user && (
           <Link
             href="/profile"
-            title={collapsed ? 'Profile' : undefined}
+            title={(!showLabels) ? 'Profile' : undefined}
+            onClick={isMobile ? onMobileClose : undefined}
             className={cn(
               'flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-colors hover:bg-white/[0.04]',
-              collapsed ? 'justify-center' : '',
+              !showLabels ? 'justify-center' : '',
               path === '/profile' ? 'bg-white/[0.04]' : ''
             )}
           >
@@ -163,7 +185,7 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
               {(session.user.name || session.user.email || '?')[0].toUpperCase()}
             </div>
             <AnimatePresence>
-              {!collapsed && (
+              {showLabels && (
                 <motion.div
                   initial={{ opacity: 0, width: 0 }}
                   animate={{ opacity: 1, width: 'auto' }}
@@ -181,15 +203,15 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
 
         <button
           onClick={() => signOut({ callbackUrl: '/' })}
-          title={collapsed ? 'Sign Out' : undefined}
+          title={(!showLabels) ? 'Sign Out' : undefined}
           className={cn(
             'flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[12px] font-medium text-white/30 hover:text-white/60 hover:bg-white/04 transition-colors w-full',
-            collapsed ? 'justify-center' : ''
+            !showLabels ? 'justify-center' : ''
           )}
         >
           <LogOut className="w-3.5 h-3.5 flex-shrink-0" />
           <AnimatePresence>
-            {!collapsed && (
+            {showLabels && (
               <motion.span
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: 'auto' }}
@@ -203,12 +225,15 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
           </AnimatePresence>
         </button>
 
-        <button
-          onClick={() => onCollapse(!collapsed)}
-          className="flex items-center justify-center w-full py-1.5 rounded-lg text-white/20 hover:text-white/50 hover:bg-white/04 transition-colors"
-        >
-          {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
-        </button>
+        {/* Collapse toggle — desktop only */}
+        {!isMobile && (
+          <button
+            onClick={() => onCollapse(!collapsed)}
+            className="flex items-center justify-center w-full py-1.5 rounded-lg text-white/20 hover:text-white/50 hover:bg-white/04 transition-colors"
+          >
+            {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+          </button>
+        )}
       </div>
     </motion.aside>
   )

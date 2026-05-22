@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: { default: 'CourtIQ — AI NBA 2K26 Platform', template: '%s | CourtIQ' },
   description: 'Build smarter, play better. AI-powered NBA 2K26 build analysis, coaching, and meta tracking.',
   themeColor: '#09090B',
+  viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
