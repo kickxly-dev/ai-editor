@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import {
   Trophy, Heart, Eye, Zap, TrendingUp, Filter,
-  Loader2, User, Crown,
+  Loader2, User, Crown, ChevronRight,
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import { cn } from '@/lib/utils'
@@ -140,11 +140,11 @@ export default function LeaderboardPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(i * 0.03, 0.4) }}
                   className={cn(
-                    'card p-4 hover:bg-white/[0.02] transition-colors',
+                    'card p-4 hover:bg-white/[0.02] transition-colors group',
                     rankStyle ? `border ${rankStyle.border} ${rankStyle.bg}` : ''
                   )}
                 >
-                  <div className="flex items-center gap-3">
+                  <Link href={`/builds/${build.id}`} className="flex items-center gap-3">
                     {/* Rank */}
                     <div className="w-8 flex-shrink-0 text-center">
                       {i < 3 ? (
@@ -191,8 +191,9 @@ export default function LeaderboardPage() {
                           <Eye className="w-3 h-3" />{(build.views ?? 0).toLocaleString()}
                         </span>
                       </div>
+                      <ChevronRight className="w-4 h-4 text-fg-subtle/30 group-hover:text-fg-subtle transition-colors" />
                     </div>
-                  </div>
+                  </Link>
                 </motion.div>
               )
             })}
