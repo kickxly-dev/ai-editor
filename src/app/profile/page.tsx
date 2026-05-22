@@ -77,6 +77,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/profile')
@@ -110,6 +111,22 @@ export default function ProfilePage() {
       setEditing(false)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const togglePublic = async (id: string | number, currentPublic: boolean) => {
+    setTogglingId(String(id))
+    try {
+      const res = await fetch(`/api/build?id=${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPublic: !currentPublic }),
+      })
+      if (res.ok) {
+        setBuilds(prev => prev.map(b => String(b.id) === String(id) ? { ...b, is_public: !currentPublic } : b))
+      }
+    } finally {
+      setTogglingId(null)
     }
   }
 
@@ -302,10 +319,24 @@ export default function ProfilePage() {
                           <Eye className="w-3 h-3" />{build.views ?? 0}
                         </span>
                         <span className="ml-auto">{timeAgo(build.created_at)}</span>
-                        {build.is_public
-                          ? <Globe className="w-3 h-3 text-emerald-400/60" />
-                          : <Lock className="w-3 h-3 text-fg-subtle/40" />
-                        }
+                        <button
+                          onClick={() => togglePublic(build.id, build.is_public)}
+                          disabled={togglingId === String(build.id)}
+                          className={cn(
+                            'flex items-center gap-1 text-xs transition-colors rounded px-1',
+                            build.is_public
+                              ? 'text-emerald-400/60 hover:text-emerald-400'
+                              : 'text-fg-subtle/40 hover:text-fg-subtle'
+                          )}
+                          title={build.is_public ? 'Make private' : 'Make public'}
+                        >
+                          {togglingId === String(build.id)
+                            ? <Loader2 className="w-3 h-3 animate-spin" />
+                            : build.is_public
+                            ? <Globe className="w-3 h-3" />
+                            : <Lock className="w-3 h-3" />
+                          }
+                        </button>
                         <button
                           onClick={() => deleteBuild(build.id)}
                           disabled={deletingId === String(build.id)}

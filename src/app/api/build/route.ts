@@ -97,6 +97,33 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function PATCH(req: NextRequest) {
+  const session = await auth()
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { searchParams } = new URL(req.url)
+  const id = searchParams.get('id')
+  if (!id) return NextResponse.json({ error: 'Build ID required' }, { status: 400 })
+
+  const body = await req.json()
+  const { isPublic } = body
+  if (typeof isPublic !== 'boolean') return NextResponse.json({ error: 'isPublic required' }, { status: 400 })
+
+  const client = await pool.connect()
+  try {
+    const { rowCount } = await client.query(
+      `UPDATE builds SET is_public = $1 WHERE id = $2 AND user_id = $3`,
+      [isPublic, id, session.user.id]
+    )
+    if (!rowCount) return NextResponse.json({ error: 'Build not found' }, { status: 404 })
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 })
+  } finally {
+    client.release()
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
