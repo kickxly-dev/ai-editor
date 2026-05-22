@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import {
   User, Edit2, Check, X, Crown, ShieldCheck, Shield,
-  Zap, Eye, Heart, Calendar, Loader2, ExternalLink
+  Zap, Eye, Heart, Calendar, Loader2, ExternalLink, Trash2, Globe, Lock
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import { cn } from '@/lib/utils'
@@ -76,6 +76,7 @@ export default function ProfilePage() {
   const [editBio, setEditBio] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/profile')
@@ -109,6 +110,20 @@ export default function ProfilePage() {
       setEditing(false)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const deleteBuild = async (id: string | number) => {
+    if (!confirm('Delete this build?')) return
+    setDeletingId(String(id))
+    try {
+      const res = await fetch(`/api/build?id=${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        setBuilds(prev => prev.filter(b => String(b.id) !== String(id)))
+        setProfile(prev => prev ? { ...prev, totalBuilds: Math.max(0, prev.totalBuilds - 1) } : prev)
+      }
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -287,9 +302,21 @@ export default function ProfilePage() {
                           <Eye className="w-3 h-3" />{build.views ?? 0}
                         </span>
                         <span className="ml-auto">{timeAgo(build.created_at)}</span>
-                        {build.is_public && (
-                          <ExternalLink className="w-3 h-3 text-emerald-400/60" />
-                        )}
+                        {build.is_public
+                          ? <Globe className="w-3 h-3 text-emerald-400/60" />
+                          : <Lock className="w-3 h-3 text-fg-subtle/40" />
+                        }
+                        <button
+                          onClick={() => deleteBuild(build.id)}
+                          disabled={deletingId === String(build.id)}
+                          className="text-fg-subtle/30 hover:text-rose-400 transition-colors disabled:opacity-50"
+                          title="Delete build"
+                        >
+                          {deletingId === String(build.id)
+                            ? <Loader2 className="w-3 h-3 animate-spin" />
+                            : <Trash2 className="w-3 h-3" />
+                          }
+                        </button>
                       </div>
                     </motion.div>
                   ))}

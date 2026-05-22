@@ -37,7 +37,8 @@ const TOOLS = [
   { href: '/vc-calc',   icon: Calculator,    label: 'VC Calculator',    desc: 'Exact upgrade cost to hit your stats', accent: '#F97316', glow: 'rgba(249,115,22,0.15)' },
   { href: '/badges',    icon: Award,         label: 'Badge Reference',  desc: 'All Season 5 badges with tier list',  accent: '#FBBF24', glow: 'rgba(251,191,36,0.15)' },
   { href: '/roast',     icon: Flame,         label: 'Roast My Build',   desc: 'AI roasts + shareable PNG card',      accent: '#EF4444', glow: 'rgba(239,68,68,0.15)' },
-  { href: '/jumpshots', icon: Crosshair,     label: 'Jumpshot Finder',  desc: 'Best base + releases for your build',  accent: '#F472B6', glow: 'rgba(244,114,182,0.15)' },
+  { href: '/jumpshots',    icon: Crosshair, label: 'Jumpshot Finder',  desc: 'Best base + releases for your build',  accent: '#F472B6', glow: 'rgba(244,114,182,0.15)' },
+  { href: '/leaderboard',  icon: Trophy,    label: 'Leaderboard',      desc: 'Top community builds by likes',        accent: '#FBBF24', glow: 'rgba(251,191,36,0.15)' },
 ]
 
 const TIER_COLORS: Record<string, string> = {

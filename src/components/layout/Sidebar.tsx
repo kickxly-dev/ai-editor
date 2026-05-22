@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Zap, Brain, TrendingUp, Users, BookOpen, LayoutDashboard,
   Wand2, Swords, Users2, Search, MessageSquare, LogOut,
-  ChevronLeft, ChevronRight, Shield, Calculator, Flame, Award, Crosshair, ClipboardList
+  ChevronLeft, ChevronRight, Shield, Calculator, Flame, Award, Crosshair, ClipboardList, Trophy
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CourtIQLogo } from '@/components/ui/Logo'
@@ -28,6 +28,7 @@ const links = [
   { href: '/badges',    label: 'Badges',    icon: Award },
   { href: '/jumpshots',     label: 'Jumpshots',    icon: Crosshair },
   { href: '/build-planner', label: 'Build Planner', icon: ClipboardList },
+  { href: '/leaderboard',   label: 'Leaderboard',   icon: Trophy },
 ]
 
 interface Props {
