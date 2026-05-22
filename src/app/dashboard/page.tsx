@@ -7,7 +7,8 @@ import {
   Zap, Brain, TrendingUp, Users, BookOpen, ArrowRight, ArrowUpRight,
   Wand2, Swords, Users2, Search, MessageSquare, Crown, ShieldCheck,
   BarChart3, Flame, Target, Calendar, ChevronRight, Sparkles, Trophy,
-  Calculator, Award, Crosshair
+  Calculator, Award, Crosshair, Gamepad2, TrendingDown, Bug,
+  Radio, ExternalLink,
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 
@@ -36,7 +37,6 @@ const TOOLS = [
   { href: '/messages',  icon: MessageSquare, label: 'Messages',         desc: 'Direct messages with teammates',      accent: '#A78BFA', glow: 'rgba(167,139,250,0.15)' },
   { href: '/vc-calc',   icon: Calculator,    label: 'VC Calculator',    desc: 'Exact upgrade cost to hit your stats', accent: '#F97316', glow: 'rgba(249,115,22,0.15)' },
   { href: '/badges',    icon: Award,         label: 'Badge Reference',  desc: 'All Season 5 badges with tier list',  accent: '#FBBF24', glow: 'rgba(251,191,36,0.15)' },
-  { href: '/roast',     icon: Flame,         label: 'Roast My Build',   desc: 'AI roasts + shareable PNG card',      accent: '#EF4444', glow: 'rgba(239,68,68,0.15)' },
   { href: '/jumpshots',    icon: Crosshair, label: 'Jumpshot Finder',  desc: 'Best base + releases for your build',  accent: '#F472B6', glow: 'rgba(244,114,182,0.15)' },
   { href: '/leaderboard',  icon: Trophy,    label: 'Leaderboard',      desc: 'Top community builds by likes',        accent: '#FBBF24', glow: 'rgba(251,191,36,0.15)' },
 ]
@@ -129,6 +129,131 @@ function TrendRow({ t, i }: { t: DashboardData['metaTrends'][0]; i: number }) {
   )
 }
 
+const PATCH_NOTES = [
+  {
+    icon: Gamepad2,
+    color: '#38BDF8',
+    label: 'Gameplay',
+    text: 'Refined drive transitions from standing stepback moves to better match real-world momentum and physics — effectively patching out the small-guard left-right speed booster glitch.',
+  },
+  {
+    icon: TrendingUp,
+    color: '#10B981',
+    label: 'Buff',
+    text: 'Tall guards and centers receive an indirect balance buff due to the removal of small-build speed exploits. Height-based builds are now more viable in competitive modes.',
+  },
+  {
+    icon: TrendingDown,
+    color: '#F59E0B',
+    label: 'Nerf',
+    text: 'LeBron hotback and D-Book move physics have been heavily adjusted to limit animation chaining. Signature combos now respect stamina curves and cooldown windows.',
+  },
+  {
+    icon: Bug,
+    color: '#FB7185',
+    label: 'Bug Fix',
+    text: 'Resolved an NBA Cup blocker issue in MyNBA tied to non-standard user schedules. Affected saves can now progress past the Cup scheduling screen.',
+  },
+]
+
+function PatchBanner() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.08, type: 'spring', stiffness: 240, damping: 26 }}
+      className="card overflow-hidden"
+    >
+      {/* Header */}
+      <div className="px-5 pt-4 pb-3 flex items-center gap-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ background: '#10B981' }} />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ background: '#10B981' }} />
+          </span>
+          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-emerald-400">Live Update</span>
+        </div>
+        <div className="h-3.5 w-px bg-white/10" />
+        <div className="flex items-center gap-1.5">
+          <Radio className="w-3.5 h-3.5 text-white/30" />
+          <p className="text-sm font-bold text-white/80">Season 7 Patch Notes</p>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="chip text-[10px] font-bold"
+            style={{ background: 'rgba(225,29,72,0.1)', border: '1px solid rgba(225,29,72,0.2)', color: '#FB7185' }}>
+            May 2026
+          </span>
+        </div>
+      </div>
+
+      {/* Changes */}
+      <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+        {PATCH_NOTES.map(({ icon: Icon, color, label, text }) => (
+          <div key={label} className="flex gap-3.5 px-5 py-3.5">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              style={{ background: `${color}14`, border: `1px solid ${color}22` }}>
+              <Icon className="w-3.5 h-3.5" style={{ color }} />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider mr-2" style={{ color }}>{label}</span>
+              <span className="text-[13px] text-white/55 leading-relaxed">{text}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
+function DiscordCTA() {
+  return (
+    <motion.a
+      href="https://discord.gg/h7DQqVvwdA"
+      target="_blank"
+      rel="noopener noreferrer"
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.14, type: 'spring', stiffness: 240, damping: 26 }}
+      whileHover={{ scale: 1.012 }}
+      whileTap={{ scale: 0.988 }}
+      className="group block w-full rounded-2xl relative overflow-hidden cursor-pointer"
+      style={{
+        background: '#5865F2',
+        boxShadow: '0 0 0 1px rgba(88,101,242,0.4), 0 8px 32px rgba(88,101,242,0.35), 0 0 60px rgba(88,101,242,0.15)',
+      }}
+    >
+      {/* Subtle inner highlight */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 50%)' }} />
+      {/* Neon glow pulse */}
+      <div className="absolute inset-0 pointer-events-none rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{ boxShadow: 'inset 0 0 40px rgba(88,101,242,0.3)' }} />
+      {/* Top shimmer line */}
+      <div className="absolute top-0 left-[10%] right-[10%] h-px"
+        style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)' }} />
+
+      <div className="relative flex items-center justify-center gap-4 px-6 py-5">
+        {/* Discord icon */}
+        <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+          style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.25)' }}>
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white" aria-hidden>
+            <path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.369-.444.85-.608 1.23a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.23A.077.077 0 0 0 8.562 3c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026c.462-.62.874-1.275 1.226-1.963.021-.04.001-.088-.041-.104a13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028zM8.02 15.278c-1.182 0-2.157-1.069-2.157-2.38 0-1.312.956-2.38 2.157-2.38 1.21 0 2.176 1.077 2.157 2.38 0 1.312-.956 2.38-2.157 2.38zm7.975 0c-1.183 0-2.157-1.069-2.157-2.38 0-1.312.955-2.38 2.157-2.38 1.21 0 2.176 1.077 2.157 2.38 0 1.312-.946 2.38-2.157 2.38z" />
+          </svg>
+        </div>
+
+        <div className="text-center flex-1">
+          <p className="text-white font-black text-lg sm:text-xl tracking-tight leading-tight">
+            ⚡ JOIN THE COURT IQ DISCORD SQUAD
+          </p>
+          <p className="text-white/60 text-xs mt-1 font-medium">Patch alerts · build drops · meta discussions · giveaways</p>
+        </div>
+
+        <ExternalLink className="w-5 h-5 text-white/50 flex-shrink-0 group-hover:text-white/80 transition-colors" />
+      </div>
+    </motion.a>
+  )
+}
+
 function getGreeting() {
   const h = new Date().getHours()
   if (h < 12) return 'Good morning'
@@ -211,6 +336,12 @@ export default function DashboardPage() {
               </>
             )}
           </div>
+        </div>
+
+        {/* ── Patch notes + Discord ── */}
+        <div className="px-6 lg:px-8 pb-6 space-y-3">
+          <PatchBanner />
+          <DiscordCTA />
         </div>
 
         {/* ── Main grid ── */}
