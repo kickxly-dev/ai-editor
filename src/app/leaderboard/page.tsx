@@ -43,6 +43,7 @@ const RANK_STYLES = [
 ]
 
 const POSITIONS = ['All', 'PG', 'SG', 'SF', 'PF', 'C']
+const TIERS = ['All', 'S', 'A', 'B', 'C', 'D']
 const SORTS = [
   { value: 'likes',   label: 'Most Liked' },
   { value: 'views',   label: 'Most Viewed' },
@@ -54,17 +55,19 @@ export default function LeaderboardPage() {
   const [builds, setBuilds] = useState<LeaderBuild[]>([])
   const [loading, setLoading] = useState(true)
   const [position, setPosition] = useState('All')
+  const [tier, setTier] = useState('All')
   const [sort, setSort] = useState('likes')
 
   useEffect(() => {
     setLoading(true)
     const params = new URLSearchParams({ limit: '50', sort })
     if (position !== 'All') params.set('position', position)
+    if (tier !== 'All') params.set('tier', tier)
     fetch(`/api/v1/builds?${params}`)
       .then(r => r.json())
       .then(d => setBuilds(d.data || []))
       .finally(() => setLoading(false))
-  }, [position, sort])
+  }, [position, tier, sort])
 
   return (
     <AppLayout>
@@ -97,6 +100,25 @@ export default function LeaderboardPage() {
                     : 'text-fg-muted hover:text-fg hover:bg-white/[0.04]'
                 )}
               >{p}</button>
+            ))}
+          </div>
+          <div className="h-4 w-px bg-border hidden sm:block" />
+          <div className="flex gap-1 flex-wrap">
+            {TIERS.map(t => (
+              <button key={t}
+                onClick={() => setTier(t)}
+                className={cn(
+                  'px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                  tier === t
+                    ? t === 'S' ? 'bg-amber-500/20 text-amber-300'
+                    : t === 'A' ? 'bg-emerald-500/20 text-emerald-300'
+                    : t === 'B' ? 'bg-sky-500/20 text-sky-300'
+                    : t === 'C' ? 'bg-orange-500/20 text-orange-300'
+                    : t === 'D' ? 'bg-zinc-500/20 text-zinc-300'
+                    : 'bg-white/08 text-fg'
+                    : 'text-fg-muted hover:text-fg hover:bg-white/[0.04]'
+                )}
+              >{t === 'All' ? 'All Tiers' : `${t}-Tier`}</button>
             ))}
           </div>
           <div className="h-4 w-px bg-border hidden sm:block" />

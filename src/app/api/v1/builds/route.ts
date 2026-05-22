@@ -21,24 +21,27 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50)
   const position = searchParams.get('position')
+  const tier = searchParams.get('tier')
   const sort = searchParams.get('sort') || 'likes'
 
   const client = await pool.connect()
   try {
     const sortCol = sort === 'views' ? 'views' : sort === 'created' ? 'created_at' : sort === 'rating' ? 'overall_rating' : 'likes'
-    const whereClause = position ? `AND position = $2` : ''
-    const params: (string | number)[] = position
-      ? [limit, position]
-      : [limit]
+    const conditions: string[] = ['is_public = true']
+    const params: (string | number)[] = []
+    if (position) { params.push(position); conditions.push(`position = $${params.length}`) }
+    if (tier) { params.push(tier.toUpperCase()); conditions.push(`meta_viability = $${params.length}`) }
+    params.push(limit)
+    const whereClause = `WHERE ${conditions.join(' AND ')}`
 
     const { rows } = await client.query(
       `SELECT id, name, position, height, archetype, overall_rating,
-              likes, views, created_at,
+              meta_viability, likes, views, created_at,
               (SELECT username FROM users WHERE id::text = builds.user_id LIMIT 1) as author
        FROM builds
-       WHERE is_public = true ${whereClause}
+       ${whereClause}
        ORDER BY ${sortCol} DESC
-       LIMIT $1`,
+       LIMIT $${params.length}`,
       params
     )
 
@@ -50,6 +53,7 @@ export async function GET(req: NextRequest) {
         height: r.height,
         archetype: r.archetype,
         overall_rating: r.overall_rating,
+        meta_viability: r.meta_viability,
         likes: r.likes,
         views: r.views,
         author: r.author,
@@ -58,14 +62,14 @@ export async function GET(req: NextRequest) {
       meta: {
         count: rows.length,
         limit,
-        filters: { position: position || null, sort },
+        filters: { position: position || null, tier: tier || null, sort },
       },
     }, { headers: corsHeaders() })
   } catch (err) {
     const msg = String(err)
     if (msg.includes('relation') && msg.includes('does not exist')) {
       return NextResponse.json(
-        { data: [], meta: { count: 0, limit, filters: { position: position || null, sort } } },
+        { data: [], meta: { count: 0, limit, filters: { position: position || null, tier: tier || null, sort } } },
         { headers: corsHeaders() }
       )
     }
