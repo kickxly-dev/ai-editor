@@ -87,7 +87,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-2">
             {session?.user ? (
               <>
-                <Link href="/dashboard" className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/06 transition-colors">
+                <Link href="/profile" className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/06 transition-colors">
                   {session.user.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={session.user.image} alt="" className="w-6 h-6 rounded-full" />
@@ -157,12 +157,12 @@ export default function Navbar() {
               <div className="pt-3 border-t border-white/08">
                 {session?.user ? (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-3 px-4 py-2">
+                    <Link href="/profile" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/[0.04] transition-colors">
                       <div className="w-7 h-7 rounded-full bg-gradient-to-br from-rose-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold">
                         {(session.user.name || session.user.email || '?')[0].toUpperCase()}
                       </div>
                       <span className="text-sm text-white/70">{session.user.name || session.user.email}</span>
-                    </div>
+                    </Link>
                     <button
                       onClick={() => { setOpen(false); handleSignOut() }}
                       className="btn btn-secondary btn-sm w-full justify-center gap-1.5"
