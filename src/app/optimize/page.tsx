@@ -228,7 +228,7 @@ export default function OptimizePage() {
             <span className="text-rose-400 text-xs font-semibold tracking-widest uppercase">Build Optimizer</span>
           </div>
           <h1 className="display text-4xl text-fg mb-1">Describe Your Player</h1>
-          <p className="text-fg-muted text-sm">Tell the AI what kind of player you want to build. Get a complete, optimized 2K26 build instantly.</p>
+          <p className="text-fg-muted text-sm">Describe your playstyle in plain English. The AI builds the exact attributes, badges, and animations to match — no guesswork.</p>
         </motion.div>
 
         {/* Input Card */}
@@ -238,12 +238,32 @@ export default function OptimizePage() {
           className="card p-6 mb-6"
         >
           <textarea
-            className="input min-h-[112px] resize-none leading-relaxed mb-5"
+            className="input min-h-[112px] resize-none leading-relaxed mb-3"
             placeholder={`Describe your ideal player... e.g. "A 6'4" slashing guard that can lock up at the park, hit open threes, and break ankles with handles"`}
             value={description}
             onChange={e => setDescription(e.target.value)}
             rows={4}
           />
+
+          {/* Quick-start example prompts */}
+          {!description.trim() && (
+            <div className="mb-5">
+              <p className="text-[10px] text-fg-subtle uppercase tracking-wider font-semibold mb-2">Example prompts — click to use:</p>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  'Lockdown defender that can also score from mid',
+                  'Stretch big who can shoot threes and protect the rim',
+                  'High-IQ point guard with elite playmaking and handles',
+                  'Athletic slasher built for park and rec',
+                ].map(ex => (
+                  <button key={ex} onClick={() => setDescription(ex)}
+                    className="text-left text-[11px] text-white/40 hover:text-white/70 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.07] hover:border-white/[0.12] px-2.5 py-1.5 rounded-lg transition-all">
+                    {ex}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-3 mb-5">
             <PillGroup label="Position" options={POSITIONS_OPTS} value={position} onChange={setPosition} />

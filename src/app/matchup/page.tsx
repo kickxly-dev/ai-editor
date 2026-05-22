@@ -274,7 +274,7 @@ function TugRow({ row, b1Off, b2Def, b2Off, b1Def, net, b1Color, b2Color, aiEdge
             </div>
             <div className="flex justify-between mt-0.5">
               <span className="text-[9px] text-white/15 font-mono">{b1Off}</span>
-              <span className="text-[9px] text-white/20">{row.category}</span>
+              <span className="text-[9px] text-white/35 font-medium">{row.category}</span>
               <span className="text-[9px] text-white/15 font-mono">{b2Def}</span>
             </div>
           </div>
@@ -348,7 +348,10 @@ function TugOfWarGrid({ b1, b2, b1Name, b2Name, aiResult }: {
   return (
     <div className="card overflow-hidden">
       <div className="px-5 pt-4 pb-3 flex items-center justify-between border-b border-white/[0.05]">
-        <p className="text-[11px] font-bold text-white/30 uppercase tracking-widest">Attribute Matrix</p>
+        <div>
+          <p className="text-[11px] font-bold text-white/30 uppercase tracking-widest">Attribute Matrix</p>
+          <p className="text-[9px] text-white/20 mt-0.5">Tap any row to see the math</p>
+        </div>
         <div className="flex items-center gap-4 text-[11px]">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full" style={{ background: b1Color }} />
@@ -422,24 +425,28 @@ function Scoreboard({ b1, b2, b1Name, b2Name, aiResult }: {
           </div>
         </div>
 
+        {!aiResult && (
+          <p className="text-center text-[9px] text-white/20 mt-1.5 mb-0.5">Live math estimate — hit Simulate for full AI analysis</p>
+        )}
+
         {/* Auxiliary counters */}
         <div className="grid grid-cols-3 gap-3 pt-3 border-t border-white/[0.05]">
           <div className="text-center">
-            <p className="text-[10px] text-white/25 uppercase tracking-wider mb-0.5">Height Δ</p>
+            <p className="text-[10px] text-white/25 uppercase tracking-wider mb-0.5">Height Adv.</p>
             <span className="mono font-bold text-sm" style={{ color: heightDiff === 0 ? '#52525B' : heightDiff > 0 ? '#E11D48' : '#8B5CF6' }}>
-              {heightDiff === 0 ? 'Even' : `${Math.abs(heightDiff)}" ${heightDiff > 0 ? '→ B1' : '→ B2'}`}
+              {heightDiff === 0 ? 'Even' : `${Math.abs(heightDiff)}" – ${heightDiff > 0 ? (b1Name || 'Your Build') : (b2Name || 'Opponent')}`}
             </span>
           </div>
           <div className="text-center">
             <p className="text-[10px] text-white/25 uppercase tracking-wider mb-0.5">Verdict</p>
             <span className="text-[11px] font-semibold text-white/60">
-              {Math.abs(p1 - 50) < 5 ? 'Coin flip' : p1 > p2 ? (b1Name || 'B1') + ' edge' : (b2Name || 'B2') + ' edge'}
+              {Math.abs(p1 - 50) < 5 ? 'Coin flip' : p1 > p2 ? (b1Name || 'Your Build') + ' wins' : (b2Name || 'Opponent') + ' wins'}
             </span>
           </div>
           <div className="text-center">
-            <p className="text-[10px] text-white/25 uppercase tracking-wider mb-0.5">Badges Δ</p>
+            <p className="text-[10px] text-white/25 uppercase tracking-wider mb-0.5">Badge Edge</p>
             <span className="mono font-bold text-sm" style={{ color: b1Badges === b2Badges ? '#52525B' : b1Badges > b2Badges ? '#E11D48' : '#8B5CF6' }}>
-              {b1Badges === b2Badges ? 'Even' : `${Math.abs(b1Badges - b2Badges)} ${b1Badges > b2Badges ? '→ B1' : '→ B2'}`}
+              {b1Badges === b2Badges ? 'Even' : `${Math.abs(b1Badges - b2Badges)} – ${b1Badges > b2Badges ? (b1Name || 'Your Build') : (b2Name || 'Opponent')}`}
             </span>
           </div>
         </div>
@@ -473,7 +480,7 @@ function ScoutingCascade({ result, b1Name, b2Name }: {
               style={{ background: 'rgba(225,29,72,0.12)', border: '1px solid rgba(225,29,72,0.2)' }}>
               <Target className="w-3 h-3 text-rose-400" />
             </div>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-rose-400">Offensive Weaknesses to Exploit</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-rose-400">{b1Name ? `${b1Name}'s Attack Plan` : 'Attack Plan'}</p>
           </div>
           <motion.ul className="space-y-2.5" variants={stagger} initial="hidden" animate="visible">
             {result.build1_strategy.map((tip, i) => (
@@ -504,7 +511,7 @@ function ScoutingCascade({ result, b1Name, b2Name }: {
               style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.2)' }}>
               <Shield className="w-3 h-3 text-violet-400" />
             </div>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-violet-400">Defensive Adjustments to Make</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-violet-400">{b2Name ? `Stopping ${b2Name}` : 'Defensive Keys'}</p>
           </div>
           <motion.ul className="space-y-2.5" variants={stagger} initial="hidden" animate="visible">
             {result.build2_strategy.map((tip, i) => (
@@ -678,7 +685,7 @@ export default function MatchupPage() {
             <span className="text-rose-400 text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase">Matchup Lab</span>
           </div>
           <h1 className="display text-3xl sm:text-4xl text-white mb-1">1v1 Simulator</h1>
-          <p className="text-white/35 text-xs sm:text-sm">AI-powered matchup analysis with live attribute matrix.</p>
+          <p className="text-white/35 text-xs sm:text-sm">Compare two builds head-to-head. Get AI win probability, attribute breakdown, and coaching tips.</p>
         </motion.div>
 
         {/* Tab switcher — kinetic */}
@@ -702,6 +709,27 @@ export default function MatchupPage() {
               exit={{ x: tabDir * -48, opacity: 0 }} transition={SPRING_SOFT}
               className="space-y-3 sm:space-y-5">
 
+              {/* 3-step guide */}
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
+                className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap"
+              >
+                {[
+                  { n: '1', text: 'Fill in both builds' },
+                  { n: '2', text: 'Hit Simulate' },
+                  { n: '3', text: 'Read the AI breakdown' },
+                ].map(({ n, text }, i) => (
+                  <div key={n} className="flex items-center gap-1.5 sm:gap-2">
+                    {i > 0 && <span className="text-white/10 text-xs">→</span>}
+                    <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black flex-shrink-0"
+                      style={{ background: 'rgba(225,29,72,0.15)', border: '1px solid rgba(225,29,72,0.2)', color: '#FB7185' }}>
+                      {n}
+                    </span>
+                    <span className="text-[10px] text-white/30">{text}</span>
+                  </div>
+                ))}
+              </motion.div>
+
               {/* Rolling scoreboard */}
               <Scoreboard b1={build1} b2={build2} b1Name={build1.name} b2Name={build2.name} aiResult={matchupResult} />
 
@@ -715,7 +743,7 @@ export default function MatchupPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ ...SPRING_SNAP, delay: 0.06 }}>
                   <BuildCard form={build1} onChange={u => setBuild1(p => ({ ...p, ...u }))}
-                    label="Build 1" color="#E11D48" onSliderTouch={() => triggerRipple('left')} />
+                    label="Your Build" color="#E11D48" onSliderTouch={() => triggerRipple('left')} />
                 </motion.div>
 
                 {/* VS + ripple divider — always visible */}
@@ -754,7 +782,7 @@ export default function MatchupPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ ...SPRING_SNAP, delay: 0.08 }}>
                   <BuildCard form={build2} onChange={u => setBuild2(p => ({ ...p, ...u }))}
-                    label="Build 2" color="#8B5CF6" onSliderTouch={() => triggerRipple('right')} />
+                    label="Opponent" color="#8B5CF6" onSliderTouch={() => triggerRipple('right')} />
                 </motion.div>
               </div>
 

@@ -210,8 +210,8 @@ export default function AnalyzePage() {
                 ) : (
                   <>
                     <Upload className="w-10 h-10 text-fg-subtle mb-3" />
-                    <p className="text-fg font-medium mb-1">Drop your build screenshot</p>
-                    <p className="text-fg-subtle text-sm mb-4">PNG, JPG up to 10MB</p>
+                    <p className="text-fg font-medium mb-1">Drop your MyPlayer screenshot here</p>
+                    <p className="text-fg-subtle text-sm mb-4">PNG, JPG, WebP up to 10MB · or click to browse</p>
                     <div className="text-left bg-white/[0.03] border border-white/[0.06] rounded-lg p-3 max-w-sm">
                       <p className="text-xs font-semibold text-fg-muted mb-2 uppercase tracking-wider">Best screenshots</p>
                       <ul className="space-y-1">
@@ -308,6 +308,7 @@ export default function AnalyzePage() {
                     </select>
                     <button onClick={addBadge} className="btn btn-secondary btn-icon flex-shrink-0"><Plus className="w-4 h-4" /></button>
                   </div>
+                  <p className="text-[10px] text-fg-subtle mb-2">Type a badge name and press Enter or click + to add it</p>
                   {badges.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                       {badges.map((b, i) => (

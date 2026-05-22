@@ -73,7 +73,7 @@ type CoachMessageWithSearch = CoachMessage & { searched?: string }
 export default function CoachPage() {
   const [msgs, setMsgs] = useState<CoachMessageWithSearch[]>([{
     id: '0', role: 'assistant', timestamp: new Date().toISOString(),
-    content: "What's good! I'm your CourtIQ AI coach powered by Groq + live web search. Ask me anything — builds, badges, meta, animations, or how to improve your game. Let's get to work. 🏀",
+    content: "What's good! Ask me anything about NBA 2K26 — builds, badges, jumpshots, meta picks, or how to improve your game. I search the web in real-time so my answers are always current.",
   }])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -136,7 +136,7 @@ export default function CoachPage() {
               <p className="text-fg font-semibold">AI Coach</p>
               <div className="flex items-center gap-1.5">
                 <span className="status-online" />
-                <span className="text-fg-subtle text-xs">Groq — Online</span>
+                <span className="text-fg-subtle text-xs">AI + Live Search — Ready</span>
               </div>
             </div>
           </div>
@@ -166,13 +166,16 @@ export default function CoachPage() {
           <AnimatePresence>
             {showStarters && msgs.length <= 1 && !loading && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                className="mt-2">
+                <p className="text-xs font-semibold text-fg-muted uppercase tracking-wider mb-2">Try asking:</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {STARTERS.map(q => (
                   <button key={q} onClick={() => send(q)}
                     className="text-left text-xs text-fg-muted hover:text-fg bg-surface hover:bg-card border border-border hover:border-rose-500/20 px-4 py-3 rounded-xl transition-all text-left">
                     {q}
                   </button>
                 ))}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -195,7 +198,7 @@ export default function CoachPage() {
               <Send className="w-4 h-4" />
             </button>
           </div>
-          <p className="text-fg-subtle text-xs mt-2">Enter to send · Shift+Enter for new line · Powered by Groq</p>
+          <p className="text-fg-subtle text-xs mt-2">Enter to send · Shift+Enter for new line · Searches the web for current info</p>
         </div>
       </div>
     </div>
