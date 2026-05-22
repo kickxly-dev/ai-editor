@@ -1,0 +1,8 @@
+{
+  "buttonResponseMs": 460,
+  "flashDurationMs": 80,
+  "frequencyBandLow": 1800,
+  "frequencyBandHigh": 8000,
+  "spikeThreshold": 14,
+  "cooldownMs": 280
+}
