@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 
   const client = await pool.connect()
   try {
-    const sortCol = sort === 'views' ? 'views' : sort === 'created' ? 'created_at' : 'likes'
+    const sortCol = sort === 'views' ? 'views' : sort === 'created' ? 'created_at' : sort === 'rating' ? 'overall_rating' : 'likes'
     const whereClause = position ? `AND position = $2` : ''
     const params: (string | number)[] = position
       ? [limit, position]
