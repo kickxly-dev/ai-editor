@@ -38,68 +38,85 @@ Bigs 6'10"–7'4":
   Prioritize bigger green windows over speed
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ALL 2K26 BADGES (40 total, 5 levels each up to Legend)
+ALL NBA 2K26 SEASON 5 BADGES (verified from TierMaker — real badges only)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-FINISHING (10):
-  Acrobat — boosts off-balance/leaning layups
-  Aerial Wizard — alley-oops and put-back finishes
-  Contact Finisher — contact layups and dunks through traffic
-  Giant Slayer — layups over taller defenders
-  Posterizer — dunk over/through defenders; expands dunk green window at Legend
-  Pro Touch — extra boost for timed finishes
-  Rise Up — standing dunks and posterizing in the paint
-  Slithery — avoid contact when driving, snake through gaps
-  Tear Dropper — floaters and runners
-  Post-Up Poet — post moves, faking, and scoring from the block
 
-SHOOTING (11):
-  Catch & Shoot — spot-up shooting after receiving a pass
-  Clutch Shooter — late-game and clutch-time shot boost
-  Corner Specialist — shooting from corners
-  Deadeye — reduces contest penalty on jumpers (S-tier must-have)
-  Green Machine — bonus after consecutive greens
-  Guard Up — pull-up jumpers over defenders
-  Hot Zone Hunter — shooting from your hot zones
-  Limitless Range — extends 3PT range beyond the arc (S-tier, best shooting badge)
-  Set Shot Specialist — standstill/catch-and-shoot jumpers
-  Shifty Shooter — off-the-dribble difficult shots, fading, pull-ups (S-tier for guards)
-  Volume Shooter — shooting boost later in games
+FINISHING BADGES:
+  Aerial Wizard (B-tier) — alley-oops and put-back finishes
+  Float Game (B-tier) — floaters and runners; essential for guards attacking the paint
+  High-Flying Denier (A-tier) — explosive dunk attempts over/around defenders in the paint
+  Hook Specialist (C-tier) — hook shots from the post
+  Layup Mixmaster (B-tier) — varied layup packages; off-balance and leaning finishes
+  Lightning Launch (S-tier) — explosive first step out of triple threat and off dribble; top finishing badge
+  Paint Prodigy (D-tier) — paint finishing; weakest tier
+  Physical Finisher (C-tier) — contact layups and dunks through physical defenders
+  Post Fade Phenom (B-tier) — post fade-away shots
+  Post Powerhouse (B-tier) — power post moves and drop steps
+  Post Prodigy (C-tier) — general post game effectiveness
+  Post Up Poet (B-tier) — post up scoring and faking from the block
+  Posterizer (A-tier) — dunk over/through defenders; expands dunk green window at Legend
+  Rise Up (A-tier) — standing dunks and posterizing attempts in the paint
+  Slippery Off-Ball (C-tier) — off-ball movement and getting open cuts
 
-PLAYMAKING (10):
-  Bail Out — passing out of the air / skip passes
-  Break Starter — outlet passes in transition
-  Bullet Passer — faster and harder passes
-  Dimer — passing boosts to open shooters
-  Floor General — attribute boost to teammates
-  Handles For Days — reduces stamina drain on dribble moves
-  Hyperdrive — speed boost after dribble combos
-  Killer Combos — tighter crossovers and dribble moves
-  Quick Chain — faster dribble move chains (A-tier for guards)
-  Unpluckable — reduces steal success by defenders (S-tier ballhandlers)
+SHOOTING BADGES:
+  Deadeye (S-tier) — reduces shot contest penalty; MUST-HAVE for all shooters
+  Limitless Range (A-tier) — extends 3PT range beyond the arc; essential for shooting builds
+  Mini Marksman (A-tier) — shooting boost for shorter/smaller builds; A-tier for undersized guards
+  Set Shot Specialist (S-tier) — standstill/catch-and-shoot jumpers; S-tier for spot-up shooters
+  Shifty Shooter (S-tier) — off-the-dribble difficult shots, fading, pull-ups; S-tier for guards
 
-DEFENSE / REBOUNDING (9):
-  Anchor — interior defense boost, affects block animation quality
-  Box — boxing out and securing defensive boards
-  Chase Down Artist — blocks from behind on fast breaks
-  Clamps — on-ball perimeter defense, foot speed, cut-off ability (S-tier lock)
-  Interceptor — pass deflections and interceptions
-  Intimidator — shot contests and inside presence
-  Menace — reduces opponent attribute ratings on defense
-  Pogo Stick — quick second jump for blocks and rebounds
-  Rebound Chaser — tracking and chasing down rebounds
+PLAYMAKING BADGES:
+  Ankle Assassin (B-tier) — ankle-breaking dribble moves; good for combo guards
+  Bail Out (B-tier) — passing out of the air / skip passes
+  Break Starter (A-tier) — outlet passes in transition; A-tier for PGs
+  Dimer (S-tier) — passing boosts to open shooters; S-tier for pass-first PGs
+  Handles for Days (A-tier) — reduces stamina drain on dribble moves; must-have for handles builds
+  Pick Dodger (A-tier) — navigating through screens on offense
+  Strong Handle (A-tier) — tight ball control under defensive pressure; replaces old ball-handling badge
+  Unpluckable (B-tier) — reduces steal success against you when dribbling
+  Versatile Visionary (A-tier) — playmaking vision; boosts passing in multiple situations
+
+DEFENSE / REBOUNDING BADGES:
+  Boxout Beast (A-tier) — boxing out opponents on rebounds
+  Brick Wall (A-tier) — setting physical screens; harder to move through on defense
+  Challenger (S-tier) — improved shot contest quality and timing; S-tier for perimeter defenders
+  Glove (B-tier) — stealing the ball from ball-handlers
+  Immovable Enforcer (A-tier) — interior defense; hard to back down or move in the post
+  Interceptor (S-tier) — pass deflections and interceptions in passing lanes; S-tier for locks
+  Off-Ball Pest (A-tier) — bothering off-ball offensive players and denying passes
+  On-Ball Menace (A-tier) — on-ball defensive pressure; reduces opponent attributes
+  Paint Patroller (A-tier) — protecting the paint; shot contests inside
+  Pogo Stick (S-tier) — quick successive jumps for blocks and rebounds; top big-man badge
+  Post Lockdown (B-tier) — defending in the post against post scorers
+  Rebound Chaser (S-tier) — tracking and chasing down missed shots; S-tier for rebounders
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SEASON 5 BADGE TIER LIST (from verified TierMaker)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+S-tier: Set Shot Specialist, Deadeye, Pogo Stick, Lightning Launch, Dimer, Shifty Shooter, Rebound Chaser, Interceptor, Challenger
+A-tier: Strong Handle, Immovable Enforcer, Versatile Visionary, Boxout Beast, Break Starter, Mini Marksman, On-Ball Menace, Posterizer, Limitless Range, High-Flying Denier, Rise Up, Paint Patroller, Handles for Days, Brick Wall, Pick Dodger, Off-Ball Pest
+B-tier: Bail Out, Ankle Assassin, Float Game, Unpluckable, Layup Mixmaster, Post Lockdown, Glove, Aerial Wizard, Post Fade Phenom, Post Powerhouse, Post Up Poet
+C-tier: Physical Finisher, Slippery Off-Ball, Post Prodigy, Hook Specialist
+D-tier: Paint Prodigy
+
+IMPORTANT: These are the ONLY real Season 5 badges. Do NOT invent or use any other badge names.
+Do NOT recommend: Clamps, Quick Chain, Hyperdrive, Killer Combos, Acrobat, Contact Finisher, Green Machine, Guard Up, Hot Zone Hunter, Anchor, Box, Chase Down Artist, Intimidator, Menace, Floor General, Catch & Shoot, Corner Specialist, Volume Shooter, Giant Slayer, Slithery, Tear Dropper, Bullet Passer, or any other badge not in the verified list above.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CURRENT META (Season 5, May 2026)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-BEST BADGES BY TIER:
-  S-tier: Limitless Range, Deadeye, Shifty Shooter, Clamps, Posterizer, Unpluckable
-  A-tier: Catch & Shoot, Contact Finisher, Intimidator, Quick Chain, Menace, Interceptor, Set Shot Specialist
-  B-tier: Acrobat, Corner Specialist, Guard Up, Dimer, Handles For Days, Box
+BEST BADGES BY POSITION:
+  PG (scoring): Shifty Shooter, Deadeye, Dimer, Lightning Launch, Handles for Days, Strong Handle
+  PG (pass-first): Dimer, Set Shot Specialist, Break Starter, Versatile Visionary, Handles for Days
+  SG: Deadeye, Set Shot Specialist, Limitless Range, Shifty Shooter, Ankle Assassin
+  SF: Deadeye, Posterizer, Limitless Range, On-Ball Menace, Challenger
+  PF: Posterizer, Rise Up, Rebound Chaser, Pogo Stick, Immovable Enforcer
+  C: Pogo Stick, Rebound Chaser, Paint Patroller, Immovable Enforcer, Boxout Beast, Interceptor
 
 BEST BUILDS BY POSITION:
   PG 6'2"–6'4": Shot Creator Guard — 90+ ball_handle, 85+ three_point, strong speed_with_ball
   SG 6'5"–6'6": Two-Way Shooting Guard — 90+ three_point, 75+ perimeter_defense, athletic
-  SF 6'7"–6'9": Versatile Two-Way Wing — blend of three_point + driving_dunk + perimeter_defense
+  SF 6'7"–6'9": Versatile Two-Way Wing — blend of three_point + driving_dunk + defense
   PF 6'10"–6'11": Mid-Post Point Forward — three_point + driving_dunk + interior_defense
   C  7'0"–7'3": Playmaking Cleaner Center — deep shooting, standing_dunk, strong rebounding + block
 
@@ -122,9 +139,10 @@ TAKEOVERS:
   Slasher — B-tier; good for dunk builds but less versatile
   Lockdown Defender — B-tier; situational
 
-META NOTE: Season 5 heavily rewards versatile builds. Pure specialists (rebounding-only bigs,
-pure lockdowns) underperform compared to two-way builds. The meta favors builds with 90+
-agility and 85+ three-point. A 6'4" PG absolutely should NOT focus on rebounding.
+META NOTE: Season 5 heavily rewards versatile builds. Pure specialists underperform compared
+to two-way builds. The meta favors builds with 90+ agility and 85+ three-point.
+Lightning Launch is the sleeper S-tier badge — get it on any scoring build.
+Challenger + Interceptor is the elite defensive combo for perimeter locks.
 `
 
 const BUILD_ANALYSIS_SYSTEM = `You are CourtIQ's elite NBA 2K26 AI analyst. NBA 2K26 was released September 2025.
@@ -162,8 +180,8 @@ HARD BLOCKS — never say these:
 ❌ Tell a PG they need more rebounding
 ❌ Tell a guard 6'4" or shorter to use standing dunk
 ❌ Recommend Base 98, Base 8, or ANY jumpshot from 2K24/2K25
-❌ Mention badges that don't exist in 2K26 (e.g. Quick First Step, Space Creator, Sniper, Brick Wall)
-❌ Recommend five badge levels — 2K26 has FIVE levels: Bronze, Silver, Gold, Hall of Fame, LEGEND
+❌ Mention badges NOT in the Season 5 verified list (no Clamps, Quick Chain, Acrobat, Contact Finisher, Intimidator, Menace, Anchor, etc.)
+❌ Wrong badge level count — 2K26 has FIVE levels: Bronze, Silver, Gold, Hall of Fame, LEGEND
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 2K SLANG → ATTRIBUTE MAP

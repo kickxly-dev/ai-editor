@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Zap, Brain, TrendingUp, Users, BookOpen, LayoutDashboard,
   Wand2, Swords, Users2, Search, MessageSquare, LogOut,
-  ChevronLeft, ChevronRight, Shield
+  ChevronLeft, ChevronRight, Shield, Calculator, Flame
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CourtIQLogo } from '@/components/ui/Logo'
@@ -23,6 +23,8 @@ const links = [
   { href: '/squad',     label: 'Squad',     icon: Users2 },
   { href: '/find',      label: 'Find',      icon: Search },
   { href: '/messages',  label: 'Messages',  icon: MessageSquare },
+  { href: '/vc-calc',   label: 'VC Calc',   icon: Calculator },
+  { href: '/roast',     label: 'Roast',     icon: Flame },
 ]
 
 interface Props {
