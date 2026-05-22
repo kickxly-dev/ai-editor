@@ -19,7 +19,7 @@ export async function GET() {
       ).catch(() => ({ rows: [] })),
 
       client.query(
-        `SELECT name, position, likes, views, created_at
+        `SELECT id, name, position, likes, views, created_at
          FROM builds WHERE is_public = true
          ORDER BY likes DESC LIMIT 6`
       ).catch(() => ({ rows: [] })),

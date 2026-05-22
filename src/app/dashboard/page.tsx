@@ -21,7 +21,7 @@ type DashboardData = {
     daysActive: number
     joinedAt: string
   }
-  communityBuilds: { name: string; position: string; likes: number; views: number }[]
+  communityBuilds: { id: number; name: string; position: string; likes: number; views: number }[]
   metaTrends: { name: string; category: string; tier: string; usage_rate: number; trend: string; description: string }[]
 }
 
@@ -236,23 +236,23 @@ export default function DashboardPage() {
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card p-5">
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.15em]">Top Community Builds</p>
-                    <Link href="/builds" className="text-[11px] font-semibold text-rose-400/70 hover:text-rose-400 flex items-center gap-1">
+                    <Link href="/leaderboard" className="text-[11px] font-semibold text-rose-400/70 hover:text-rose-400 flex items-center gap-1">
                       View all <ArrowUpRight className="w-3 h-3" />
                     </Link>
                   </div>
                   <div className="space-y-2">
                     {data.communityBuilds.map((b, i) => (
-                      <div key={i} className="flex items-center gap-3 py-2 border-b last:border-0" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+                      <Link key={i} href={`/builds/${b.id}`} className="flex items-center gap-3 py-2 border-b last:border-0 hover:bg-white/[0.02] -mx-1 px-1 rounded transition-colors group" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
                         <div className="w-8 h-8 rounded-lg bg-white/04 border border-white/08 flex items-center justify-center text-[10px] font-bold text-white/40 flex-shrink-0">
                           {(b.position || 'PG').slice(0, 2)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-white/80 truncate">{b.name || 'Untitled Build'}</p>
+                          <p className="text-sm font-semibold text-white/80 truncate group-hover:text-white/90 transition-colors">{b.name || 'Untitled Build'}</p>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-white/30 flex-shrink-0">
                           <span className="flex items-center gap-1"><Flame className="w-3 h-3 text-rose-500/50" />{b.likes ?? 0}</span>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </motion.div>
