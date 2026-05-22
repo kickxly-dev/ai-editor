@@ -15,19 +15,21 @@ const ENDPOINTS = [
     params: [
       { name: 'limit', type: 'number', default: '20', max: '50', desc: 'Number of results' },
       { name: 'position', type: 'string', default: 'null', desc: 'Filter by position: PG, SG, SF, PF, C' },
-      { name: 'sort', type: 'string', default: 'likes', desc: 'Sort by: likes | views | created' },
+      { name: 'tier', type: 'string', default: 'null', desc: 'Filter by meta tier: S | A | B | C | D' },
+      { name: 'sort', type: 'string', default: 'likes', desc: 'Sort by: likes | views | created | rating' },
     ],
     example: `// Fetch top 10 PG builds
 const res = await fetch('${BASE_URL}/builds?limit=10&position=PG')
 const { data, meta } = await res.json()`,
     response: `{
   "data": [{
-    "id": "uuid",
+    "id": 42,
     "name": "Park God",
     "position": "PG",
     "height": "6'4\\"",
     "archetype": "Shot Creator",
     "overall_rating": 87,
+    "meta_viability": "S",
     "likes": 142,
     "views": 3420,
     "author": "kickxly",
