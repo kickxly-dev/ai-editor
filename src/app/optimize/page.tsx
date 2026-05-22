@@ -98,6 +98,7 @@ export default function OptimizePage() {
   const [build, setBuild] = useState<OptimizedBuild | null>(null)
   const [expandedGroups, setExpandedGroups] = useState(['Finishing', 'Shooting'])
   const [copied, setCopied] = useState(false)
+  const [capBreakers, setCapBreakers] = useState(0)
   const [saving, setSaving] = useState(false)
   const [savedId, setSavedId] = useState<number | null>(null)
   const { data: session } = useSession()
@@ -156,7 +157,7 @@ export default function OptimizePage() {
       const res = await fetch('/api/optimize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description, position, heightRange, gameMode }),
+        body: JSON.stringify({ description, position, heightRange, gameMode, capBreakers }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to generate build')
@@ -269,6 +270,21 @@ export default function OptimizePage() {
             <PillGroup label="Position" options={POSITIONS_OPTS} value={position} onChange={setPosition} />
             <PillGroup label="Height" options={HEIGHT_RANGES} value={heightRange} onChange={setHeightRange} />
             <PillGroup label="Mode" options={GAME_MODES} value={gameMode} onChange={setGameMode} />
+            <div>
+              <p className="text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-2">
+                Cap Breakers
+                <span className="ml-2 normal-case font-normal text-white/20">(0 if none)</span>
+              </p>
+              <div className="flex items-center gap-3">
+                <input type="range" min={0} max={20} value={capBreakers}
+                  onChange={e => setCapBreakers(+e.target.value)}
+                  style={{ accentColor: '#F59E0B' }} className="flex-1" />
+                <span className="mono text-sm font-bold text-amber-400 w-6 text-right">{capBreakers}</span>
+              </div>
+              {capBreakers > 0 && (
+                <p className="text-[10px] text-amber-400/60 mt-1">Build will use {capBreakers} cap breaker{capBreakers !== 1 ? 's' : ''} on primary attributes</p>
+              )}
+            </div>
           </div>
 
           <button
@@ -279,7 +295,7 @@ export default function OptimizePage() {
             {loading ? (
               <>
                 <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                Generating with Groq AI...
+                Generating build...
               </>
             ) : (
               <>

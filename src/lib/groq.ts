@@ -129,6 +129,39 @@ ATTRIBUTE PRIORITIES:
 
 TAKEOVERS: Limitless Shooter (S), Rim Protector (A), Playmaker (A), Slasher (B), Lockdown Defender (B)
 META: agility 85+ important for blow-by potential in Park/Rec · guards 6'4" and under: standing_dunk near-useless
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CAP BREAKERS (2K26 Season 7)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Cap Breakers allow you to push one or more attributes beyond the natural build cap (the maximum your build can reach without them).
+Each Cap Breaker gives +1 to the maximum cap of a specific attribute — you choose which attributes to break.
+Cap Breakers are earned through gameplay, Season rewards, and challenges. Typical builds have 5–10 available.
+
+PRIORITY ORDER FOR CAP BREAKERS (break your primary attributes first):
+  Guards/PG: Ball Handle first → Three Point → Speed with Ball → Agility
+  Shooting Guards: Three Point first → Ball Handle → Perimeter Defense
+  Wings/SF: Three Point OR Driving Dunk first → Perimeter Defense → Ball Handle
+  Power Forwards: Driving Dunk first → Three Point → Interior Defense
+  Centers: Interior Defense first → Driving Dunk/Standing Dunk → Block → Strength
+
+KEY CAP BREAKER THRESHOLDS TO KNOW:
+  Ball Handle 91 = unlocks HOF Quick First Step (most impactful guard CB target)
+  Ball Handle 93 = unlocks Handles for Days HOF
+  Ball Handle 98 = unlocks Legend Handles for Days
+  Three Point 92 = unlocks HOF Limitless Range
+  Three Point 95 = unlocks HOF Deadeye / Set Shot Specialist
+  Driving Dunk 92 = unlocks HOF Posterizer
+  Perimeter Defense 86 = unlocks HOF Challenger
+  Block 90 = unlocks HOF Pogo Stick
+  Steal 85 = unlocks HOF Interceptor
+  Pass Accuracy 90 = unlocks HOF Dimer
+
+WHEN BUILDING WITH CAP BREAKERS:
+  Always show how many CBs are being used and on which attribute
+  Prioritize CBs on attributes that cross critical badge thresholds
+  If a player has 5 CBs, use 3 on primary attribute + 2 on secondary
+  If a player has 10 CBs, distribute across 2-3 attributes to hit multiple badge thresholds
+  Always explain: "X cap breakers on [attribute] pushes it from [natural cap] to [broken cap], unlocking [badge] at [level]"
 `
 
 // ─── Assembles the full knowledge prompt from config + static data ─────────────
@@ -261,7 +294,8 @@ export async function analyzeBuildText(
   height: string,
   wingspan: string,
   takeover: string,
-  buildName: string
+  buildName: string,
+  capBreakers?: number
 ): Promise<AIAnalysis> {
   const attributesList = Object.entries(attributes)
     .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`)
@@ -270,6 +304,11 @@ export async function analyzeBuildText(
   const badgesList = badges.length
     ? badges.map((b) => `${b.name} (${b.level}) - ${b.category}`).join('\n')
     : 'None specified'
+
+  const capBreakerSection = capBreakers && capBreakers > 0
+    ? `\nCAP BREAKERS AVAILABLE: ${capBreakers}
+Factor these cap breakers into your upgrade_recommendations. Identify which attributes to break and why (e.g. which badge thresholds become unlockable). Show the path from current value → broken cap → badge unlocked.`
+    : ''
 
   const prompt = `Analyze this NBA 2K26 build and return a JSON object.
 
@@ -281,6 +320,7 @@ ${attributesList}
 
 BADGES:
 ${badgesList}
+${capBreakerSection}
 
 Return ONLY this JSON structure (no markdown, no explanation):
 {
@@ -292,7 +332,7 @@ Return ONLY this JSON structure (no markdown, no explanation):
   "playstyle_summary": "2-3 sentence playstyle description referencing specific attributes",
   "offensive_role": "specific offensive role description",
   "defensive_role": "specific defensive role description",
-  "upgrade_recommendations": ["specific upgrade with reason", "upgrade 2", "upgrade 3"],
+  "upgrade_recommendations": ["specific upgrade with reason and cap breaker usage if applicable", "upgrade 2", "upgrade 3"],
   "badge_recommendations": ["Badge Name (HOF) - reason", "badge 2", "badge 3", "badge 4"],
   "animation_recommendations": ["animation type: specific recommendation", "animation 2"],
   "takeover_recommendation": "takeover name and why it fits",
@@ -409,12 +449,14 @@ export async function optimizeBuild(
   description: string,
   position?: string,
   heightRange?: string,
-  gameMode?: string
+  gameMode?: string,
+  capBreakers?: number
 ): Promise<OptimizedBuild> {
   const filters = [
     position && position !== 'All' ? `Position: ${position}` : null,
     heightRange && heightRange !== 'Any' ? `Height Range: ${heightRange}` : null,
     gameMode && gameMode !== 'Any' ? `Game Mode: ${gameMode}` : null,
+    capBreakers && capBreakers > 0 ? `Cap Breakers Available: ${capBreakers} — use them on primary attributes to cross key badge thresholds, show which attributes get broken and what badges unlock` : null,
   ].filter(Boolean).join('\n')
 
   const prompt = `Generate a complete optimized NBA 2K26 Season ${CURRENT_META.season} build from this player description:

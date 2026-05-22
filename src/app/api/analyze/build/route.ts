@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       const attributes = (extractedData.attributes as Partial<BuildAttributes>) || {}
       const badges = (extractedData.badges as Badge[]) || []
 
-      // Always run text analysis — if attributes empty, Groq will infer from position
+      const capBreakers = Number(formData.get('capBreakers') || 0)
       const analysis = await analyzeBuildText(
         attributes,
         badges,
@@ -55,7 +55,8 @@ export async function POST(req: NextRequest) {
         height,
         wingspan,
         takeover,
-        buildName
+        buildName,
+        capBreakers
       )
 
       return NextResponse.json({
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
 
     // Manual JSON entry
     const body = await req.json()
-    const { attributes, badges, position, height, wingspan, takeover, buildName } = body
+    const { attributes, badges, position, height, wingspan, takeover, buildName, capBreakers } = body
 
     if (!position || !attributes) {
       return NextResponse.json(
@@ -83,7 +84,8 @@ export async function POST(req: NextRequest) {
       height || "6'4\"",
       wingspan || 'Normal',
       takeover || 'None',
-      buildName || 'My Build'
+      buildName || 'My Build',
+      Number(capBreakers || 0)
     )
 
     return NextResponse.json({ success: true, analysis })

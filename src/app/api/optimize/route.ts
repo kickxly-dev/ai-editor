@@ -11,13 +11,13 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { description, position, heightRange, gameMode } = body
+    const { description, position, heightRange, gameMode, capBreakers } = body
 
     if (!description || typeof description !== 'string' || !description.trim()) {
       return NextResponse.json({ error: 'A build description is required.' }, { status: 400 })
     }
 
-    const build = await optimizeBuild(description.trim(), position, heightRange, gameMode)
+    const build = await optimizeBuild(description.trim(), position, heightRange, gameMode, Number(capBreakers || 0))
 
     return NextResponse.json({ success: true, build })
   } catch (err) {

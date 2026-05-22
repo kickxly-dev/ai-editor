@@ -80,6 +80,7 @@ export default function AnalyzePage() {
   const [loading, setLoading] = useState(false)
   const [analysis, setAnalysis] = useState<AIAnalysis | null>(null)
   const [expanded, setExpanded] = useState(['Finishing'])
+  const [capBreakers, setCapBreakers] = useState(0)
   const [saving, setSaving] = useState(false)
   const [savedId, setSavedId] = useState<number | null>(null)
   const [isPublic, setIsPublic] = useState(false)
@@ -117,7 +118,7 @@ export default function AnalyzePage() {
         const r = await fetch('/api/analyze/build', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ attributes: attrs, badges, position, height, wingspan, takeover, buildName }),
+          body: JSON.stringify({ attributes: attrs, badges, position, height, wingspan, takeover, buildName, capBreakers }),
         })
         const d = await r.json()
         if (!r.ok) throw new Error(d.error)
@@ -248,6 +249,21 @@ export default function AnalyzePage() {
                     <select className="select col-span-2" value={category} onChange={e => setCategory(e.target.value)}>
                       {META_CATEGORIES.map(c => <option key={c}>{c}</option>)}
                     </select>
+                    <div className="col-span-2">
+                      <label className="block text-xs font-semibold text-fg-muted mb-1.5 uppercase tracking-wider">
+                        Cap Breakers Available
+                        <span className="ml-2 text-[10px] normal-case text-fg-subtle font-normal">(0 if none)</span>
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <input type="range" min={0} max={20} value={capBreakers}
+                          onChange={e => setCapBreakers(+e.target.value)}
+                          style={{ accentColor: '#F59E0B' }} className="flex-1" />
+                        <span className="mono text-sm font-bold text-amber-400 w-6 text-right">{capBreakers}</span>
+                      </div>
+                      {capBreakers > 0 && (
+                        <p className="text-[10px] text-amber-400/60 mt-1">AI will factor {capBreakers} cap breaker{capBreakers !== 1 ? 's' : ''} into upgrade recommendations</p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
