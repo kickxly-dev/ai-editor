@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   Heart, Eye, User, Calendar, ArrowLeft, Zap, Brain,
   TrendingUp, Shield, Target, CheckCircle2, AlertTriangle,
-  Loader2, Globe, Lock, Star,
+  Loader2, Globe, Lock, Star, Share2, Check,
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import { cn } from '@/lib/utils'
@@ -122,6 +122,7 @@ export default function BuildDetailPage({ params }: { params: Promise<{ id: stri
   const [liked, setLiked] = useState(false)
   const [liking, setLiking] = useState(false)
   const [localLikes, setLocalLikes] = useState(0)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     fetch(`/api/build/${id}`)
@@ -444,11 +445,18 @@ export default function BuildDetailPage({ params }: { params: Promise<{ id: stri
             {/* CTA */}
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
               className="flex gap-2">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href)
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 2000)
+                }}
+                className="btn btn-secondary gap-2 text-sm flex-1"
+              >
+                {copied ? <><Check className="w-3.5 h-3.5 text-emerald-400" /> Copied!</> : <><Share2 className="w-3.5 h-3.5" /> Share</>}
+              </button>
               <Link href="/analyze" className="btn btn-secondary flex-1 gap-2 text-sm">
                 <Zap className="w-3.5 h-3.5" /> Analyze Mine
-              </Link>
-              <Link href="/leaderboard" className="btn btn-secondary flex-1 gap-2 text-sm">
-                <Star className="w-3.5 h-3.5" /> Leaderboard
               </Link>
             </motion.div>
           </div>
