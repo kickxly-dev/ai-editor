@@ -217,10 +217,12 @@ CRITICAL RULES:
 - Include at least 6 builds, 12 badges, 5 animations, 3 takeovers
 - Do NOT duplicate badge names
 - ONLY use badges from this VERIFIED 2K26 Season 7 badge list — DO NOT invent or use any other badge name:
-  FINISHING: Aerial Wizard, Float Game, High-Flying Denier, Hook Specialist, Layup Mixmaster, Lightning Launch, Paint Prodigy, Physical Finisher, Post Fade Phenom, Post Powerhouse, Post Prodigy, Post Up Poet, Posterizer, Rise Up, Slippery Off-Ball
+  FINISHING: Aerial Wizard, Float Game, Hook Specialist, Layup Mixmaster, Paint Prodigy, Physical Finisher, Post Fade Phenom, Post Powerhouse, Post Up Poet, Posterizer, Rise Up
   SHOOTING: Deadeye, Limitless Range, Mini Marksman, Set Shot Specialist, Shifty Shooter
-  PLAYMAKING: Ankle Assassin, Bail Out, Break Starter, Dimer, Handles for Days, Pick Dodger, Strong Handle, Unpluckable, Versatile Visionary
-  DEFENSE: Boxout Beast, Brick Wall, Challenger, Glove, Immovable Enforcer, Interceptor, Off-Ball Pest, On-Ball Menace, Paint Patroller, Pogo Stick, Post Lockdown, Rebound Chaser
+  PLAYMAKING: Ankle Assassin, Bail Out, Break Starter, Dimer, Handles for Days, Lightning Launch, Strong Handle, Unpluckable, Versatile Visionary
+  DEFENSE: Challenger, Glove, High-Flying Denier, Immovable Enforcer, Interceptor, Off-Ball Pest, On-Ball Menace, Paint Patroller, Pick Dodger, Post Lockdown
+  REBOUNDING: Boxout Beast, Rebound Chaser
+  ALL-AROUND: Brick Wall, Pogo Stick, Slippery Off-Ball
 - DEPRECATED BADGES — NEVER USE THESE (they do not exist in 2K26): Clamps, Quick First Step, Green Machine, Catch & Shoot, Space Creator, Contact Finisher, Intimidator, Dream Shake, Hot Zone Hunter, Acrobat, Agent 3, Speed Booster, Blinders, Vice Grip, Floor General, Corner Specialist, Volume Shooter, Giant Slayer, Slithery, Tear Dropper, Bullet Passer, Anchor, Box, Chase Down Artist, Menace, Guard Up
 - For animations, ONLY use verified 2K26 jumpshot bases: Patty Mills, Quinton Grimes, AJ Green, Paul George, Kevin Durant, Dirk Nowitzki (standing), Damian Lillard. DO NOT use "Base 6", "Base 8", "Base 98", or any 2K24/2K25 bases
 - For dribble animations: Pro 3 (S-tier guards), Curry Package (guards 85+ ball handle), KD Package (wings), Pro 5 (guards/wings)
@@ -232,7 +234,7 @@ CRITICAL RULES:
     messages: [
       {
         role: 'system',
-        content: 'You are a NBA 2K26 Season 7 meta analyst. Extract structured meta data and return valid JSON only. CRITICAL: Only use badges that exist in NBA 2K26 Season 7. NEVER use these deprecated badges that do not exist in 2K26: Clamps, Quick First Step, Green Machine, Catch & Shoot, Space Creator, Contact Finisher, Intimidator, Dream Shake, Hot Zone Hunter, Acrobat, Agent 3, Speed Booster, Blinders, Vice Grip, Floor General. For jumpshot bases, NEVER use Base 6, Base 8, Base 98 — use player names like Patty Mills, Quinton Grimes, Kevin Durant, Dirk Nowitzki.',
+        content: 'You are a NBA 2K26 Season 7 meta analyst. Extract structured meta data and return valid JSON only. CRITICAL: Only use badges that exist in NBA 2K26 Season 7. Verified badge categories — FINISHING: Aerial Wizard, Float Game, Hook Specialist, Layup Mixmaster, Paint Prodigy, Physical Finisher, Post Fade Phenom, Post Powerhouse, Post Up Poet, Posterizer, Rise Up. SHOOTING: Deadeye, Limitless Range, Mini Marksman, Set Shot Specialist, Shifty Shooter. PLAYMAKING: Ankle Assassin, Bail Out, Break Starter, Dimer, Handles for Days, Lightning Launch, Strong Handle, Unpluckable, Versatile Visionary. DEFENSE: Challenger, Glove, High-Flying Denier, Immovable Enforcer, Interceptor, Off-Ball Pest, On-Ball Menace, Paint Patroller, Pick Dodger, Post Lockdown. REBOUNDING: Boxout Beast, Rebound Chaser. ALL-AROUND: Brick Wall, Pogo Stick, Slippery Off-Ball. Tier order: S=Unpluckable,Lightning Launch,Deadeye,Pogo Stick,Posterizer,Shifty Shooter,Interceptor,Set Shot Specialist,Float Game,Immovable Enforcer,Rebound Chaser,Strong Handle,Paint Patroller,Handles for Days,Challenger. NEVER use: Clamps, Quick First Step, Green Machine, Catch & Shoot, Space Creator, Contact Finisher, Intimidator, Dream Shake, Hot Zone Hunter, Acrobat, Agent 3, Speed Booster, Post Prodigy, Lightning Launch under Finishing. For jumpshot bases, NEVER use Base 6, Base 8, Base 98 — use player names like Patty Mills, Quinton Grimes, Kevin Durant, Dirk Nowitzki.',
       },
       { role: 'user', content: prompt },
     ],
@@ -309,28 +311,50 @@ function getFallbackMeta(): ScrapedMeta {
       { name: 'Pure Lock', tier: 'B', category: 'build', usage: 14, winRate: 51, trend: 'falling', description: 'Elite defender but limited offense in current meta.' },
     ],
     badges: [
-      { name: 'Deadeye', tier: 'S', category: 'badge', usage: 71, winRate: 62, trend: 'rising', description: 'Eliminates penalty from contested shots. Essential for any scoring guard or wing.' },
+      // S tier
+      { name: 'Unpluckable', tier: 'S', category: 'badge', usage: 72, winRate: 63, trend: 'rising', description: '#1 dribble protection badge in Season 7. Prevents steals on all dribble moves. Must-have for any ball handler.' },
+      { name: 'Lightning Launch', tier: 'S', category: 'badge', usage: 68, winRate: 62, trend: 'rising', description: 'Explosive first-step burst on drive initiation. Best playmaking badge in Season 7 for guards and wings.' },
+      { name: 'Deadeye', tier: 'S', category: 'badge', usage: 71, winRate: 62, trend: 'stable', description: 'Eliminates penalty from contested shots. Essential for any scoring guard or wing.' },
+      { name: 'Pogo Stick', tier: 'S', category: 'badge', usage: 60, winRate: 62, trend: 'stable', description: 'Blocks shots and immediately recovers for the next contest. Best interior defense badge in the game.' },
+      { name: 'Posterizer', tier: 'S', category: 'badge', usage: 55, winRate: 61, trend: 'rising', description: 'Activates contact dunks at the rim. S-tier for slashers — high-percentage finisher in traffic.' },
+      { name: 'Shifty Shooter', tier: 'S', category: 'badge', usage: 60, winRate: 61, trend: 'rising', description: 'Boosts shooting off movement and hesitations. Pairs perfectly with Lightning Launch.' },
+      { name: 'Interceptor', tier: 'S', category: 'badge', usage: 50, winRate: 61, trend: 'rising', description: 'Off-ball steals and deflections. Dominant when paired with Challenger. Core defensive combo.' },
       { name: 'Set Shot Specialist', tier: 'S', category: 'badge', usage: 65, winRate: 61, trend: 'stable', description: 'Dramatically boosts spot-up and catch-and-shoot efficiency. Meta-defining in Season 7.' },
-      { name: 'Shifty Shooter', tier: 'S', category: 'badge', usage: 60, winRate: 60, trend: 'rising', description: 'Boosts shooting off movement and hesitations. Pairs perfectly with ball handle.' },
-      { name: 'Dimer', tier: 'S', category: 'badge', usage: 58, winRate: 60, trend: 'stable', description: 'Boosts teammate shooting off your passes. Must-have for any playmaking guard or PF.' },
-      { name: 'Lightning Launch', tier: 'S', category: 'badge', usage: 55, winRate: 61, trend: 'rising', description: 'The sleeper S-tier badge. Explosive drive initiation that blows past defenders.' },
-      { name: 'Challenger', tier: 'S', category: 'badge', usage: 52, winRate: 60, trend: 'stable', description: 'Best perimeter defense badge in Season 7. Replaces Clamps as the lockdown standard.' },
-      { name: 'Interceptor', tier: 'S', category: 'badge', usage: 50, winRate: 59, trend: 'rising', description: 'Off-ball steals and deflections. Dominant when paired with Challenger.' },
-      { name: 'Pogo Stick', tier: 'S', category: 'badge', usage: 48, winRate: 60, trend: 'stable', description: 'Blocks shots and quickly recovers for the next contest. Best interior defense badge.' },
-      { name: 'Rebound Chaser', tier: 'S', category: 'badge', usage: 45, winRate: 59, trend: 'stable', description: 'Elite pursuit of missed shots. Glass cleaner badge of the year in Season 7.' },
-      { name: 'Limitless Range', tier: 'A', category: 'badge', usage: 62, winRate: 58, trend: 'stable', description: 'Extends shooting range to deep 3-point territory. Essential for floor spacers.' },
-      { name: 'Posterizer', tier: 'A', category: 'badge', usage: 44, winRate: 57, trend: 'stable', description: 'Activates contact dunks at the rim. High-percentage finisher badge for slashers.' },
-      { name: 'Strong Handle', tier: 'A', category: 'badge', usage: 52, winRate: 56, trend: 'stable', description: 'Ball security under pressure. Essential for any guard taking the ball coast to coast.' },
-      { name: 'Handles for Days', tier: 'A', category: 'badge', usage: 46, winRate: 56, trend: 'rising', description: 'Unlocks advanced combo chains when maxed. Gate badge for elite dribble packages.' },
-      { name: 'Pick Dodger', tier: 'A', category: 'badge', usage: 40, winRate: 56, trend: 'stable', description: 'Navigate through screens without losing your man. Elite off-ball defense badge.' },
-      { name: 'On-Ball Menace', tier: 'A', category: 'badge', usage: 42, winRate: 55, trend: 'stable', description: 'Disrupts ball handler rhythm. Best on-ball pressure badge in current meta.' },
-      { name: 'Immovable Enforcer', tier: 'A', category: 'badge', usage: 38, winRate: 55, trend: 'stable', description: 'Reduces charge and block foul calls going to the rim. Essential for rim protectors.' },
-      { name: 'Rise Up', tier: 'A', category: 'badge', usage: 36, winRate: 56, trend: 'rising', description: 'Boosts standing dunk attempts and contact inside. Best big man finishing badge.' },
-      { name: 'High-Flying Denier', tier: 'A', category: 'badge', usage: 34, winRate: 55, trend: 'stable', description: 'Blocks layups and dunks from behind. Rim protection from the perimeter.' },
-      { name: 'Unpluckable', tier: 'B', category: 'badge', usage: 55, winRate: 53, trend: 'stable', description: 'Prevents steal attempts on dribble moves. Good for ball handlers in traffic.' },
-      { name: 'Ankle Assassin', tier: 'B', category: 'badge', usage: 38, winRate: 53, trend: 'stable', description: 'Boosts ankle-breaking animations and step-back effectiveness.' },
-      { name: 'Glove', tier: 'B', category: 'badge', usage: 30, winRate: 52, trend: 'stable', description: 'Increases steal success rate on on-ball pressure. Pairs with Interceptor.' },
-      { name: 'Post Up Poet', tier: 'B', category: 'badge', usage: 22, winRate: 52, trend: 'stable', description: 'Boosts effectiveness of post moves and fakes. Niche but solid for post scorers.' },
+      { name: 'Float Game', tier: 'S', category: 'badge', usage: 52, winRate: 61, trend: 'rising', description: 'Boosts floaters in the paint and mid-range teardrops. S-tier finisher badge for guards attacking the rim.' },
+      { name: 'Immovable Enforcer', tier: 'S', category: 'badge', usage: 48, winRate: 60, trend: 'stable', description: 'Reduces charge and block foul calls. S-tier for bigs and rim protectors in the paint.' },
+      { name: 'Rebound Chaser', tier: 'S', category: 'badge', usage: 45, winRate: 60, trend: 'stable', description: 'Elite pursuit of missed shots. Best rebounding badge in Season 7 — essential for glass cleaners.' },
+      { name: 'Strong Handle', tier: 'S', category: 'badge', usage: 58, winRate: 60, trend: 'stable', description: 'Ball security under intense pressure. S-tier for guards — prevents fumbles on coast-to-coast drives.' },
+      { name: 'Paint Patroller', tier: 'S', category: 'badge', usage: 44, winRate: 60, trend: 'stable', description: 'Boosts shot contests and blocks inside the paint. S-tier defensive badge for shot-blocking bigs.' },
+      { name: 'Handles for Days', tier: 'S', category: 'badge', usage: 50, winRate: 60, trend: 'rising', description: 'Unlocks advanced dribble combo chains when maxed. Gate badge for elite dribble packages in Season 7.' },
+      { name: 'Challenger', tier: 'S', category: 'badge', usage: 52, winRate: 60, trend: 'stable', description: 'Best perimeter defense badge in Season 7. Replaces Clamps as the lockdown standard for guards.' },
+      // A tier
+      { name: 'On-Ball Menace', tier: 'A', category: 'badge', usage: 42, winRate: 58, trend: 'stable', description: 'Disrupts ball handler rhythm on defense. Best on-ball pressure badge in the current meta.' },
+      { name: 'Rise Up', tier: 'A', category: 'badge', usage: 40, winRate: 57, trend: 'rising', description: 'Boosts standing dunk attempts and contact inside. Best big man finishing badge for powerful forwards.' },
+      { name: 'Boxout Beast', tier: 'A', category: 'badge', usage: 38, winRate: 57, trend: 'stable', description: 'Dominant boxing out on both ends. A-tier rebounding badge, especially strong for undersized bigs.' },
+      { name: 'Break Starter', tier: 'A', category: 'badge', usage: 35, winRate: 57, trend: 'rising', description: 'Boosts outlet passes and transition speed after rebounds. A-tier for playmaking bigs and wings.' },
+      { name: 'Post Lockdown', tier: 'A', category: 'badge', usage: 32, winRate: 56, trend: 'stable', description: 'Shuts down post scorers and post moves. A-tier defensive badge for centers and power forwards.' },
+      { name: 'Dimer', tier: 'A', category: 'badge', usage: 46, winRate: 57, trend: 'stable', description: 'Boosts teammate shooting off your passes. A-tier for playmaking guards — solid but not the meta-defining choice it once was.' },
+      { name: 'Physical Finisher', tier: 'A', category: 'badge', usage: 36, winRate: 56, trend: 'stable', description: 'Powers through contact on finishing attempts. A-tier for slashers who attack the paint aggressively.' },
+      { name: 'Pick Dodger', tier: 'A', category: 'badge', usage: 40, winRate: 56, trend: 'stable', description: 'Navigate through screens without losing your man. A-tier off-ball defense badge for perimeter defenders.' },
+      { name: 'Brick Wall', tier: 'A', category: 'badge', usage: 30, winRate: 55, trend: 'stable', description: 'Sets devastating screens that stagger defenders. A-tier for bigs who set screens in the pick-and-roll.' },
+      { name: 'Post Powerhouse', tier: 'A', category: 'badge', usage: 28, winRate: 55, trend: 'stable', description: 'Powers through defenders in the post. A-tier for physical post scorers and power forwards.' },
+      { name: 'Paint Prodigy', tier: 'A', category: 'badge', usage: 34, winRate: 56, trend: 'stable', description: 'Boosts layup percentage in heavy traffic. A-tier for slashers and guards who finish through contact.' },
+      { name: 'Limitless Range', tier: 'A', category: 'badge', usage: 62, winRate: 56, trend: 'stable', description: 'Extends shooting range to deep 3-point territory. A-tier — essential for floor spacers and catch-and-shoot wings.' },
+      { name: 'High-Flying Denier', tier: 'A', category: 'badge', usage: 34, winRate: 55, trend: 'stable', description: 'Blocks layups and dunks from behind. A-tier rim protection from the perimeter for athletic wings.' },
+      // B tier
+      { name: 'Bail Out', tier: 'B', category: 'badge', usage: 28, winRate: 53, trend: 'stable', description: 'Boosts passes out of the air and mid-drive. B-tier for playmakers who kick out on drives.' },
+      { name: 'Ankle Assassin', tier: 'B', category: 'badge', usage: 38, winRate: 53, trend: 'stable', description: 'Boosts ankle-breaking animations and step-back effectiveness. B-tier — fun but situational.' },
+      { name: 'Mini Marksman', tier: 'B', category: 'badge', usage: 30, winRate: 53, trend: 'stable', description: 'Boosts mid-range shooting. B-tier in a 3-point dominated meta — good for volume mid-range scorers.' },
+      { name: 'Layup Mixmaster', tier: 'B', category: 'badge', usage: 26, winRate: 52, trend: 'stable', description: 'Unlocks advanced layup packages and boosts euro steps. B-tier for athletic slashers.' },
+      { name: 'Aerial Wizard', tier: 'B', category: 'badge', usage: 22, winRate: 52, trend: 'stable', description: 'Boosts alley-oop catches and off-hand layups. B-tier for athletic bigs who play above the rim.' },
+      { name: 'Post Fade Phenom', tier: 'B', category: 'badge', usage: 18, winRate: 52, trend: 'stable', description: 'Boosts post fade-away jumpers. B-tier for skilled post scorers — niche but effective.' },
+      { name: 'Off-Ball Pest', tier: 'B', category: 'badge', usage: 24, winRate: 52, trend: 'stable', description: 'Disrupts off-ball movement and cuts. B-tier — situational defensive badge for off-ball defenders.' },
+      { name: 'Versatile Visionary', tier: 'B', category: 'badge', usage: 20, winRate: 52, trend: 'stable', description: 'Boosts passing in varied situations. B-tier playmaking badge for all-around playmakers.' },
+      // C/D tier
+      { name: 'Post Up Poet', tier: 'C', category: 'badge', usage: 14, winRate: 50, trend: 'falling', description: 'Boosts post move effectiveness. C-tier — outclassed by Post Powerhouse for most post builds.' },
+      { name: 'Hook Specialist', tier: 'C', category: 'badge', usage: 12, winRate: 50, trend: 'falling', description: 'Boosts hook shots in the paint. C-tier — very situational for centers who exclusively use hooks.' },
+      { name: 'Glove', tier: 'D', category: 'badge', usage: 8, winRate: 49, trend: 'falling', description: 'Weakest badge in 2K26 — avoid. The steal boost is negligible and badge points are far better spent on Challenger or Interceptor.' },
+      { name: 'Slippery Off-Ball', tier: 'D', category: 'badge', usage: 10, winRate: 49, trend: 'falling', description: 'Off-ball movement boost. D-tier — rarely impactful in current meta, badge points wasted here.' },
     ],
     animations: [
       { name: 'Jumpshot: Patty Mills', tier: 'S', category: 'animation', usage: 62, winRate: 63, trend: 'rising', description: 'S-tier jumpshot base for guards 5\'9"–6\'4". Largest green window and fastest release at this height range.' },
