@@ -8,5 +8,13 @@
       "path": "/api/scrape",
       "schedule": "0 6 * * *"
     }
-  ]
+  ],
+  "experimentalServices": {
+    "courtiq-2k26": {
+      "type": "web",
+      "routePrefix": "/",
+      "framework": "nextjs",
+      "buildCommand": "npm install && npm run build"
+    }
+  }
 }
