@@ -49,6 +49,7 @@ export default function VisionPage() {
   const streamRef      = useRef<MediaStream | null>(null)
   const timerRef       = useRef<ReturnType<typeof setInterval> | null>(null)
   const speechUnlocked = useRef(false)
+  const speakQueue     = useRef<string | null>(null)
 
   const [cameraOn,    setCameraOn]    = useState(false)
   const [autoOn,      setAutoOn]      = useState(false)
@@ -113,13 +114,7 @@ export default function VisionPage() {
         }
         setLatest(t)
         setTips(prev => [t, ...prev.slice(0, 9)])
-        if (voiceOn && speechUnlocked.current && 'speechSynthesis' in window) {
-          window.speechSynthesis.cancel()
-          const u = new SpeechSynthesisUtterance(data.tip)
-          u.rate = 1.15
-          u.volume = 1
-          window.speechSynthesis.speak(u)
-        }
+        if (voiceOn) speakQueue.current = data.tip
       }
     } catch { /* silent fail */ }
     finally { setBusy(false) }
@@ -140,6 +135,19 @@ export default function VisionPage() {
   useEffect(() => {
     if (autoOn) { stopAuto(); startAuto() }
   }, [intervalMs]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Speak queued tip on each render after a new tip arrives
+  useEffect(() => {
+    const text = speakQueue.current
+    if (!text || !voiceOn || !speechUnlocked.current) return
+    speakQueue.current = null
+    if (!('speechSynthesis' in window)) return
+    window.speechSynthesis.cancel()
+    const u = new SpeechSynthesisUtterance(text)
+    u.rate = 1.15
+    u.volume = 1
+    window.speechSynthesis.speak(u)
+  }, [latest, voiceOn])
 
   useEffect(() => () => { stopCamera() }, [stopCamera])
 
