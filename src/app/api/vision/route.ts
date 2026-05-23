@@ -261,6 +261,52 @@ Include 2-3 S tier entries, 3-4 A tier. Base on Season 7 (May 2026) NBA 2K26 dat
       return NextResponse.json({ success: true, report, searched: searchQuery })
     }
 
+    // ── Proactive Watch: AI watches screen, only speaks when something matters ──
+    if (mode === 'watch') {
+      const { image, buildContext, recentTips = [] } = body
+      if (!image) return NextResponse.json({ error: 'No image provided.' }, { status: 400 })
+
+      const base64 = image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}`
+
+      const sysPrompt = `You are CourtIQ, an elite NBA 2K26 coach watching a skilled player's screen. You are watching silently and ONLY speak up when there is something GENUINELY important to say. Default to silence.
+
+Rules:
+- If you see a lobby, menu, loading screen, halftime, replay, or anything that is NOT live gameplay → respond exactly: {"skip":true}
+- If gameplay is happening but nothing critical is going on → {"skip":true}
+- Only break silence when you see ONE of these:
+  • An open shot/pass the player is missing
+  • A defensive rotation they need to make NOW
+  • A clear matchup exploit available
+  • A costly mistake actively happening
+  • A great takeover moment
+  • A bad shot selection about to happen
+- The player is experienced — NEVER explain controls or basics
+- Keep it under 15 words, urgent and specific
+- Don't repeat anything from recent tips (shown below)
+- If unsure, stay silent → {"skip":true}
+
+Output JSON only: {"skip":true} OR {"skip":false,"tip":"...","priority":"critical|tip|nice"}${buildContext ? `\n\nPlayer's build: ${buildContext}` : ''}${recentTips.length ? `\n\nRecent tips you already said (do not repeat):\n${recentTips.map((t: string) => `- ${t}`).join('\n')}` : ''}`
+
+      const res = await getGroq().chat.completions.create({
+        model: MODELS.vision,
+        messages: [
+          { role: 'system', content: sysPrompt },
+          { role: 'user', content: [
+            { type: 'image_url', image_url: { url: base64, detail: 'auto' } },
+            { type: 'text', text: 'Watch this frame. Speak only if there is something genuinely important.' },
+          ] },
+        ],
+        temperature: 0.35,
+        max_tokens: 100,
+        response_format: { type: 'json_object' },
+      })
+
+      const raw = res.choices[0].message.content || '{}'
+      const parsed = await parseVisionJSON<{ skip: boolean; tip?: string; priority?: string }>(raw, { skip: true })
+      if (parsed.skip || !parsed.tip) return NextResponse.json({ skip: true })
+      return NextResponse.json({ skip: false, tip: parsed.tip, priority: parsed.priority || 'tip' })
+    }
+
     // ── Conversational Coach: user asks a question, AI sees screen + answers ────
     if (mode === 'chat') {
       const { image, question, history = [], buildContext } = body

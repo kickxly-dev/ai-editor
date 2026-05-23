@@ -40,16 +40,22 @@ export default function VisionPage() {
   const videoRef       = useRef<HTMLVideoElement>(null)
   const canvasRef      = useRef<HTMLCanvasElement>(null)
   const streamRef      = useRef<MediaStream | null>(null)
-  const recorderRef    = useRef<MediaRecorder | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
   const micStreamRef   = useRef<MediaStream | null>(null)
+  const audioCtxRef    = useRef<AudioContext | null>(null)
+  const analyserRef    = useRef<AnalyserNode | null>(null)
+  const rafRef         = useRef<number | null>(null)
+  const recorderRef    = useRef<MediaRecorder | null>(null)
+  const chunksRef      = useRef<Blob[]>([])
+  const speakingRef    = useRef(false)
   const speechUnlocked = useRef(false)
   const speakQueue     = useRef<string | null>(null)
   const scrollRef      = useRef<HTMLDivElement>(null)
 
   const [cameraOn,   setCameraOn]   = useState(false)
   const [voiceOn,    setVoiceOn]    = useState(false)
-  const [listening,  setListening]  = useState(false)
+  const [listening,  setListening]  = useState(false) // hands-free mic on
+  const [recording,  setRecording]  = useState(false) // VAD detected speech, capturing now
+  const [autoWatch,  setAutoWatch]  = useState(false) // proactive coach watches & speaks unprompted
   const [thinking,   setThinking]   = useState(false)
   const [build,      setBuild]      = useState('')
   const [input,      setInput]      = useState('')
@@ -86,46 +92,124 @@ export default function VisionPage() {
     stopListening()
   }, [])
 
-  // ── Voice input: record audio → Whisper transcription → send as question ─────
+  // ── Hands-free voice via VAD: tap mic once → continuous listening ──────────
+  // Speech detected → record. Silence for ~700ms → stop & transcribe. Repeat.
+  const VAD_THRESHOLD = 0.022
+  const SPEECH_MIN_MS = 120
+  const SILENCE_MS    = 700
+
   const startListening = async () => {
     setErr(null)
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      })
       micStreamRef.current = stream
-      const mime = pickMime()
-      const rec  = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream)
-      audioChunksRef.current = []
-      rec.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data) }
-      rec.onstop = async () => {
-        const blob = new Blob(audioChunksRef.current, { type: rec.mimeType || 'audio/webm' })
-        micStreamRef.current?.getTracks().forEach(t => t.stop())
-        micStreamRef.current = null
-        if (blob.size < 1200) return // too short, probably a tap
-        await transcribeAndSend(blob)
+
+      const Ctx: typeof AudioContext = (window.AudioContext || (window as any).webkitAudioContext)
+      const ctx = new Ctx()
+      const src = ctx.createMediaStreamSource(stream)
+      const an  = ctx.createAnalyser()
+      an.fftSize = 1024
+      src.connect(an)
+      audioCtxRef.current = ctx
+      analyserRef.current = an
+
+      const buf = new Uint8Array(an.fftSize)
+      let isRecording = false
+      let speechStart: number | null = null
+      let silenceStart: number | null = null
+
+      const startClip = () => {
+        const mime = pickMime()
+        const rec  = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream)
+        chunksRef.current = []
+        rec.ondataavailable = e => { if (e.data && e.data.size > 0) chunksRef.current.push(e.data) }
+        rec.onstop = async () => {
+          const blob = new Blob(chunksRef.current, { type: rec.mimeType || 'audio/webm' })
+          chunksRef.current = []
+          if (blob.size < 500) return
+          await transcribeAndSend(blob)
+        }
+        rec.start()
+        recorderRef.current = rec
+        isRecording = true
+        setRecording(true)
       }
-      rec.start()
-      recorderRef.current = rec
+
+      const stopClip = () => {
+        const rec = recorderRef.current
+        recorderRef.current = null
+        isRecording = false
+        setRecording(false)
+        if (rec && rec.state !== 'inactive') { try { rec.stop() } catch { /* */ } }
+      }
+
+      const loop = () => {
+        if (!analyserRef.current) return
+        an.getByteTimeDomainData(buf)
+        let sum = 0
+        for (let i = 0; i < buf.length; i++) { const v = (buf[i] - 128) / 128; sum += v * v }
+        const rms = Math.sqrt(sum / buf.length)
+        const now = performance.now()
+
+        // Skip VAD entirely while TTS is reading the AI response (avoid self-recording)
+        if (speakingRef.current) {
+          speechStart  = null
+          silenceStart = null
+          if (isRecording) stopClip()
+          rafRef.current = requestAnimationFrame(loop)
+          return
+        }
+
+        const isSpeech = rms > VAD_THRESHOLD
+
+        if (!isRecording) {
+          if (isSpeech) {
+            if (speechStart === null) speechStart = now
+            if (now - speechStart > SPEECH_MIN_MS) startClip()
+          } else {
+            speechStart = null
+          }
+        } else {
+          if (isSpeech) {
+            silenceStart = null
+          } else {
+            if (silenceStart === null) silenceStart = now
+            if (now - silenceStart > SILENCE_MS) {
+              stopClip()
+              speechStart  = null
+              silenceStart = null
+            }
+          }
+        }
+
+        rafRef.current = requestAnimationFrame(loop)
+      }
+
+      rafRef.current = requestAnimationFrame(loop)
       setListening(true)
     } catch {
-      setErr('Microphone access denied — allow mic in your browser settings.')
+      setErr('Mic access denied — allow microphone in browser settings.')
       setListening(false)
     }
   }
 
   const stopListening = () => {
+    setListening(false)
+    setRecording(false)
+    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
     const rec = recorderRef.current
     recorderRef.current = null
-    setListening(false)
-    if (rec && rec.state !== 'inactive') {
-      try { rec.stop() } catch { /* */ }
-    } else {
-      micStreamRef.current?.getTracks().forEach(t => t.stop())
-      micStreamRef.current = null
-    }
+    if (rec && rec.state !== 'inactive') { try { rec.stop() } catch { /* */ } }
+    analyserRef.current = null
+    audioCtxRef.current?.close().catch(() => {})
+    audioCtxRef.current = null
+    micStreamRef.current?.getTracks().forEach(t => t.stop())
+    micStreamRef.current = null
   }
 
   const transcribeAndSend = async (blob: Blob) => {
-    setThinking(true)
     try {
       const ext  = (blob.type.split('/')[1] || 'webm').split(';')[0]
       const file = new File([blob], `clip.${ext}`, { type: blob.type })
@@ -134,16 +218,8 @@ export default function VisionPage() {
       const res  = await fetch('/api/vision/transcribe', { method: 'POST', body: form })
       const data = await res.json()
       const text: string = (data.text || '').trim()
-      if (text) {
-        await sendQuestion(text)
-      } else {
-        setErr("Couldn't hear that — try again.")
-      }
-    } catch {
-      setErr('Transcription failed — try again.')
-    } finally {
-      setThinking(false)
-    }
+      if (text && text.length > 1) await sendQuestion(text)
+    } catch { /* silent — VAD will pick up next utterance */ }
   }
 
   // ── Voice output ──────────────────────────────────────────────────────────────
@@ -159,7 +235,7 @@ export default function VisionPage() {
     }
   }
 
-  // Drain speak queue when assistant replies
+  // Drain speak queue when assistant replies — flag speakingRef so VAD ignores TTS
   useEffect(() => {
     const text = speakQueue.current
     if (!text || !voiceOn || !speechUnlocked.current) return
@@ -169,6 +245,9 @@ export default function VisionPage() {
     const u = new SpeechSynthesisUtterance(text)
     u.rate = 1.1
     u.volume = 1
+    speakingRef.current = true
+    u.onend   = () => { speakingRef.current = false }
+    u.onerror = () => { speakingRef.current = false }
     window.speechSynthesis.speak(u)
   }, [messages, voiceOn])
 
@@ -176,6 +255,44 @@ export default function VisionPage() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, thinking])
+
+  // ── Proactive watch loop: AI watches every ~3s, only speaks if it matters ────
+  useEffect(() => {
+    if (!autoWatch || !cameraOn) return
+    let cancelled = false
+    let busy = false
+
+    const tick = async () => {
+      if (cancelled || busy || thinking || recording) return
+      const video  = videoRef.current
+      const canvas = canvasRef.current
+      if (!video || !canvas) return
+      busy = true
+      try {
+        canvas.width  = video.videoWidth  || 640
+        canvas.height = video.videoHeight || 360
+        canvas.getContext('2d')?.drawImage(video, 0, 0)
+        const image = canvas.toDataURL('image/jpeg', 0.85)
+        const recentTips = messages.filter(m => m.role === 'assistant').slice(-4).map(m => m.content)
+        const res  = await fetch('/api/vision', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: 'watch', image, buildContext: build || undefined, recentTips }),
+        })
+        const data = await res.json()
+        if (!cancelled && !data.skip && data.tip) {
+          const aiMsg: ChatMsg = { role: 'assistant', content: data.tip, timestamp: Date.now() }
+          setMessages(prev => [...prev, aiMsg])
+          if (voiceOn) speakQueue.current = data.tip
+        }
+      } catch { /* silent */ }
+      finally { busy = false }
+    }
+
+    const id = setInterval(tick, 3000)
+    tick()
+    return () => { cancelled = true; clearInterval(id) }
+  }, [autoWatch, cameraOn, build, voiceOn, thinking, recording, messages])
 
   useEffect(() => () => { stopCamera() }, [stopCamera])
 
@@ -428,6 +545,19 @@ export default function VisionPage() {
             VOICE {voiceOn ? 'ON' : 'OFF'}
           </button>
 
+          <button
+            onClick={() => setAutoWatch(a => !a)}
+            disabled={!cameraOn}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
+              autoWatch ? 'text-emerald-400' : 'text-white/40 hover:text-white/65'
+            }`}
+            style={{ background: autoWatch ? 'rgba(52,211,153,0.1)' : 'rgba(255,255,255,0.05)', border: `1px solid ${autoWatch ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.08)'}` }}
+            title="AI watches the screen and speaks up when it sees something important"
+          >
+            <Sparkles className="w-3 h-3" />
+            AUTO {autoWatch ? 'ON' : 'OFF'}
+          </button>
+
           <div className="ml-auto relative flex items-center">
             <select
               value={build}
@@ -459,18 +589,33 @@ export default function VisionPage() {
           <button
             type="button"
             onClick={listening ? stopListening : startListening}
-            disabled={!cameraOn || thinking}
-            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
-              listening ? 'bg-rose-500 text-white' : 'text-white/55 hover:text-white'
+            disabled={!cameraOn}
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed relative ${
+              recording ? 'bg-rose-500 text-white' :
+              listening ? 'text-emerald-400'      :
+                          'text-white/55 hover:text-white'
             }`}
-            style={listening ? {} : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            style={recording ? {} : listening
+              ? { background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.35)' }
+              : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            title={listening ? (recording ? 'Recording your question…' : 'Listening — just talk') : 'Tap to enable hands-free mic'}
           >
-            {listening ? (
-              <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.9 }}>
+            {recording ? (
+              <motion.div animate={{ scale: [1, 1.18, 1] }} transition={{ repeat: Infinity, duration: 0.6 }}>
                 <Mic className="w-5 h-5" />
               </motion.div>
+            ) : listening ? (
+              <>
+                <Mic className="w-5 h-5" />
+                <motion.span
+                  className="absolute inset-0 rounded-2xl"
+                  style={{ border: '1.5px solid rgba(52,211,153,0.5)' }}
+                  animate={{ opacity: [0.2, 0.9, 0.2], scale: [1, 1.06, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.4 }}
+                />
+              </>
             ) : (
-              <Mic className="w-5 h-5" />
+              <MicOff className="w-5 h-5" />
             )}
           </button>
 
