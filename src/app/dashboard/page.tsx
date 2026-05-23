@@ -152,14 +152,11 @@ function MetaPulse({ trends }: { trends: DashboardData['metaTrends'] }) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 + i * 0.05 }}
-            className="rounded-xl p-3.5"
-            style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(251,113,133,0.18)' }}
+            className="surface p-3.5"
           >
             <div className="flex items-center gap-2 mb-2">
-              <span
-                className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black"
-                style={{ background: `${TIER_COLORS[t.tier]}1f`, color: TIER_COLORS[t.tier] }}
-              >
+              <span className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black"
+                style={{ background: `${TIER_COLORS[t.tier]}20`, color: TIER_COLORS[t.tier] }}>
                 {t.tier}
               </span>
               <span className="text-[9px] font-bold uppercase tracking-wider text-white/35">{t.category}</span>
@@ -204,8 +201,7 @@ function TrendingBuilds({ builds }: { builds: DashboardData['communityBuilds'] }
           >
             <Link
               href={`/builds/${b.id}`}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:bg-white/[0.035]"
-              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
+              className="card-sm flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:border-white/[0.15]"
             >
               <span
                 className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0"
@@ -246,8 +242,7 @@ function PatchNotes() {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.04 + i * 0.04 }}
-              className="rounded-2xl p-4"
-              style={{ background: 'rgba(255,255,255,0.022)', border: '1px solid rgba(255,255,255,0.06)' }}
+              className="card p-4"
             >
               <div className="flex items-start gap-3">
                 <div
