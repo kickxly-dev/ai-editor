@@ -261,6 +261,52 @@ Include 2-3 S tier entries, 3-4 A tier. Base on Season 7 (May 2026) NBA 2K26 dat
       return NextResponse.json({ success: true, report, searched: searchQuery })
     }
 
+    // ── Conversational Coach: user asks a question, AI sees screen + answers ────
+    if (mode === 'chat') {
+      const { image, question, history = [], buildContext } = body
+      if (!image)    return NextResponse.json({ error: 'No image provided.' }, { status: 400 })
+      if (!question) return NextResponse.json({ error: 'No question provided.' }, { status: 400 })
+
+      const base64 = image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}`
+
+      const sysPrompt = `You are CourtIQ, an elite NBA 2K26 coach having a live conversation with a skilled player while they play. They are pointing their phone camera at their TV — the image may be blurry. Read what's actually on screen (menu, lobby, in-game, what's happening) and answer their question directly based on what you see.
+
+Rules:
+- The player is experienced — NEVER explain controls or basics
+- Answer in 1-3 sentences max, conversational tone, no bullet lists
+- Be specific to what's on the screen right now ("you're facing a Stretch Big with a Glass Cleaner help defender — drive baseline")
+- If you can't see something they're asking about, say so briefly ("can't make out the scoreboard — angle your phone better")
+- If they ask about meta/builds/badges and you can't see the relevant info, answer from your NBA 2K26 Season 7 knowledge
+- Output plain text only, no JSON, no markdown${buildContext ? `\n\nPlayer's build: ${buildContext}` : ''}`
+
+      const messages: any[] = [{ role: 'system', content: sysPrompt }]
+
+      // Last few turns of conversation for context
+      for (const m of history.slice(-6)) {
+        if (m.role === 'user' || m.role === 'assistant') {
+          messages.push({ role: m.role, content: m.content })
+        }
+      }
+
+      messages.push({
+        role: 'user',
+        content: [
+          { type: 'image_url', image_url: { url: base64, detail: 'auto' } },
+          { type: 'text', text: question },
+        ],
+      })
+
+      const res = await getGroq().chat.completions.create({
+        model: MODELS.vision,
+        messages,
+        temperature: 0.5,
+        max_tokens: 250,
+      })
+
+      const answer = res.choices[0].message.content?.trim() || "I'm not sure — try asking again."
+      return NextResponse.json({ answer })
+    }
+
     // ── Camera Coach: real-time coaching from phone camera pointed at screen ────
     if (mode === 'camera') {
       const { image, buildContext, gameMode } = body
@@ -279,7 +325,7 @@ Include 2-3 S tier entries, 3-4 A tier. Base on Season 7 (May 2026) NBA 2K26 dat
         messages: [
           {
             role: 'system',
-            content: `You are CourtIQ, an elite NBA 2K26 coach for experienced players. The user knows the controls perfectly — NEVER explain basics like "use the joystick", "press shoot", "dribble to the basket". Assume they are a skilled player and give ADVANCED reads only: defensive rotations, shot selection mistakes, spacing errors, when to attack vs kick, badge-specific timing, matchup exploits, takeover management. The image is from a phone pointed at a TV — may be blurry, read it as best you can. Give ONE sharp, high-level tip in under 20 words. ALWAYS give a useful tip — if image unclear, give elite meta advice for their build. ONLY output valid JSON: {"tip":"...","category":"offense|defense|timing|positioning|takeover","priority":"critical|tip|nice"}. critical=costly mistake happening now, tip=improvement, nice=smart play to reinforce.`,
+            content: `You are CourtIQ, an elite NBA 2K26 real-time coach for experienced players. First determine if actual gameplay is on screen (live game, active possession, defense situation). If you see a lobby, main menu, MyCareer hub, squad screen, loading screen, halftime, celebration cutscene, or anything that is NOT live in-game action — output {"skip":true}. Only coach during live gameplay. When in a live game: give ONE advanced, high-level read in under 20 words. Player is skilled — NEVER explain controls or basics. Focus on: defensive rotations, shot selection, spacing reads, when to kick vs attack, badge timing windows, matchup exploits, takeover usage. The image is from a phone pointed at a TV, may be blurry — read context clues (scoreboard, court, players in action). ONLY output valid JSON: {"skip":false,"tip":"...","category":"offense|defense|timing|positioning|takeover","priority":"critical|tip|nice"} OR {"skip":true}. priority: critical=active mistake costing points, tip=smart improvement, nice=reinforce good play.`,
           },
           {
             role: 'user',
@@ -295,9 +341,12 @@ Include 2-3 S tier entries, 3-4 A tier. Base on Season 7 (May 2026) NBA 2K26 dat
       })
 
       const raw = res.choices[0].message.content || '{}'
-      const parsed = await parseVisionJSON(raw, { tip: 'Stay focused and play your game.', category: 'tip', priority: 'tip' })
+      const parsed = await parseVisionJSON(raw, { skip: false, tip: 'Stay locked in.', category: 'tip', priority: 'tip' })
+
+      if (parsed.skip) return NextResponse.json({ skip: true })
 
       return NextResponse.json({
+        skip: false,
         tip: parsed.tip,
         category: parsed.category,
         priority: parsed.priority,
