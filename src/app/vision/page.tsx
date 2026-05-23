@@ -3,7 +3,8 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Camera, CameraOff, Volume2, VolumeX, Play, Square, Zap,
-  ChevronDown, Eye, Wifi,
+  ChevronDown, Eye, Wifi, Maximize2, Minimize2,
+  Smartphone, Monitor, ArrowRight, RotateCcw,
 } from 'lucide-react'
 
 type Priority = 'critical' | 'tip' | 'nice'
@@ -17,24 +18,25 @@ interface CoachTip {
 }
 
 const PRIORITY = {
-  critical: { bg: 'bg-red-500/15',     border: 'border-red-500/35',     text: 'text-red-400',     dot: 'bg-red-500',     label: 'CRITICAL' },
-  tip:      { bg: 'bg-amber-500/15',   border: 'border-amber-500/35',   text: 'text-amber-400',   dot: 'bg-amber-500',   label: 'TIP'      },
-  nice:     { bg: 'bg-emerald-500/15', border: 'border-emerald-500/35', text: 'text-emerald-400', dot: 'bg-emerald-500', label: 'INFO'     },
+  critical: {
+    bg: 'rgba(239,68,68,0.18)', border: 'rgba(239,68,68,0.4)',
+    text: 'text-red-400', label: 'CRITICAL', bar: '#ef4444',
+  },
+  tip: {
+    bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.38)',
+    text: 'text-amber-400', label: 'TIP', bar: '#f59e0b',
+  },
+  nice: {
+    bg: 'rgba(52,211,153,0.13)', border: 'rgba(52,211,153,0.35)',
+    text: 'text-emerald-400', label: 'INFO', bar: '#34d399',
+  },
 }
 
 const CAT_ICON: Record<Category, string> = {
-  offense:     '⚡',
-  defense:     '🛡️',
-  timing:      '⏱️',
-  positioning: '📍',
-  takeover:    '🔥',
+  offense: '⚡', defense: '🛡️', timing: '⏱️', positioning: '📍', takeover: '🔥',
 }
 
-const INTERVALS = [
-  { label: '3s', ms: 3000 },
-  { label: '5s', ms: 5000 },
-  { label: '10s', ms: 10000 },
-]
+const INTERVALS = [{ label: '3s', ms: 3000 }, { label: '5s', ms: 5000 }, { label: '10s', ms: 10000 }]
 
 const BUILD_OPTS = [
   '', 'Shot Creator Guard', 'Two-Way Guard', 'Playmaking Wing',
@@ -42,22 +44,25 @@ const BUILD_OPTS = [
 ]
 
 export default function VisionPage() {
-  const videoRef   = useRef<HTMLVideoElement>(null)
-  const canvasRef  = useRef<HTMLCanvasElement>(null)
-  const streamRef  = useRef<MediaStream | null>(null)
-  const timerRef   = useRef<ReturnType<typeof setInterval> | null>(null)
+  const videoRef  = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const timerRef  = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const [cameraOn,  setCameraOn]  = useState(false)
-  const [autoOn,    setAutoOn]    = useState(false)
-  const [busy,      setBusy]      = useState(false)
-  const [voiceOn,   setVoiceOn]   = useState(false)
-  const [interval,  setIntervalMs] = useState(5000)
-  const [build,     setBuild]     = useState('')
-  const [tips,      setTips]      = useState<CoachTip[]>([])
-  const [latest,    setLatest]    = useState<CoachTip | null>(null)
-  const [err,       setErr]       = useState<string | null>(null)
+  const [cameraOn,    setCameraOn]    = useState(false)
+  const [autoOn,      setAutoOn]      = useState(false)
+  const [busy,        setBusy]        = useState(false)
+  const [voiceOn,     setVoiceOn]     = useState(false)
+  const [intervalMs,  setIntervalMs]  = useState(5000)
+  const [build,       setBuild]       = useState('')
+  const [tips,        setTips]        = useState<CoachTip[]>([])
+  const [latest,      setLatest]      = useState<CoachTip | null>(null)
+  const [err,         setErr]         = useState<string | null>(null)
+  const [fullscreen,  setFullscreen]  = useState(false)
+  const [ready,       setReady]       = useState(false) // has user tapped Start Camera at least once
 
   const startCamera = async () => {
+    setErr(null)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -68,9 +73,10 @@ export default function VisionPage() {
         await videoRef.current.play()
       }
       setCameraOn(true)
-      setErr(null)
+      setReady(true)
     } catch {
       setErr('Camera access denied — allow camera in your browser settings and try again.')
+      setReady(true)
     }
   }
 
@@ -79,19 +85,18 @@ export default function VisionPage() {
     streamRef.current = null
     if (videoRef.current) videoRef.current.srcObject = null
     setCameraOn(false)
-    stopAuto()
+    setAutoOn(false)
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
   }, [])
 
   const analyze = useCallback(async () => {
     const video  = videoRef.current
     const canvas = canvasRef.current
     if (!video || !canvas || busy) return
-
     canvas.width  = video.videoWidth  || 640
     canvas.height = video.videoHeight || 360
     canvas.getContext('2d')?.drawImage(video, 0, 0)
     const image = canvas.toDataURL('image/jpeg', 0.72)
-
     setBusy(true)
     try {
       const res  = await fetch('/api/vision', {
@@ -101,7 +106,10 @@ export default function VisionPage() {
       })
       const data = await res.json()
       if (data.tip) {
-        const t: CoachTip = { tip: data.tip, category: data.category || 'tip', priority: data.priority || 'tip', timestamp: Date.now() }
+        const t: CoachTip = {
+          tip: data.tip, category: data.category || 'tip',
+          priority: data.priority || 'tip', timestamp: Date.now(),
+        }
         setLatest(t)
         setTips(prev => [t, ...prev.slice(0, 9)])
         if (voiceOn && 'speechSynthesis' in window) {
@@ -111,235 +119,357 @@ export default function VisionPage() {
           window.speechSynthesis.speak(u)
         }
       }
-    } catch { /* silent fail in auto mode */ }
+    } catch { /* silent fail */ }
     finally { setBusy(false) }
   }, [busy, build, voiceOn])
 
   const startAuto = useCallback(() => {
     setAutoOn(true)
     analyze()
-    timerRef.current = setInterval(analyze, interval)
-  }, [analyze, interval])
+    timerRef.current = setInterval(analyze, intervalMs)
+  }, [analyze, intervalMs])
 
-  function stopAuto() {
+  const stopAuto = useCallback(() => {
     setAutoOn(false)
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
-  }
+  }, [])
 
-  // restart timer when interval changes while running
+  // restart timer when interval changes while auto is running
   useEffect(() => {
     if (autoOn) { stopAuto(); startAuto() }
-  }, [interval]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [intervalMs]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => () => { stopCamera() }, [stopCamera])
 
   const ps = latest ? PRIORITY[latest.priority] : null
 
-  return (
-    <div className="max-w-lg mx-auto px-4 pt-6 pb-32 md:pb-10">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-5">
-        <div className="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/25 flex items-center justify-center">
-          <Eye className="w-4 h-4 text-rose-400" />
+  // ── Setup screen (first visit, camera not yet started) ───────────────────────
+  if (!ready) {
+    return (
+      <div className="flex flex-col min-h-[calc(100vh-48px)] px-5 pb-8">
+        {/* Hero */}
+        <div className="flex flex-col items-center justify-center text-center pt-10 pb-8">
+          <motion.div
+            className="w-24 h-24 rounded-[28px] flex items-center justify-center mb-6 relative"
+            style={{ background: 'rgba(225,29,72,0.07)', border: '1px solid rgba(225,29,72,0.22)' }}
+            animate={{ boxShadow: ['0 0 0px rgba(225,29,72,0)', '0 0 48px rgba(225,29,72,0.3)', '0 0 0px rgba(225,29,72,0)'] }}
+            transition={{ duration: 3, repeat: Infinity }}
+          >
+            <Eye className="w-10 h-10 text-rose-400" />
+          </motion.div>
+          <h2 className="text-[26px] font-black text-white mb-3 leading-tight tracking-tight">
+            AI Vision Coach
+          </h2>
+          <p className="text-white/40 text-sm leading-relaxed max-w-[270px]">
+            Point your phone at your TV while you play.<br />
+            CourtIQ watches the screen and coaches you live.
+          </p>
         </div>
-        <div>
-          <h1 className="text-xl font-bold text-white leading-none">Vision Coach</h1>
-          <p className="text-white/35 text-[11px] mt-0.5">Point phone at your screen for live AI coaching</p>
+
+        {/* How it works */}
+        <div className="space-y-2.5 mb-8">
+          {[
+            {
+              num: '1',
+              icon: <Smartphone className="w-4 h-4 text-rose-400" />,
+              title: 'Open on your phone',
+              desc: "You're already here ✓",
+              accent: 'rgba(225,29,72,0.12)',
+            },
+            {
+              num: '2',
+              icon: <Monitor className="w-4 h-4 text-sky-400" />,
+              title: 'Point rear camera at your TV',
+              desc: 'Prop it on something stable or angle it at the screen',
+              accent: 'rgba(14,165,233,0.10)',
+            },
+            {
+              num: '3',
+              icon: <Wifi className="w-4 h-4 text-emerald-400" />,
+              title: 'Hit Auto Coach',
+              desc: 'AI reads your screen every 3–10s and gives real-time tips',
+              accent: 'rgba(52,211,153,0.10)',
+            },
+            {
+              num: '4',
+              icon: <Volume2 className="w-4 h-4 text-amber-400" />,
+              title: 'Turn on Voice',
+              desc: 'Hear tips aloud so you never look away from the game',
+              accent: 'rgba(245,158,11,0.10)',
+            },
+          ].map((step, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.07 }}
+              className="flex items-center gap-4 p-4 rounded-2xl"
+              style={{ background: step.accent, border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: 'rgba(255,255,255,0.06)' }}>
+                {step.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white text-sm font-semibold leading-tight">{step.title}</p>
+                <p className="text-white/35 text-xs mt-0.5 leading-snug">{step.desc}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
-        {autoOn && (
-          <div className="ml-auto flex items-center gap-1.5 bg-emerald-500/15 border border-emerald-500/30 rounded-full px-2.5 py-1">
-            <Wifi className="w-3 h-3 text-emerald-400" />
-            <span className="text-emerald-400 text-[10px] font-bold">LIVE</span>
-          </div>
-        )}
+
+        <motion.button
+          onClick={startCamera}
+          className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl text-[15px] font-bold bg-rose-500 text-white hover:bg-rose-400 active:scale-[0.98] transition-all"
+          whileTap={{ scale: 0.97 }}
+        >
+          <Camera className="w-5 h-5" />
+          Start Camera
+          <ArrowRight className="w-4 h-4 opacity-70" />
+        </motion.button>
       </div>
+    )
+  }
+
+  // ── Main coaching UI ─────────────────────────────────────────────────────────
+  return (
+    <div className={`flex flex-col ${fullscreen ? 'h-[calc(100vh-48px)] overflow-hidden' : 'min-h-[calc(100vh-48px)]'}`}>
 
       {/* Camera viewport */}
       <div
-        className="relative rounded-2xl overflow-hidden bg-zinc-950 border border-white/[0.07] mb-3"
-        style={{ aspectRatio: '16/9' }}
+        className={`relative bg-black overflow-hidden flex-shrink-0 ${fullscreen ? 'flex-1' : ''}`}
+        style={{ aspectRatio: fullscreen ? undefined : '16/9' }}
       >
-        <video ref={videoRef} playsInline muted className={`w-full h-full object-cover ${cameraOn ? '' : 'hidden'}`} />
+        <video
+          ref={videoRef}
+          playsInline
+          muted
+          className={`w-full h-full object-cover ${cameraOn ? '' : 'hidden'}`}
+        />
         <canvas ref={canvasRef} className="hidden" />
 
+        {/* Camera-off placeholder */}
         {!cameraOn && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-            <motion.div
-              className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center"
-              animate={{ boxShadow: ['0 0 0px rgba(225,29,72,0)', '0 0 20px rgba(225,29,72,0.3)', '0 0 0px rgba(225,29,72,0)'] }}
-              transition={{ duration: 2.5, repeat: Infinity }}
-            >
-              <Camera className="w-6 h-6 text-rose-400" />
-            </motion.div>
-            <div className="text-center">
-              <p className="text-white/50 text-sm font-medium">Camera off</p>
-              <p className="text-white/25 text-xs mt-0.5">Tap Start Camera below</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+            style={{ background: 'rgba(6,6,10,0.97)' }}>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
+              style={{ background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.2)' }}>
+              <Camera className="w-7 h-7 text-rose-400" />
             </div>
-            {err && <p className="text-red-400 text-xs text-center px-6 max-w-[280px]">{err}</p>}
+            <p className="text-white/40 text-sm font-medium">Camera off</p>
+            {err && (
+              <div className="mx-6 px-4 py-3 rounded-xl text-center"
+                style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)' }}>
+                <p className="text-red-400 text-xs leading-snug">{err}</p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Analyzing pulse */}
-        <AnimatePresence>
+        {/* Status badges — top right */}
+        <div className="absolute top-3 right-3 flex items-center gap-2">
+          {autoOn && (
+            <div className="flex items-center gap-1.5 rounded-full px-2.5 py-1 backdrop-blur-sm"
+              style={{ background: 'rgba(52,211,153,0.18)', border: '1px solid rgba(52,211,153,0.35)' }}>
+              <motion.div className="w-1.5 h-1.5 rounded-full bg-emerald-400"
+                animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 0.7 }} />
+              <span className="text-emerald-400 text-[10px] font-bold tracking-wide">LIVE</span>
+            </div>
+          )}
           {busy && (
+            <div className="flex items-center gap-1.5 rounded-full px-2.5 py-1 backdrop-blur-sm"
+              style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <motion.div className="w-1.5 h-1.5 rounded-full bg-rose-400"
+                animate={{ scale: [1, 1.4, 1] }} transition={{ repeat: Infinity, duration: 0.65 }} />
+              <span className="text-white/60 text-[10px]">Reading</span>
+            </div>
+          )}
+          <button
+            onClick={() => setFullscreen(f => !f)}
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-white/40 hover:text-white active:scale-90 transition-all backdrop-blur-sm"
+            style={{ background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            {fullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+
+        {/* Tip overlay — bottom of camera */}
+        <AnimatePresence mode="wait">
+          {latest && ps && (
             <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute top-2.5 right-2.5 flex items-center gap-1.5 bg-black/70 rounded-full px-2.5 py-1 backdrop-blur-sm"
+              key={latest.timestamp}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="absolute bottom-0 left-0 right-0 p-3 backdrop-blur-md"
+              style={{ background: ps.bg, borderTop: `1px solid ${ps.border}` }}
             >
-              <motion.div
-                className="w-1.5 h-1.5 rounded-full bg-rose-400"
-                animate={{ scale: [1, 1.4, 1] }}
-                transition={{ repeat: Infinity, duration: 0.7 }}
-              />
-              <span className="text-white/70 text-[11px] font-medium">Analyzing</span>
+              {/* Priority bar */}
+              <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: ps.bar, opacity: 0.7 }} />
+              <div className="flex items-start gap-2.5">
+                <span className="text-[18px] leading-none mt-0.5 shrink-0">{CAT_ICON[latest.category]}</span>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-[9px] font-black tracking-[0.14em] mb-1 ${ps.text}`}>{ps.label}</p>
+                  <p className="text-white text-[13px] font-semibold leading-snug">{latest.tip}</p>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Latest tip card */}
-      <AnimatePresence mode="wait">
-        {latest && ps ? (
-          <motion.div
-            key={latest.timestamp}
-            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            className={`rounded-xl border p-4 mb-3 ${ps.bg} ${ps.border}`}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm">{CAT_ICON[latest.category]}</span>
-              <span className={`text-[9px] font-black tracking-[0.15em] ${ps.text}`}>{ps.label}</span>
-              <span className="ml-auto text-white/25 text-[10px]">
-                {new Date(latest.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-              </span>
+      {/* Controls panel — hidden in fullscreen */}
+      {!fullscreen && (
+        <div className="flex-1 px-4 pt-3 pb-6 space-y-3 overflow-y-auto">
+
+          {/* Settings row */}
+          <div className="grid grid-cols-2 gap-2.5">
+            {/* Frequency */}
+            <div className="rounded-2xl px-3 py-3"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <p className="text-white/25 text-[9px] font-bold tracking-[0.12em] uppercase mb-2">Frequency</p>
+              <div className="flex gap-1">
+                {INTERVALS.map(({ label, ms }) => (
+                  <button key={ms} onClick={() => setIntervalMs(ms)}
+                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-all active:scale-95 ${
+                      intervalMs === ms ? 'bg-rose-500 text-white' : 'text-white/30 hover:text-white/60'
+                    }`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <p className="text-white text-sm font-semibold leading-snug">{latest.tip}</p>
-          </motion.div>
-        ) : (
-          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 mb-3 text-center">
-            <p className="text-white/25 text-xs">Tips will appear here after analysis</p>
+
+            {/* Build context */}
+            <div className="rounded-2xl px-3 py-3"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <p className="text-white/25 text-[9px] font-bold tracking-[0.12em] uppercase mb-2">Your Build</p>
+              <div className="relative flex items-center">
+                <select
+                  value={build}
+                  onChange={e => setBuild(e.target.value)}
+                  className="w-full bg-transparent text-white/60 text-[11px] font-semibold focus:outline-none cursor-pointer appearance-none pr-4"
+                >
+                  <option value="" className="bg-zinc-900">Any build</option>
+                  {BUILD_OPTS.filter(Boolean).map(b => (
+                    <option key={b} value={b} className="bg-zinc-900">{b}</option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3 h-3 text-white/25 absolute right-0 pointer-events-none" />
+              </div>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
 
-      {/* Primary controls */}
-      <div className="grid grid-cols-2 gap-2.5 mb-2.5">
-        <button
-          onClick={cameraOn ? stopCamera : startCamera}
-          className={`flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold transition-all active:scale-95 ${
-            cameraOn ? 'bg-zinc-800 text-white/55 hover:bg-zinc-700' : 'bg-rose-500 text-white hover:bg-rose-400'
-          }`}
-        >
-          {cameraOn ? <CameraOff className="w-4 h-4" /> : <Camera className="w-4 h-4" />}
-          {cameraOn ? 'Stop Camera' : 'Start Camera'}
-        </button>
-
-        <button
-          onClick={autoOn ? stopAuto : startAuto}
-          disabled={!cameraOn}
-          className={`flex items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold transition-all active:scale-95 disabled:opacity-35 disabled:cursor-not-allowed ${
-            autoOn ? 'bg-emerald-500/20 border border-emerald-500/35 text-emerald-400' : 'bg-zinc-800 text-white/65 hover:bg-zinc-700'
-          }`}
-        >
-          {autoOn ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-          {autoOn ? 'Stop Auto' : 'Auto Coach'}
-        </button>
-      </div>
-
-      {/* Secondary controls */}
-      <div className="grid grid-cols-2 gap-2.5 mb-4">
-        <button
-          onClick={analyze}
-          disabled={!cameraOn || busy}
-          className="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-medium bg-white/[0.05] border border-white/[0.07] text-white/60 hover:text-white hover:bg-white/[0.08] transition-all active:scale-95 disabled:opacity-35 disabled:cursor-not-allowed"
-        >
-          <Zap className="w-4 h-4" />
-          Analyze Now
-        </button>
-
-        <button
-          onClick={() => setVoiceOn(v => !v)}
-          className={`flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-medium border transition-all active:scale-95 ${
-            voiceOn
-              ? 'bg-amber-500/15 border-amber-500/35 text-amber-400'
-              : 'bg-white/[0.05] border-white/[0.07] text-white/40 hover:text-white/65'
-          }`}
-        >
-          {voiceOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-          Voice {voiceOn ? 'On' : 'Off'}
-        </button>
-      </div>
-
-      {/* Settings */}
-      <div className="grid grid-cols-2 gap-2.5 mb-5">
-        <div className="rounded-xl bg-white/[0.03] border border-white/[0.07] p-3">
-          <p className="text-white/35 text-[9px] font-bold tracking-[0.12em] uppercase mb-2">Frequency</p>
-          <div className="flex gap-1.5">
-            {INTERVALS.map(({ label, ms }) => (
-              <button
-                key={ms}
-                onClick={() => setIntervalMs(ms)}
-                className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
-                  interval === ms ? 'bg-rose-500 text-white' : 'bg-white/[0.06] text-white/35 hover:text-white/60'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-xl bg-white/[0.03] border border-white/[0.07] p-3">
-          <p className="text-white/35 text-[9px] font-bold tracking-[0.12em] uppercase mb-2">Your Build</p>
-          <div className="relative flex items-center">
-            <select
-              value={build}
-              onChange={e => setBuild(e.target.value)}
-              className="w-full bg-transparent text-white/60 text-[11px] font-semibold focus:outline-none cursor-pointer appearance-none pr-4"
+          {/* Primary buttons */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <button
+              onClick={cameraOn ? stopCamera : startCamera}
+              className={`flex items-center justify-center gap-2 rounded-2xl py-4 text-sm font-bold transition-all active:scale-[0.97] ${
+                cameraOn
+                  ? 'text-white/50 hover:text-white/70'
+                  : 'bg-rose-500 text-white hover:bg-rose-400'
+              }`}
+              style={cameraOn ? { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' } : {}}
             >
-              <option value="" className="bg-zinc-900">Any build</option>
-              {BUILD_OPTS.filter(Boolean).map(b => (
-                <option key={b} value={b} className="bg-zinc-900">{b}</option>
-              ))}
-            </select>
-            <ChevronDown className="w-3 h-3 text-white/25 absolute right-0 pointer-events-none" />
-          </div>
-        </div>
-      </div>
+              {cameraOn ? <CameraOff className="w-4 h-4" /> : <Camera className="w-4 h-4" />}
+              {cameraOn ? 'Stop' : 'Start Camera'}
+            </button>
 
-      {/* Tip history */}
-      {tips.length > 1 && (
-        <div className="mb-5">
-          <p className="text-white/25 text-[9px] font-bold tracking-[0.12em] uppercase mb-2.5">Recent Tips</p>
-          <div className="space-y-2">
-            {tips.slice(1, 6).map(t => (
-              <div key={t.timestamp} className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.025] border border-white/[0.055]">
-                <span className="text-sm mt-px shrink-0">{CAT_ICON[t.category]}</span>
-                <p className="text-white/45 text-xs leading-snug flex-1">{t.tip}</p>
-                <span className={`text-[9px] font-black shrink-0 ${PRIORITY[t.priority].text}`}>{PRIORITY[t.priority].label}</span>
-              </div>
-            ))}
+            <button
+              onClick={autoOn ? stopAuto : startAuto}
+              disabled={!cameraOn}
+              className={`flex items-center justify-center gap-2 rounded-2xl py-4 text-sm font-bold transition-all active:scale-[0.97] disabled:opacity-30 disabled:cursor-not-allowed ${
+                autoOn ? 'text-emerald-400' : 'text-white/60 hover:text-white/80'
+              }`}
+              style={autoOn
+                ? { background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)' }
+                : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              {autoOn ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              {autoOn ? 'Stop Auto' : 'Auto Coach'}
+            </button>
           </div>
-        </div>
-      )}
 
-      {/* How to use — shown when camera is off */}
-      {!cameraOn && (
-        <div className="rounded-xl bg-white/[0.02] border border-white/[0.055] p-4">
-          <p className="text-white/30 text-[9px] font-bold tracking-[0.12em] uppercase mb-3">Setup</p>
-          <div className="space-y-2.5">
-            {[
-              'Open CourtIQ on your phone in a browser',
-              'Tap "Start Camera" and allow access',
-              'Point your rear camera at your TV or monitor',
-              'Tap "Auto Coach" for continuous live tips',
-              'Turn on Voice to hear tips without looking away',
-            ].map((step, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <span className="w-5 h-5 rounded-full bg-rose-500/15 text-rose-400 text-[10px] font-black flex items-center justify-center shrink-0">{i + 1}</span>
-                <span className="text-white/35 text-xs">{step}</span>
-              </div>
-            ))}
+          {/* Secondary buttons */}
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              onClick={analyze}
+              disabled={!cameraOn || busy}
+              className="flex items-center justify-center gap-1.5 rounded-xl py-3 text-xs font-semibold text-white/45 hover:text-white/70 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              Snap
+            </button>
+
+            <button
+              onClick={() => setVoiceOn(v => !v)}
+              className={`flex items-center justify-center gap-1.5 rounded-xl py-3 text-xs font-semibold transition-all active:scale-95 ${
+                voiceOn ? 'text-amber-400' : 'text-white/40 hover:text-white/65'
+              }`}
+              style={voiceOn
+                ? { background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)' }
+                : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              {voiceOn ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+              {voiceOn ? 'Voice On' : 'Voice Off'}
+            </button>
+
+            <button
+              onClick={() => { setTips([]); setLatest(null) }}
+              className="flex items-center justify-center gap-1.5 rounded-xl py-3 text-xs font-semibold text-white/30 hover:text-white/55 transition-all active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Clear
+            </button>
           </div>
+
+          {/* Tip history */}
+          {tips.length > 1 && (
+            <div>
+              <p className="text-white/20 text-[9px] font-bold tracking-[0.12em] uppercase mb-2">Session Tips</p>
+              <div className="space-y-1.5">
+                {tips.slice(1, 6).map(t => {
+                  const p = PRIORITY[t.priority]
+                  return (
+                    <div
+                      key={t.timestamp}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
+                      style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.055)' }}
+                    >
+                      <span className="text-sm shrink-0">{CAT_ICON[t.category]}</span>
+                      <p className="text-white/40 text-xs leading-snug flex-1 line-clamp-2">{t.tip}</p>
+                      <span className={`text-[9px] font-black shrink-0 ${p.text}`}>{p.label}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Setup reminder when camera is off after being on */}
+          {!cameraOn && ready && !err && (
+            <div className="rounded-2xl p-4"
+              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <p className="text-white/25 text-[9px] font-bold tracking-[0.1em] uppercase mb-2.5">Quick Setup</p>
+              <div className="space-y-2">
+                {[
+                  'Open this page on your phone',
+                  'Point rear camera at your TV or monitor',
+                  'Tap Start Camera then Auto Coach',
+                  'Turn on Voice to hear tips hands-free',
+                ].map((s, i) => (
+                  <div key={i} className="flex items-center gap-2.5">
+                    <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-rose-400 shrink-0"
+                      style={{ background: 'rgba(225,29,72,0.12)' }}>{i + 1}</span>
+                    <span className="text-white/30 text-xs">{s}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
