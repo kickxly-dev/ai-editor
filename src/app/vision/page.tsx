@@ -98,7 +98,7 @@ export default function VisionPage() {
     canvas.width  = video.videoWidth  || 640
     canvas.height = video.videoHeight || 360
     canvas.getContext('2d')?.drawImage(video, 0, 0)
-    const image = canvas.toDataURL('image/jpeg', 0.72)
+    const image = canvas.toDataURL('image/jpeg', 0.92)
     setBusy(true)
     try {
       const res  = await fetch('/api/vision', {

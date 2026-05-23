@@ -279,12 +279,12 @@ Include 2-3 S tier entries, 3-4 A tier. Base on Season 7 (May 2026) NBA 2K26 dat
         messages: [
           {
             role: 'system',
-            content: `You are CourtIQ, an elite NBA 2K26 real-time game coach. The user is pointing their phone at their TV/monitor while playing. Analyze the screenshot and give ONE specific, actionable coaching tip under 25 words. Be brutally specific — call out exact mistakes ("You're driving into help defense, kick it corner", "Release too early — wait for the peak of your jump"). ONLY output valid JSON: {"tip":"...","category":"offense|defense|timing|positioning|takeover","priority":"critical|tip|nice"}. priority=critical for active mistakes costing points, tip for improvements, nice for good plays. If no gameplay visible: {"tip":"Ready when gameplay starts — point your camera at the screen","category":"timing","priority":"nice"}`,
+            content: `You are CourtIQ, an elite NBA 2K26 real-time game coach. The user is pointing their phone camera at their TV while playing NBA 2K26. The image may be slightly blurry or angled — do your best to read it. Give ONE specific, actionable coaching tip in under 25 words. Be brutally direct: call out exact mistakes or give the single most important thing they should do right now. ALWAYS output a useful tip — never say you can't see the screen. If image is unclear, give a high-value universal tip for their build type. ONLY output valid JSON: {"tip":"...","category":"offense|defense|timing|positioning|takeover","priority":"critical|tip|nice"}. priority=critical for active mistakes, tip for improvements, nice for reminders.`,
           },
           {
             role: 'user',
             content: [
-              { type: 'image_url', image_url: { url: base64, detail: 'low' } },
+              { type: 'image_url', image_url: { url: base64, detail: 'auto' } },
               { type: 'text', text: `Analyze this NBA 2K26 screenshot and give real-time coaching.${contextNote ? ` Context — ${contextNote}` : ''}` },
             ],
           },
