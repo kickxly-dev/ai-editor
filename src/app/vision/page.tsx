@@ -92,11 +92,14 @@ export default function VisionPage() {
     stopListening()
   }, [])
 
-  // ── Hands-free voice via VAD: tap mic once → continuous listening ──────────
-  // Speech detected → record. Silence for ~700ms → stop & transcribe. Repeat.
-  const VAD_THRESHOLD = 0.022
-  const SPEECH_MIN_MS = 120
-  const SILENCE_MS    = 700
+  // ── Hands-free voice via VAD with continuous recorder + pre-roll buffer ────
+  // MediaRecorder runs continuously when listening (no spin-up latency).
+  // VAD watches RMS, slices the rolling buffer when speech starts/ends.
+  const VAD_THRESHOLD     = 0.014    // lower = more sensitive
+  const SPEECH_MIN_MS     = 80       // shorter = catches short utterances
+  const SILENCE_MS        = 850      // longer = doesn't cut you off mid-thought
+  const TIMESLICE_MS      = 250      // recorder chunks every 250ms
+  const PREROLL_CHUNKS    = 2        // include ~500ms before speech started
 
   const startListening = async () => {
     setErr(null)
@@ -115,35 +118,29 @@ export default function VisionPage() {
       audioCtxRef.current = ctx
       analyserRef.current = an
 
-      const buf = new Uint8Array(an.fftSize)
-      let isRecording = false
-      let speechStart: number | null = null
-      let silenceStart: number | null = null
+      // Continuous recorder — runs the entire time mic is on
+      const mime = pickMime()
+      const rec  = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream)
+      const rolling: Blob[] = []
+      const MAX_BUFFER = 60 // ~15s of rolling audio
+      let captureStartIdx = -1
 
-      const startClip = () => {
-        const mime = pickMime()
-        const rec  = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream)
-        chunksRef.current = []
-        rec.ondataavailable = e => { if (e.data && e.data.size > 0) chunksRef.current.push(e.data) }
-        rec.onstop = async () => {
-          const blob = new Blob(chunksRef.current, { type: rec.mimeType || 'audio/webm' })
-          chunksRef.current = []
-          if (blob.size < 500) return
-          await transcribeAndSend(blob)
+      rec.ondataavailable = (e: BlobEvent) => {
+        if (!e.data || !e.data.size) return
+        rolling.push(e.data)
+        if (rolling.length > MAX_BUFFER) {
+          rolling.shift()
+          if (captureStartIdx > 0) captureStartIdx--
+          else if (captureStartIdx === 0) captureStartIdx = 0
         }
-        rec.start()
-        recorderRef.current = rec
-        isRecording = true
-        setRecording(true)
       }
+      rec.start(TIMESLICE_MS)
+      recorderRef.current = rec
 
-      const stopClip = () => {
-        const rec = recorderRef.current
-        recorderRef.current = null
-        isRecording = false
-        setRecording(false)
-        if (rec && rec.state !== 'inactive') { try { rec.stop() } catch { /* */ } }
-      }
+      const buf = new Uint8Array(an.fftSize)
+      let capturing: boolean = false
+      let speechStart: number | null  = null
+      let silenceStart: number | null = null
 
       const loop = () => {
         if (!analyserRef.current) return
@@ -153,21 +150,33 @@ export default function VisionPage() {
         const rms = Math.sqrt(sum / buf.length)
         const now = performance.now()
 
-        // Skip VAD entirely while TTS is reading the AI response (avoid self-recording)
+        // Barge-in: if user starts talking while TTS is reading, cancel TTS and listen
         if (speakingRef.current) {
-          speechStart  = null
-          silenceStart = null
-          if (isRecording) stopClip()
-          rafRef.current = requestAnimationFrame(loop)
-          return
+          // Slightly higher threshold here so the AI's own voice (leaking past echo
+          // cancellation) doesn't trigger barge-in. Real human speech easily clears it.
+          if (rms > VAD_THRESHOLD * 1.8) {
+            try { window.speechSynthesis.cancel() } catch { /* */ }
+            speakingRef.current = false
+            // fall through to normal VAD handling this frame
+          } else {
+            speechStart = null
+            silenceStart = null
+            rafRef.current = requestAnimationFrame(loop)
+            return
+          }
         }
 
         const isSpeech = rms > VAD_THRESHOLD
 
-        if (!isRecording) {
+        if (!capturing) {
           if (isSpeech) {
             if (speechStart === null) speechStart = now
-            if (now - speechStart > SPEECH_MIN_MS) startClip()
+            if (now - speechStart > SPEECH_MIN_MS) {
+              // Start capture with pre-roll — include last few chunks of audio
+              captureStartIdx = Math.max(0, rolling.length - PREROLL_CHUNKS)
+              capturing = true
+              setRecording(true)
+            }
           } else {
             speechStart = null
           }
@@ -177,9 +186,17 @@ export default function VisionPage() {
           } else {
             if (silenceStart === null) silenceStart = now
             if (now - silenceStart > SILENCE_MS) {
-              stopClip()
-              speechStart  = null
+              // Slice the rolling buffer from captureStartIdx → end, send to Whisper
+              const slice = rolling.slice(captureStartIdx)
+              capturing = false
+              captureStartIdx = -1
+              speechStart = null
               silenceStart = null
+              setRecording(false)
+              if (slice.length > 0) {
+                const blob = new Blob(slice, { type: rec.mimeType || 'audio/webm' })
+                if (blob.size > 400) transcribeAndSend(blob)
+              }
             }
           }
         }
@@ -199,10 +216,12 @@ export default function VisionPage() {
     setListening(false)
     setRecording(false)
     if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+    analyserRef.current = null
     const rec = recorderRef.current
     recorderRef.current = null
-    if (rec && rec.state !== 'inactive') { try { rec.stop() } catch { /* */ } }
-    analyserRef.current = null
+    if (rec && rec.state !== 'inactive') {
+      try { rec.ondataavailable = null as any; rec.stop() } catch { /* */ }
+    }
     audioCtxRef.current?.close().catch(() => {})
     audioCtxRef.current = null
     micStreamRef.current?.getTracks().forEach(t => t.stop())

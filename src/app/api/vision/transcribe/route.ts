@@ -20,7 +20,8 @@ export async function POST(req: NextRequest) {
       language: 'en',
       response_format: 'json',
       temperature: 0,
-    })
+      prompt: 'NBA 2K26 build, badges, jumpshot, dribble, takeover, MyCareer, REC, Park, Pro-Am, shot creator, lockdown, glass cleaner, perimeter defense, ankle breaker, deadeye, clamps.',
+    } as any)
 
     const text = (res as any).text?.trim() || ''
     return NextResponse.json({ text })
