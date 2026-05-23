@@ -26,20 +26,23 @@ const QUICK_PROMPTS = [
   'Am I winning this matchup?',
 ]
 
-// SpeechRecognition is webkit-prefixed in some browsers
-type SpeechRecognitionType = any
-declare global {
-  interface Window {
-    SpeechRecognition?: any
-    webkitSpeechRecognition?: any
+// Pick a MediaRecorder mime type the device supports — iOS prefers mp4, others webm
+function pickMime(): string {
+  if (typeof MediaRecorder === 'undefined') return ''
+  const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/mpeg', 'audio/ogg']
+  for (const m of candidates) {
+    try { if (MediaRecorder.isTypeSupported(m)) return m } catch { /* */ }
   }
+  return ''
 }
 
 export default function VisionPage() {
   const videoRef       = useRef<HTMLVideoElement>(null)
   const canvasRef      = useRef<HTMLCanvasElement>(null)
   const streamRef      = useRef<MediaStream | null>(null)
-  const recognitionRef = useRef<SpeechRecognitionType | null>(null)
+  const recorderRef    = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+  const micStreamRef   = useRef<MediaStream | null>(null)
   const speechUnlocked = useRef(false)
   const speakQueue     = useRef<string | null>(null)
   const scrollRef      = useRef<HTMLDivElement>(null)
@@ -83,32 +86,64 @@ export default function VisionPage() {
     stopListening()
   }, [])
 
-  // ── Voice input ───────────────────────────────────────────────────────────────
-  const startListening = () => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SR) {
-      setErr('Voice input not supported on this browser — use text input.')
-      return
+  // ── Voice input: record audio → Whisper transcription → send as question ─────
+  const startListening = async () => {
+    setErr(null)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      micStreamRef.current = stream
+      const mime = pickMime()
+      const rec  = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream)
+      audioChunksRef.current = []
+      rec.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data) }
+      rec.onstop = async () => {
+        const blob = new Blob(audioChunksRef.current, { type: rec.mimeType || 'audio/webm' })
+        micStreamRef.current?.getTracks().forEach(t => t.stop())
+        micStreamRef.current = null
+        if (blob.size < 1200) return // too short, probably a tap
+        await transcribeAndSend(blob)
+      }
+      rec.start()
+      recorderRef.current = rec
+      setListening(true)
+    } catch {
+      setErr('Microphone access denied — allow mic in your browser settings.')
+      setListening(false)
     }
-    const rec = new SR()
-    rec.lang = 'en-US'
-    rec.continuous = false
-    rec.interimResults = false
-    rec.onresult = (e: any) => {
-      const text = e.results[0]?.[0]?.transcript?.trim()
-      if (text) sendQuestion(text)
-    }
-    rec.onerror = () => setListening(false)
-    rec.onend   = () => setListening(false)
-    rec.start()
-    recognitionRef.current = rec
-    setListening(true)
   }
 
   const stopListening = () => {
-    recognitionRef.current?.stop?.()
-    recognitionRef.current = null
+    const rec = recorderRef.current
+    recorderRef.current = null
     setListening(false)
+    if (rec && rec.state !== 'inactive') {
+      try { rec.stop() } catch { /* */ }
+    } else {
+      micStreamRef.current?.getTracks().forEach(t => t.stop())
+      micStreamRef.current = null
+    }
+  }
+
+  const transcribeAndSend = async (blob: Blob) => {
+    setThinking(true)
+    try {
+      const ext  = (blob.type.split('/')[1] || 'webm').split(';')[0]
+      const file = new File([blob], `clip.${ext}`, { type: blob.type })
+      const form = new FormData()
+      form.append('audio', file)
+      const res  = await fetch('/api/vision/transcribe', { method: 'POST', body: form })
+      const data = await res.json()
+      const text: string = (data.text || '').trim()
+      if (text) {
+        await sendQuestion(text)
+      } else {
+        setErr("Couldn't hear that — try again.")
+      }
+    } catch {
+      setErr('Transcription failed — try again.')
+    } finally {
+      setThinking(false)
+    }
   }
 
   // ── Voice output ──────────────────────────────────────────────────────────────
