@@ -53,20 +53,21 @@ export const CURRENT_META: SeasonMetaConfig = {
     'Any build designed around LeBron hotback or D-Book signature animation chaining',
   ],
   deprecatedBadges: [
-    // Pre-2K26 badges (do not exist in any season of 2K26)
-    'Clamps', 'Quick Chain', 'Hyperdrive', 'Killer Combos', 'Acrobat',
+    // DO NOT exist in any version of NBA 2K26
+    'Clamps', 'Quick First Step', 'Quick Chain', 'Hyperdrive', 'Killer Combos', 'Acrobat',
     'Contact Finisher', 'Green Machine', 'Guard Up', 'Hot Zone Hunter',
     'Anchor', 'Box', 'Chase Down Artist', 'Intimidator', 'Menace',
     'Floor General', 'Catch & Shoot', 'Corner Specialist', 'Volume Shooter',
     'Giant Slayer', 'Slithery', 'Tear Dropper', 'Bullet Passer',
+    'Space Creator', 'Dream Shake', 'Post Prodigy',
     // Season 6 and earlier 2K26 badges deprecated in Season 7
     'Speed Booster', 'Blinders', 'Agent 3', 'Vice Grip',
   ],
   metaNotes: [
     "Season 7 rewards height. Do NOT recommend small guard builds (under 6'2\") without explicitly flagging the nerf.",
     'Two-way versatile builds remain optimal. Pure specialists underperform.',
-    'Lightning Launch is still the sleeper S-tier badge on any scoring build.',
-    'Challenger + Interceptor remains the elite defensive combo for perimeter locks.',
+    'Unpluckable + Lightning Launch is the core S-tier guard badge combo — both are S tier.',
+    'Challenger + Interceptor is the elite defensive combo. Challenger replaced Clamps.',
     "Patty Mills base remains S-tier for guards under 6'5\".",
   ],
 }
@@ -85,32 +86,38 @@ Wings 6'5"–6'9": Patty Mills, Quinton Grimes, mid-speed combos · Upper: balan
 Bigs 6'10"–7'4": Dirk Nowitzki standing base, Kevin Durant base · Prioritize green window over speed
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ALL NBA 2K26 SEASON 7 BADGES (verified — real badges only)
+ALL NBA 2K26 BADGES — VERIFIED FROM 2KLAB + NBA2KW (real badges only, 40 total)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-FINISHING: Aerial Wizard (B), Float Game (B), High-Flying Denier (A), Hook Specialist (C),
-  Layup Mixmaster (B), Lightning Launch (S), Paint Prodigy (D), Physical Finisher (C),
-  Post Fade Phenom (B), Post Powerhouse (B), Post Prodigy (C), Post Up Poet (B),
-  Posterizer (A), Rise Up (A), Slippery Off-Ball (C)
-SHOOTING: Deadeye (S), Limitless Range (A), Mini Marksman (A), Set Shot Specialist (S), Shifty Shooter (S)
-PLAYMAKING: Ankle Assassin (B), Bail Out (B), Break Starter (A), Dimer (S), Handles for Days (A),
-  Pick Dodger (A), Strong Handle (A), Unpluckable (B), Versatile Visionary (A)
-DEFENSE/REBOUNDING: Boxout Beast (A), Brick Wall (A), Challenger (S), Glove (B),
-  Immovable Enforcer (A), Interceptor (S), Off-Ball Pest (A), On-Ball Menace (A),
-  Paint Patroller (A), Pogo Stick (S), Post Lockdown (B), Rebound Chaser (S)
+FINISHING (11): Aerial Wizard, Float Game, Hook Specialist, Layup Mixmaster,
+  Paint Prodigy, Physical Finisher, Post Fade Phenom, Post Powerhouse,
+  Post Up Poet, Posterizer, Rise Up
+SHOOTING (5): Deadeye, Limitless Range, Mini Marksman, Set Shot Specialist, Shifty Shooter
+PLAYMAKING (9): Ankle Assassin, Bail Out, Break Starter, Dimer,
+  Handles for Days, Lightning Launch, Strong Handle, Unpluckable, Versatile Visionary
+DEFENSE (10): Challenger, Glove, High-Flying Denier, Immovable Enforcer,
+  Interceptor, Off-Ball Pest, On-Ball Menace, Paint Patroller, Pick Dodger, Post Lockdown
+REBOUNDING (2): Boxout Beast, Rebound Chaser
+ALL-AROUND (3): Brick Wall, Pogo Stick, Slippery Off-Ball
 
-TIER LIST:
-S: Set Shot Specialist, Deadeye, Pogo Stick, Lightning Launch, Dimer, Shifty Shooter, Rebound Chaser, Interceptor, Challenger
-A: Strong Handle, Immovable Enforcer, Versatile Visionary, Boxout Beast, Break Starter, Mini Marksman, On-Ball Menace, Posterizer, Limitless Range, High-Flying Denier, Rise Up, Paint Patroller, Handles for Days, Brick Wall, Pick Dodger, Off-Ball Pest
-B: Bail Out, Ankle Assassin, Float Game, Unpluckable, Layup Mixmaster, Post Lockdown, Glove, Aerial Wizard, Post Fade Phenom, Post Powerhouse, Post Up Poet
-C: Physical Finisher, Slippery Off-Ball, Post Prodigy, Hook Specialist · D: Paint Prodigy
+TIER LIST (community-tested, 2KLab + Operation Sports verified):
+S: Unpluckable, Lightning Launch, Deadeye, Pogo Stick, Posterizer, Shifty Shooter,
+   Interceptor, Set Shot Specialist, Float Game, Immovable Enforcer, Rebound Chaser,
+   Strong Handle, Paint Patroller, Handles for Days, Challenger
+A: On-Ball Menace, Rise Up, Boxout Beast, Break Starter, Post Lockdown, Dimer,
+   Physical Finisher, Pick Dodger, Brick Wall, Post Powerhouse, Paint Prodigy,
+   Limitless Range, High-Flying Denier
+B: Bail Out, Ankle Assassin, Mini Marksman, Layup Mixmaster, Aerial Wizard,
+   Post Fade Phenom, Off-Ball Pest, Versatile Visionary
+C: Post Up Poet, Hook Specialist
+D: Slippery Off-Ball
+F: Glove (weakest badge in 2K26 — avoid)
 
-BEST BADGES BY POSITION:
-  PG (scoring):   Shifty Shooter, Deadeye, Dimer, Lightning Launch, Handles for Days, Strong Handle
-  PG (pass-first): Dimer, Set Shot Specialist, Break Starter, Versatile Visionary, Handles for Days
-  SG: Deadeye, Set Shot Specialist, Limitless Range, Shifty Shooter, Ankle Assassin
-  SF: Deadeye, Posterizer, Limitless Range, On-Ball Menace, Challenger
-  PF: Posterizer, Rise Up, Rebound Chaser, Pogo Stick, Immovable Enforcer
-  C:  Pogo Stick, Rebound Chaser, Paint Patroller, Immovable Enforcer, Boxout Beast, Interceptor
+BEST BADGES BY POSITION (verified):
+  PG:  Unpluckable (S), Lightning Launch (S), Handles for Days (S), Strong Handle (S), Deadeye (S), Shifty Shooter (S)
+  SG:  Deadeye (S), Set Shot Specialist (S), Shifty Shooter (S), Limitless Range (A), Unpluckable (S)
+  SF:  Posterizer (S), Interceptor (S), Immovable Enforcer (S), Challenger (S), Boxout Beast (A)
+  PF:  Paint Prodigy (A), Post Lockdown (A), Boxout Beast (A), Rebound Chaser (S), Pogo Stick (S)
+  C:   Paint Prodigy (A), High-Flying Denier (A), Rebound Chaser (S), Boxout Beast (A), Pogo Stick (S), Paint Patroller (S)
 
 BEST BUILDS BY POSITION:
   PG 6'4"–6'5": Shot Creator Guard — 90+ ball_handle, 85+ three_point (BUFFED in Season 7)
