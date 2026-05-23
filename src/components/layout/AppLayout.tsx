@@ -65,7 +65,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         >
           {/* Mobile top header */}
           <div className="sticky top-0 z-30 md:hidden flex items-center justify-between px-4 h-14"
-            style={{ background: 'rgba(8,8,10,0.94)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
+            style={{ background: 'rgba(8,8,10,0.96)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.09)' }}>
             <button
               onClick={() => setMobileOpen(true)}
               className="w-9 h-9 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/[0.06] transition-colors"
@@ -74,7 +74,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </button>
             <Link href="/" className="flex items-center gap-2">
               <CourtIQLogo className="w-6 h-6" />
-              <span className="display text-[15px] font-bold text-white">Court<span className="text-rose-400">IQ</span></span>
+              <span className="text-[16px] font-black text-white tracking-tight">Court<span style={{ color: '#E11D48' }}>IQ</span></span>
             </Link>
             <div className="w-9" />
           </div>
@@ -83,7 +83,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
           {/* Mobile bottom nav */}
           <div className="md:hidden fixed bottom-0 inset-x-0 z-30 flex safe-area-bottom"
-            style={{ background: 'rgba(9,9,11,0.97)', backdropFilter: 'blur(24px)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            style={{ background: 'rgba(9,9,11,0.97)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderTop: '1px solid rgba(255,255,255,0.09)' }}>
             {BOTTOM_TABS.map(({ href, label, icon: Icon, highlight }) => {
               const active = path === href || (href !== '/dashboard' && path.startsWith(href))
               if (highlight) {

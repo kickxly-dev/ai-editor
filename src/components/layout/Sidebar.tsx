@@ -80,11 +80,11 @@ export default function Sidebar({ collapsed, onCollapse, mobileOpen, onMobileClo
         'fixed left-0 top-0 h-screen z-50 flex flex-col overflow-hidden',
         isMobile && !mobileOpen ? 'pointer-events-none' : ''
       )}
-      style={{ background: '#09090E', borderRight: '1px solid rgba(255,255,255,0.05)' }}
+      style={{ background: 'rgba(10,10,14,0.97)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderRight: '1px solid rgba(255,255,255,0.09)' }}
     >
       {/* ── Header ── */}
       <div className="h-14 flex items-center px-3.5 flex-shrink-0 justify-between"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <Link href="/" className="flex items-center gap-2.5 min-w-0" onClick={isMobile ? onMobileClose : undefined}>
           <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.96 }} className="flex-shrink-0">
             <CourtIQLogo className="w-6 h-6" />
@@ -96,9 +96,9 @@ export default function Sidebar({ collapsed, onCollapse, mobileOpen, onMobileClo
                 animate={{ opacity: 1, width: 'auto' }}
                 exit={{ opacity: 0, width: 0 }}
                 transition={{ duration: 0.16 }}
-                className="display text-[15px] font-bold text-white whitespace-nowrap overflow-hidden"
+                className="text-[16px] font-black text-white whitespace-nowrap overflow-hidden tracking-tight"
               >
-                Court<span className="text-rose-400">IQ</span>
+                Court<span style={{ color: '#E11D48' }}>IQ</span>
               </motion.span>
             )}
           </AnimatePresence>
@@ -170,11 +170,11 @@ export default function Sidebar({ collapsed, onCollapse, mobileOpen, onMobileClo
             {gi > 0 && (
               <div className="pt-3 pb-1">
                 {showLabels && group.label ? (
-                  <p className="px-2 text-[9px] font-semibold text-white/20 uppercase tracking-[0.18em] select-none">
+                  <p className="px-2 text-[9px] font-bold text-white/35 uppercase tracking-[0.2em] select-none">
                     {group.label}
                   </p>
                 ) : (
-                  <div className="mx-1" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }} />
+                  <div className="mx-1" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }} />
                 )}
               </div>
             )}
@@ -188,13 +188,13 @@ export default function Sidebar({ collapsed, onCollapse, mobileOpen, onMobileClo
                   className={cn(
                     'flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-100 relative mb-px',
                     !showLabels && 'justify-center',
-                    active ? 'text-white' : 'text-white/35 hover:text-white/65 hover:bg-white/[0.03]'
+                    active ? 'text-white' : 'text-white/45 hover:text-white/75 hover:bg-white/[0.05]'
                   )}
                 >
                   {active && (
                     <motion.div layoutId="sidebar-pill"
                       className="absolute inset-0 rounded-lg"
-                      style={{ background: 'rgba(225,29,72,0.09)', border: '1px solid rgba(225,29,72,0.15)' }}
+                      style={{ background: 'rgba(225,29,72,0.13)', border: '1px solid rgba(225,29,72,0.22)', boxShadow: '0 0 12px rgba(225,29,72,0.1) inset' }}
                       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                     />
                   )}
@@ -258,7 +258,7 @@ export default function Sidebar({ collapsed, onCollapse, mobileOpen, onMobileClo
       </nav>
 
       {/* ── Bottom ── */}
-      <div className="flex-shrink-0 px-2.5 py-2 space-y-px" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+      <div className="flex-shrink-0 px-2.5 py-2 space-y-px" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
         {session?.user && (
           <Link href="/profile"
             title={!showLabels ? 'Profile' : undefined}
@@ -281,7 +281,7 @@ export default function Sidebar({ collapsed, onCollapse, mobileOpen, onMobileClo
                   transition={{ duration: 0.14 }}
                   className="overflow-hidden min-w-0 flex-1"
                 >
-                  <p className="text-[12px] text-white/70 font-medium truncate leading-none">
+                  <p className="text-[12px] text-white/80 font-semibold truncate leading-none">
                     {session.user.name || session.user.email}
                   </p>
                   <p className="text-[9px] text-white/25 mt-0.5">
