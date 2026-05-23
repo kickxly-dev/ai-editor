@@ -36,7 +36,7 @@ const CAT_ICON: Record<Category, string> = {
   offense: '⚡', defense: '🛡️', timing: '⏱️', positioning: '📍', takeover: '🔥',
 }
 
-const INTERVALS = [{ label: '3s', ms: 3000 }, { label: '5s', ms: 5000 }, { label: '10s', ms: 10000 }]
+const INTERVALS = [{ label: '1s', ms: 1000 }, { label: '2s', ms: 2000 }, { label: '3s', ms: 3000 }]
 
 const BUILD_OPTS = [
   '', 'Shot Creator Guard', 'Two-Way Guard', 'Playmaking Wing',
@@ -44,16 +44,17 @@ const BUILD_OPTS = [
 ]
 
 export default function VisionPage() {
-  const videoRef  = useRef<HTMLVideoElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const streamRef = useRef<MediaStream | null>(null)
-  const timerRef  = useRef<ReturnType<typeof setInterval> | null>(null)
+  const videoRef       = useRef<HTMLVideoElement>(null)
+  const canvasRef      = useRef<HTMLCanvasElement>(null)
+  const streamRef      = useRef<MediaStream | null>(null)
+  const timerRef       = useRef<ReturnType<typeof setInterval> | null>(null)
+  const speechUnlocked = useRef(false)
 
   const [cameraOn,    setCameraOn]    = useState(false)
   const [autoOn,      setAutoOn]      = useState(false)
   const [busy,        setBusy]        = useState(false)
   const [voiceOn,     setVoiceOn]     = useState(false)
-  const [intervalMs,  setIntervalMs]  = useState(5000)
+  const [intervalMs,  setIntervalMs]  = useState(2000)
   const [build,       setBuild]       = useState('')
   const [tips,        setTips]        = useState<CoachTip[]>([])
   const [latest,      setLatest]      = useState<CoachTip | null>(null)
@@ -112,10 +113,11 @@ export default function VisionPage() {
         }
         setLatest(t)
         setTips(prev => [t, ...prev.slice(0, 9)])
-        if (voiceOn && 'speechSynthesis' in window) {
+        if (voiceOn && speechUnlocked.current && 'speechSynthesis' in window) {
           window.speechSynthesis.cancel()
           const u = new SpeechSynthesisUtterance(data.tip)
-          u.rate = 1.1
+          u.rate = 1.15
+          u.volume = 1
           window.speechSynthesis.speak(u)
         }
       }
@@ -404,7 +406,18 @@ export default function VisionPage() {
             </button>
 
             <button
-              onClick={() => setVoiceOn(v => !v)}
+              onClick={() => {
+                const next = !voiceOn
+                setVoiceOn(next)
+                if (next && 'speechSynthesis' in window) {
+                  // Unlock speech synthesis with a silent utterance on the user gesture
+                  const unlock = new SpeechSynthesisUtterance(' ')
+                  unlock.volume = 0
+                  window.speechSynthesis.cancel()
+                  window.speechSynthesis.speak(unlock)
+                  speechUnlocked.current = true
+                }
+              }}
               className={`flex items-center justify-center gap-1.5 rounded-xl py-3 text-xs font-semibold transition-all active:scale-95 ${
                 voiceOn ? 'text-amber-400' : 'text-white/40 hover:text-white/65'
               }`}
