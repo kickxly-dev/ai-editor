@@ -289,7 +289,7 @@ export default function VisionPage() {
       finally { busy = false }
     }
 
-    const id = setInterval(tick, 3000)
+    const id = setInterval(tick, 1000)
     tick()
     return () => { cancelled = true; clearInterval(id) }
   }, [autoWatch, cameraOn, build, voiceOn, thinking, recording, messages])
