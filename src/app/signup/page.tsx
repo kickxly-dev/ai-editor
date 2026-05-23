@@ -2,8 +2,9 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, ArrowRight, Trophy, Users, Star } from 'lucide-react'
 import { signIn } from 'next-auth/react'
+import { CourtIQLogo } from '@/components/ui/Logo'
 
 export default function SignupPage() {
   const [username, setUsername] = useState('')
@@ -18,16 +19,8 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.')
-      return
-    }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters.')
-      return
-    }
-
+    if (password !== confirmPassword) { setError('Passwords do not match.'); return }
+    if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
     setLoading(true)
     try {
       const res = await fetch('/api/auth/signup', {
@@ -35,137 +28,165 @@ export default function SignupPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, username }),
       })
-
       const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error || 'Signup failed. Please try again.')
-        setLoading(false)
-        return
-      }
-
-      // Sign in after successful signup
-      const result = await signIn('credentials', {
-        email,
-        password,
-        callbackUrl: '/dashboard',
-        redirect: false,
-      })
-
-      if (result?.error) {
-        setError('Account created! Please sign in.')
-        window.location.href = '/login'
-      } else if (result?.url) {
-        window.location.href = result.url
-      }
+      if (!res.ok) { setError(data.error || 'Signup failed.'); setLoading(false); return }
+      const result = await signIn('credentials', { email, password, callbackUrl: '/dashboard', redirect: false })
+      if (result?.error) { window.location.href = '/login' }
+      else if (result?.url) { window.location.href = result.url }
     } catch {
       setError('Something went wrong. Please try again.')
       setLoading(false)
     }
   }
 
+  const inputStyle = {
+    background: 'rgba(255,255,255,0.045)',
+    border: '1px solid rgba(255,255,255,0.08)',
+  }
+  const onFocus = (e: React.FocusEvent<HTMLInputElement>) => { e.target.style.borderColor = 'rgba(225,29,72,0.5)' }
+  const onBlur = (e: React.FocusEvent<HTMLInputElement>) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)' }
+
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center px-4 relative overflow-hidden">
-      {/* bg glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-crimson-radial opacity-50" />
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-10 relative overflow-hidden"
+      style={{ background: '#08080a' }}>
+
+      {/* Ambient glow */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full opacity-30"
+          style={{ background: 'radial-gradient(ellipse, #E11D4820 0%, transparent 70%)' }} />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-15"
+          style={{ background: 'radial-gradient(ellipse, #8B5CF620 0%, transparent 70%)' }} />
       </div>
 
       {/* Grid */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden>
+      <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40" aria-hidden>
         <defs>
-          <pattern id="g" width="60" height="60" patternUnits="userSpaceOnUse">
-            <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="1" />
+          <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+            <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(255,255,255,0.025)" strokeWidth="1" />
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill="url(#g)" />
+        <rect width="100%" height="100%" fill="url(#grid)" />
       </svg>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 w-full max-w-sm">
-        <Link href="/login" className="flex items-center gap-2 text-fg-muted hover:text-fg transition-colors text-sm mb-8">
-          <ArrowLeft className="w-4 h-4" /> Back to Sign In
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 280, damping: 26 }}
+        className="relative z-10 w-full max-w-[400px]"
+      >
+        {/* Logo */}
+        <Link href="/" className="flex items-center justify-center gap-2.5 mb-8">
+          <div className="w-11 h-11 rounded-2xl flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #E11D48 0%, #7C3AED 100%)' }}>
+            <CourtIQLogo className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-[22px] font-black text-white tracking-tight">
+            Court<span style={{ color: '#E11D48' }}>IQ</span>
+          </span>
         </Link>
 
-        <div className="card p-8">
-          {/* Logo */}
-          <div className="flex justify-center mb-8">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-violet-600 flex items-center justify-center">
-                <span className="display text-white font-bold">C</span>
+        {/* Social proof */}
+        <div className="flex items-center justify-center gap-1.5 mb-6">
+          <div className="flex -space-x-2">
+            {['#E11D48', '#8B5CF6', '#38BDF8', '#10B981'].map((c, i) => (
+              <div key={i} className="w-6 h-6 rounded-full border-2 flex items-center justify-center text-[8px] font-bold text-white"
+                style={{ borderColor: '#08080a', background: c }}>
+                {['K', 'J', 'M', 'D'][i]}
               </div>
-              <span className="display text-xl font-bold text-fg">Court<span className="text-rose-400">IQ</span></span>
-            </Link>
+            ))}
           </div>
+          <span className="text-[12px] text-white/40 ml-1">Join 2,400+ 2K players</span>
+        </div>
 
-          <h1 className="text-xl font-bold text-fg text-center mb-1.5">Create your account</h1>
-          <p className="text-fg-muted text-sm text-center mb-8">Join the CourtIQ community and level up your game.</p>
+        {/* Card */}
+        <div className="rounded-3xl p-8"
+          style={{ background: 'rgba(255,255,255,0.032)', border: '1px solid rgba(255,255,255,0.08)' }}>
+
+          <div className="mb-7">
+            <h1 className="text-[26px] font-black text-white tracking-tight leading-tight">Create account</h1>
+            <p className="text-white/45 text-[14px] mt-1.5">Level up your 2K game with AI</p>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-fg-muted mb-1.5 uppercase tracking-wider">Username</label>
+              <label className="block text-[11px] font-bold uppercase tracking-[0.16em] text-white/40 mb-2">
+                Gamertag / Username
+              </label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="YourGamertag"
-                className="input"
                 required
                 autoComplete="username"
+                className="w-full h-11 px-4 rounded-xl text-[14px] text-white placeholder-white/25 outline-none transition-all duration-200"
+                style={inputStyle}
+                onFocus={onFocus}
+                onBlur={onBlur}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-fg-muted mb-1.5 uppercase tracking-wider">Email</label>
+              <label className="block text-[11px] font-bold uppercase tracking-[0.16em] text-white/40 mb-2">
+                Email
+              </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="input"
                 required
                 autoComplete="email"
+                className="w-full h-11 px-4 rounded-xl text-[14px] text-white placeholder-white/25 outline-none transition-all duration-200"
+                style={inputStyle}
+                onFocus={onFocus}
+                onBlur={onBlur}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-fg-muted mb-1.5 uppercase tracking-wider">Password</label>
+              <label className="block text-[11px] font-bold uppercase tracking-[0.16em] text-white/40 mb-2">
+                Password
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min. 8 characters"
-                  className="input pr-10"
                   required
                   autoComplete="new-password"
+                  className="w-full h-11 px-4 pr-11 rounded-xl text-[14px] text-white placeholder-white/25 outline-none transition-all duration-200"
+                  style={inputStyle}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg transition-colors"
-                >
+                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-fg-muted mb-1.5 uppercase tracking-wider">Confirm Password</label>
+              <label className="block text-[11px] font-bold uppercase tracking-[0.16em] text-white/40 mb-2">
+                Confirm Password
+              </label>
               <div className="relative">
                 <input
                   type={showConfirm ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter password"
-                  className="input pr-10"
                   required
                   autoComplete="new-password"
+                  className="w-full h-11 px-4 pr-11 rounded-xl text-[14px] text-white placeholder-white/25 outline-none transition-all duration-200"
+                  style={inputStyle}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg transition-colors"
-                >
+                <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
                   {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -173,9 +194,10 @@ export default function SignupPage() {
 
             {error && (
               <motion.div
-                initial={{ opacity: 0, y: -8 }}
+                initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-3 rounded-lg text-sm text-rose-400 bg-rose-500/10 border border-rose-500/20"
+                className="px-4 py-3 rounded-xl text-[13px]"
+                style={{ background: 'rgba(225,29,72,0.1)', border: '1px solid rgba(225,29,72,0.25)', color: '#f87171' }}
               >
                 {error}
               </motion.div>
@@ -184,21 +206,47 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-primary w-full h-11 text-sm"
+              className="w-full h-11 rounded-xl text-[14px] font-bold text-white transition-all duration-200 flex items-center justify-center gap-2 mt-2"
+              style={{ background: loading ? 'rgba(225,29,72,0.5)' : '#E11D48' }}
             >
               {loading ? (
                 <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
               ) : (
-                'Create Account'
+                <>Create Account <ArrowRight className="w-4 h-4" /></>
               )}
             </button>
           </form>
 
-          <p className="text-fg-subtle text-xs text-center mt-6">
-            Already have an account?{' '}
-            <Link href="/login" className="text-rose-400 hover:underline">Sign in</Link>
-          </p>
+          <div className="my-6 flex items-center gap-3">
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+            <span className="text-[11px] text-white/25 font-medium">What you get</span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+          </div>
+
+          <div className="space-y-2.5">
+            {[
+              { icon: Star,   text: 'AI build optimizer & analyst', color: '#E11D48' },
+              { icon: Trophy, text: 'Real-time meta tier lists', color: '#F59E0B' },
+              { icon: Users,  text: 'Community builds & squads', color: '#38BDF8' },
+            ].map(({ icon: Icon, text, color }) => (
+              <div key={text} className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: `${color}14` }}>
+                  <Icon className="w-3 h-3" style={{ color }} />
+                </div>
+                <span className="text-[13px] text-white/45">{text}</span>
+              </div>
+            ))}
+          </div>
         </div>
+
+        <p className="text-center text-[13px] text-white/30 mt-5">
+          Already have an account?{' '}
+          <Link href="/login" className="font-semibold hover:text-white/60 transition-colors"
+            style={{ color: '#E11D48' }}>
+            Sign in
+          </Link>
+        </p>
       </motion.div>
     </div>
   )

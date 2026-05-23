@@ -420,7 +420,7 @@ export default function BuildsPage() {
               </div>
               <span className="text-rose-400 text-[10px] font-bold tracking-[0.2em] uppercase">Build Database</span>
             </div>
-            <h1 className="display text-4xl text-white mb-1">Community Builds</h1>
+            <h1 className="text-[28px] md:text-[34px] font-black text-white leading-[1.05] tracking-tight mb-1">Community Builds</h1>
             <p className="text-white/35 text-sm">Real builds scraped from Reddit — updated every 30 minutes</p>
           </div>
           <button onClick={() => fetchBuilds(true)} disabled={refreshing || loading}

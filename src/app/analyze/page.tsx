@@ -166,15 +166,21 @@ export default function AnalyzePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
 
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-rose-400" />
+        <div className="flex items-start justify-between gap-4 mb-8">
+          <div className="flex items-start gap-4">
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(225,29,72,0.1)', border: '1px solid rgba(225,29,72,0.2)' }}>
+              <Zap className="w-5 h-5" style={{ color: '#E11D48' }} />
             </div>
-            <span className="text-rose-400 text-xs font-semibold tracking-widest uppercase">AI Build Analyzer</span>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1.5"
+                style={{ color: 'rgba(225,29,72,0.8)' }}>AI Build Analyzer</p>
+              <h1 className="text-[28px] md:text-[34px] font-black text-white leading-[1.05] tracking-tight">
+                Analyze Your Build
+              </h1>
+              <p className="text-white/40 text-[14px] mt-1.5">Enter stats manually or upload a screenshot. Groq AI does the rest.</p>
+            </div>
           </div>
-          <h1 className="display text-4xl text-fg mb-1">Analyze Your Build</h1>
-          <p className="text-fg-muted text-sm">Enter stats manually or upload a screenshot. Groq AI does the rest.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

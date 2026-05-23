@@ -218,18 +218,20 @@ export default function OptimizePage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-16">
 
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
-              <Wand2 className="w-5 h-5 text-rose-400" />
-            </div>
-            <span className="text-rose-400 text-xs font-semibold tracking-widest uppercase">Build Optimizer</span>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+          className="flex items-start gap-4 mb-8">
+          <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ background: 'rgba(225,29,72,0.1)', border: '1px solid rgba(225,29,72,0.2)' }}>
+            <Wand2 className="w-5 h-5" style={{ color: '#E11D48' }} />
           </div>
-          <h1 className="display text-4xl text-fg mb-1">Describe Your Player</h1>
-          <p className="text-fg-muted text-sm">Describe your playstyle in plain English. The AI builds the exact attributes, badges, and animations to match — no guesswork.</p>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1.5"
+              style={{ color: 'rgba(225,29,72,0.8)' }}>Build Optimizer</p>
+            <h1 className="text-[28px] md:text-[34px] font-black text-white leading-[1.05] tracking-tight">
+              Describe Your Player
+            </h1>
+            <p className="text-white/40 text-[14px] mt-1.5">Describe your playstyle in plain English. The AI builds the exact attributes, badges, and animations to match — no guesswork.</p>
+          </div>
         </motion.div>
 
         {/* Input Card */}

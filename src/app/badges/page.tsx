@@ -129,12 +129,18 @@ export default function BadgesPage() {
     <AppLayout>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-16">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <div className="flex items-center gap-2 mb-1">
-            <Award className="w-5 h-5 text-rose-400" />
-            <span className="text-xs font-semibold text-rose-400 uppercase tracking-wider">Badge Reference</span>
+          <div className="flex items-start gap-4">
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(225,29,72,0.1)', border: '1px solid rgba(225,29,72,0.2)' }}>
+              <Award className="w-5 h-5" style={{ color: '#E11D48' }} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1.5"
+                style={{ color: 'rgba(225,29,72,0.8)' }}>Badge Reference</p>
+              <h1 className="text-[28px] md:text-[34px] font-black text-white leading-[1.05] tracking-tight">Season 5 Badges</h1>
+              <p className="text-white/40 text-[14px] mt-1.5">All verified NBA 2K26 Season 5 badges — tier rankings, categories, and coaching notes.</p>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-fg">Season 5 Badges</h1>
-          <p className="text-fg-muted mt-1">All verified NBA 2K26 Season 5 badges — tier rankings, categories, and coaching notes.</p>
         </motion.div>
 
         {/* Tabs */}

@@ -684,7 +684,7 @@ export default function MatchupPage() {
             </motion.div>
             <span className="text-rose-400 text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase">Matchup Lab</span>
           </div>
-          <h1 className="display text-3xl sm:text-4xl text-white mb-1">1v1 Simulator</h1>
+          <h1 className="text-[26px] sm:text-[34px] font-black text-white leading-[1.05] tracking-tight mb-1">1v1 Simulator</h1>
           <p className="text-white/35 text-xs sm:text-sm">Compare two builds head-to-head. Get AI win probability, attribute breakdown, and coaching tips.</p>
         </motion.div>
 

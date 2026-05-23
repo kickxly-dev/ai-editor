@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brain, Send, User, RotateCcw, Copy, Check, Globe } from 'lucide-react'
+import { Brain, Send, User, RotateCcw, Copy, Check, Globe, Sparkles } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import { CoachMessage } from '@/types'
 import { cn } from '@/lib/utils'
@@ -9,7 +9,7 @@ import toast from 'react-hot-toast'
 
 const STARTERS = [
   'What badges should I prioritize for a Shot Creator?',
-  'Best jumpshot for a 6\'4" guard right now?',
+  "Best jumpshot for a 6'4\" guard right now?",
   'How do I stop getting cooked on perimeter defense?',
   'Why do I keep getting blocked going to the rim?',
   'What animations should I use for park?',
@@ -22,25 +22,31 @@ function Message({ msg, searched }: { msg: CoachMessage; searched?: string }) {
 
   const copy = () => {
     navigator.clipboard.writeText(msg.content)
-    setCopied(true); setTimeout(() => setCopied(false), 1800)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1800)
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       className={cn('flex gap-3', isUser ? 'justify-end' : 'justify-start')}
     >
       {!isUser && (
-        <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-          <Brain className="w-4 h-4 text-rose-400" />
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+          style={{ background: 'rgba(225,29,72,0.12)', border: '1px solid rgba(225,29,72,0.2)' }}>
+          <Brain className="w-4 h-4" style={{ color: '#E11D48' }} />
         </div>
       )}
-      <div className={cn('max-w-[78%] group', isUser ? 'items-end' : 'items-start flex flex-col')}>
-        <div className={cn(
-          'px-4 py-3 text-sm leading-relaxed',
-          isUser
-            ? 'bg-rose-500 text-white rounded-2xl rounded-tr-sm'
-            : 'bg-card border border-border text-fg rounded-2xl rounded-tl-sm'
-        )}>
+      <div className={cn('max-w-[80%] group', isUser ? 'items-end' : 'items-start flex flex-col')}>
+        <div
+          className={cn('px-4 py-3 text-[14px] leading-relaxed', isUser ? 'text-white rounded-2xl rounded-tr-sm' : 'text-white/90 rounded-2xl rounded-tl-sm')}
+          style={isUser
+            ? { background: '#E11D48' }
+            : { background: 'rgba(255,255,255,0.048)', border: '1px solid rgba(255,255,255,0.07)' }
+          }
+        >
           {msg.content.split('\n').map((line, i) => (
             <p key={i} className={line === '' ? 'h-3' : undefined}>{line}</p>
           ))}
@@ -48,20 +54,23 @@ function Message({ msg, searched }: { msg: CoachMessage; searched?: string }) {
         {!isUser && (
           <div className="flex items-center gap-3 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
             {searched && (
-              <span className="flex items-center gap-1 text-xs text-white/25">
+              <span className="flex items-center gap-1 text-[11px] text-white/30">
                 <Globe className="w-3 h-3 text-sky-400/60" />
                 <span className="text-sky-400/60">searched: {searched}</span>
               </span>
             )}
-            <button onClick={copy} className="flex items-center gap-1 text-xs text-fg-subtle hover:text-fg-muted">
-              {copied ? <><Check className="w-3 h-3 text-emerald-400" /><span className="text-emerald-400">Copied</span></> : <><Copy className="w-3 h-3" /> Copy</>}
+            <button onClick={copy} className="flex items-center gap-1 text-[11px] text-white/30 hover:text-white/60 transition-colors">
+              {copied
+                ? <><Check className="w-3 h-3 text-emerald-400" /><span className="text-emerald-400">Copied</span></>
+                : <><Copy className="w-3 h-3" />Copy</>}
             </button>
           </div>
         )}
       </div>
       {isUser && (
-        <div className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center flex-shrink-0 mt-0.5">
-          <User className="w-4 h-4 text-fg-muted" />
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <User className="w-4 h-4 text-white/50" />
         </div>
       )}
     </motion.div>
@@ -83,23 +92,29 @@ export default function CoachPage() {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs])
 
+  const reset = () => {
+    setMsgs([{ id: '0', role: 'assistant', content: "New session. What do you want to work on?", timestamp: new Date().toISOString() }])
+    setShowStarters(true)
+  }
+
   const send = async (text?: string) => {
     const content = (text || input).trim()
     if (!content || loading) return
-
     const userMsg: CoachMessageWithSearch = { id: Date.now().toString(), role: 'user', content, timestamp: new Date().toISOString() }
     setMsgs(p => [...p, userMsg])
-    setInput(''); setShowStarters(false); setLoading(true)
-
+    setInput('')
+    setShowStarters(false)
+    setLoading(true)
     try {
       const res = await fetch('/api/coach', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: [...msgs, userMsg].map(m => ({ role: m.role, content: m.content })) }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       setMsgs(p => [...p, {
-        id: (Date.now()+1).toString(), role: 'assistant',
+        id: (Date.now() + 1).toString(), role: 'assistant',
         content: data.message, timestamp: new Date().toISOString(),
         searched: data.searched || undefined,
       }])
@@ -114,7 +129,6 @@ export default function CoachPage() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
   }
 
-  // Auto-resize textarea
   useEffect(() => {
     if (textRef.current) {
       textRef.current.style.height = 'auto'
@@ -123,85 +137,111 @@ export default function CoachPage() {
   }, [input])
 
   return (
-    <AppLayout><div className="flex flex-col" style={{minHeight:"100vh"}}>
-      <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full px-4 sm:px-6 pt-20 pb-6">
+    <AppLayout>
+      <div className="flex flex-col" style={{ minHeight: '100vh' }}>
+        <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full px-4 sm:px-6 pt-6 md:pt-8 pb-6">
 
-        {/* Header */}
-        <div className="flex items-center justify-between py-4 border-b border-border mb-4 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
-              <Brain className="w-5 h-5 text-rose-400" />
-            </div>
-            <div>
-              <p className="text-fg font-semibold">AI Coach</p>
-              <div className="flex items-center gap-1.5">
-                <span className="status-online" />
-                <span className="text-fg-subtle text-xs">AI + Live Search — Ready</span>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6 flex-shrink-0">
+            <div className="flex items-start gap-4">
+              <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+                style={{ background: 'rgba(225,29,72,0.1)', border: '1px solid rgba(225,29,72,0.2)' }}>
+                <Brain className="w-5 h-5" style={{ color: '#E11D48' }} />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1"
+                  style={{ color: 'rgba(225,29,72,0.8)' }}>
+                  AI + Live Search
+                </p>
+                <h1 className="text-[24px] font-black text-white tracking-tight leading-tight">AI Coach</h1>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[12px] text-white/35">Ready — real-time answers</span>
+                </div>
               </div>
             </div>
+            <button onClick={reset}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold text-white/50 hover:text-white/80 transition-colors"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <RotateCcw className="w-3.5 h-3.5" /> New Chat
+            </button>
           </div>
-          <button onClick={() => { setMsgs([{ id:'0', role:'assistant', content:'New session. What do you want to work on?', timestamp: new Date().toISOString() }]); setShowStarters(true) }}
-            className="btn btn-ghost btn-sm gap-2">
-            <RotateCcw className="w-3.5 h-3.5" /> New Chat
-          </button>
-        </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto space-y-4 pr-1 no-scrollbar min-h-0">
-          {msgs.map(m => <Message key={m.id} msg={m} searched={m.searched} />)}
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto space-y-4 pr-1 no-scrollbar min-h-0 pb-4">
+            {msgs.map(m => <Message key={m.id} msg={m} searched={(m as CoachMessageWithSearch).searched} />)}
 
-          {loading && (
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3">
-              <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0">
-                <Brain className="w-4 h-4 text-rose-400 animate-pulse" />
-              </div>
-              <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5">
-                {[0, 150, 300].map(d => (
-                  <span key={d} className="w-1.5 h-1.5 rounded-full bg-rose-400/60 animate-bounce" style={{ animationDelay: `${d}ms` }} />
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          <AnimatePresence>
-            {showStarters && msgs.length <= 1 && !loading && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="mt-2">
-                <p className="text-xs font-semibold text-fg-muted uppercase tracking-wider mb-2">Try asking:</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {STARTERS.map(q => (
-                  <button key={q} onClick={() => send(q)}
-                    className="text-left text-xs text-fg-muted hover:text-fg bg-surface hover:bg-card border border-border hover:border-rose-500/20 px-4 py-3 rounded-xl transition-all text-left">
-                    {q}
-                  </button>
-                ))}
+            {loading && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'rgba(225,29,72,0.12)', border: '1px solid rgba(225,29,72,0.2)' }}>
+                  <Brain className="w-4 h-4 animate-pulse" style={{ color: '#E11D48' }} />
+                </div>
+                <div className="px-4 py-3 rounded-2xl rounded-tl-sm flex items-center gap-1.5"
+                  style={{ background: 'rgba(255,255,255,0.048)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  {[0, 150, 300].map(d => (
+                    <span key={d} className="w-1.5 h-1.5 rounded-full animate-bounce"
+                      style={{ background: '#E11D48', opacity: 0.6, animationDelay: `${d}ms` }} />
+                  ))}
                 </div>
               </motion.div>
             )}
-          </AnimatePresence>
 
-          <div ref={endRef} />
-        </div>
+            <AnimatePresence>
+              {showStarters && msgs.length <= 1 && !loading && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mt-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="w-3.5 h-3.5" style={{ color: '#E11D48' }} />
+                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/35">Try asking</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {STARTERS.map(q => (
+                      <button key={q} onClick={() => send(q)}
+                        className="text-left text-[13px] text-white/50 hover:text-white/80 px-4 py-3 rounded-xl transition-all duration-200"
+                        style={{ background: 'rgba(255,255,255,0.028)', border: '1px solid rgba(255,255,255,0.06)' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(225,29,72,0.3)' }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)' }}
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-        {/* Input */}
-        <div className="mt-4 card p-3 flex-shrink-0">
-          <div className="flex items-end gap-2.5">
-            <textarea
-              ref={textRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey}
-              placeholder="Ask your AI coach anything about 2K26..."
-              className="flex-1 bg-transparent text-fg text-sm placeholder:text-fg-subtle outline-none resize-none min-h-[40px] max-h-40 leading-relaxed"
-              rows={1}
-            />
-            <button onClick={() => send()} disabled={!input.trim() || loading}
-              className={cn('btn btn-primary btn-icon flex-shrink-0 transition-all',
-                (!input.trim() || loading) && 'opacity-40')}>
-              <Send className="w-4 h-4" />
-            </button>
+            <div ref={endRef} />
           </div>
-          <p className="text-fg-subtle text-xs mt-2">Enter to send · Shift+Enter for new line · Searches the web for current info</p>
+
+          {/* Input */}
+          <div className="flex-shrink-0 rounded-2xl p-3.5"
+            style={{ background: 'rgba(255,255,255,0.032)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="flex items-end gap-3">
+              <textarea
+                ref={textRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={onKey}
+                placeholder="Ask your AI coach anything about 2K26..."
+                className="flex-1 bg-transparent text-white text-[14px] placeholder-white/25 outline-none resize-none min-h-[40px] max-h-40 leading-relaxed"
+                rows={1}
+              />
+              <button
+                onClick={() => send()}
+                disabled={!input.trim() || loading}
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200"
+                style={{
+                  background: input.trim() && !loading ? '#E11D48' : 'rgba(255,255,255,0.06)',
+                  opacity: !input.trim() || loading ? 0.5 : 1,
+                }}
+              >
+                <Send className="w-4 h-4 text-white" />
+              </button>
+            </div>
+            <p className="text-[11px] text-white/25 mt-2">Enter to send · Shift+Enter for new line</p>
+          </div>
         </div>
       </div>
-    </div>
     </AppLayout>
   )
 }

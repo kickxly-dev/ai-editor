@@ -154,7 +154,7 @@ export default function MetaPage() {
               </div>
               <span className="text-rose-400 text-[10px] font-bold tracking-[0.2em] uppercase">Meta Tracker</span>
             </div>
-            <h1 className="display text-4xl text-white mb-2">NBA 2K26 Meta</h1>
+            <h1 className="text-[28px] md:text-[34px] font-black text-white leading-[1.05] tracking-tight mb-2">NBA 2K26 Meta</h1>
             <div className="flex items-center gap-3 flex-wrap">
               {meta?.sources?.map(s => (
                 <span key={s} className="chip chip-muted flex items-center gap-1">

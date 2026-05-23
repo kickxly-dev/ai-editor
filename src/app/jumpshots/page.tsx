@@ -445,7 +445,7 @@ export default function JumpshotsPage() {
             <Crosshair className="w-5 h-5 text-rose-400" />
             <span className="text-[10px] font-semibold text-rose-400 uppercase tracking-widest">Animations</span>
           </div>
-          <h1 className="text-3xl font-bold text-white">Jumpshots & Dribble Styles</h1>
+          <h1 className="text-[28px] md:text-[34px] font-black text-white leading-[1.05] tracking-tight">Jumpshots & Dribble Styles</h1>
           <p className="text-white/35 mt-1 text-sm">Season 7 meta recommendations based on your exact height and attributes.</p>
         </motion.div>
 
