@@ -1,9 +1,9 @@
 'use client'
-import { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, Zap, LayoutDashboard, Brain, Wand2, MoreHorizontal } from 'lucide-react'
+import { Menu, Zap, LayoutDashboard, Brain, Wand2, Eye } from 'lucide-react'
 import Sidebar from './Sidebar'
 import { CourtIQLogo } from '@/components/ui/Logo'
 import { cn } from '@/lib/utils'
@@ -11,11 +11,12 @@ import { cn } from '@/lib/utils'
 const SidebarCtx = createContext({ collapsed: false })
 export const useSidebar = () => useContext(SidebarCtx)
 
-const BOTTOM_TABS = [
-  { href: '/dashboard', label: 'Home',     icon: LayoutDashboard },
-  { href: '/analyze',   label: 'Analyze',  icon: Zap },
-  { href: '/optimize',  label: 'Optimize', icon: Wand2 },
-  { href: '/coach',     label: 'Coach',    icon: Brain },
+const BOTTOM_TABS: { href: string; label: string; icon: React.ElementType; highlight?: boolean }[] = [
+  { href: '/dashboard', label: 'Home',    icon: LayoutDashboard },
+  { href: '/analyze',   label: 'Analyze', icon: Zap },
+  { href: '/vision',    label: 'Vision',  icon: Eye,  highlight: true },
+  { href: '/optimize',  label: 'Build',   icon: Wand2 },
+  { href: '/coach',     label: 'Coach',   icon: Brain },
 ]
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -83,8 +84,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {/* Mobile bottom nav */}
           <div className="md:hidden fixed bottom-0 inset-x-0 z-30 flex safe-area-bottom"
             style={{ background: 'rgba(9,9,11,0.97)', backdropFilter: 'blur(24px)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-            {BOTTOM_TABS.map(({ href, label, icon: Icon }) => {
+            {BOTTOM_TABS.map(({ href, label, icon: Icon, highlight }) => {
               const active = path === href || (href !== '/dashboard' && path.startsWith(href))
+              if (highlight) {
+                return (
+                  <Link key={href} href={href}
+                    className="flex-1 flex flex-col items-center justify-center gap-1 py-2 transition-colors"
+                  >
+                    <div className={cn(
+                      'w-10 h-10 rounded-full flex items-center justify-center transition-all',
+                      active
+                        ? 'bg-rose-500 shadow-[0_0_14px_rgba(225,29,72,0.6)]'
+                        : 'bg-rose-500/80 hover:bg-rose-500'
+                    )}>
+                      <Icon className="w-[18px] h-[18px] text-white" />
+                    </div>
+                    <span className={cn('text-[10px] font-semibold tracking-wide', active ? 'text-rose-400' : 'text-white/50')}>{label}</span>
+                  </Link>
+                )
+              }
               return (
                 <Link key={href} href={href}
                   className={cn(
@@ -97,13 +115,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </Link>
               )
             })}
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 text-white/30 active:text-white/60 transition-colors"
-            >
-              <MoreHorizontal className="w-[18px] h-[18px]" />
-              <span className="text-[10px] font-semibold tracking-wide">More</span>
-            </button>
           </div>
         </motion.main>
       </div>

@@ -23,11 +23,12 @@ const NAV_GROUPS = [
     id: 'ai',
     label: 'AI Tools',
     items: [
-      { href: '/analyze',   label: 'Analyzer',  icon: Zap },
-      { href: '/optimize',  label: 'Optimizer', icon: Wand2 },
-      { href: '/matchup',   label: 'Matchup',   icon: Swords },
-      { href: '/coach',     label: 'AI Coach',  icon: Brain },
-      { href: '/jumpshots', label: 'Jumpshots', icon: Crosshair },
+      { href: '/vision',    label: 'Vision Coach', icon: Eye },
+      { href: '/analyze',   label: 'Analyzer',     icon: Zap },
+      { href: '/optimize',  label: 'Optimizer',    icon: Wand2 },
+      { href: '/matchup',   label: 'Matchup',      icon: Swords },
+      { href: '/coach',     label: 'AI Coach',     icon: Brain },
+      { href: '/jumpshots', label: 'Jumpshots',    icon: Crosshair },
     ],
   },
   {

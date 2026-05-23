@@ -261,6 +261,49 @@ Include 2-3 S tier entries, 3-4 A tier. Base on Season 7 (May 2026) NBA 2K26 dat
       return NextResponse.json({ success: true, report, searched: searchQuery })
     }
 
+    // ── Camera Coach: real-time coaching from phone camera pointed at screen ────
+    if (mode === 'camera') {
+      const { image, buildContext, gameMode } = body
+
+      if (!image) return NextResponse.json({ error: 'No image provided.' }, { status: 400 })
+
+      const base64 = image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}`
+
+      const contextNote = [
+        buildContext && `Player build: ${buildContext}`,
+        gameMode && `Mode: ${gameMode}`,
+      ].filter(Boolean).join(' | ')
+
+      const res = await getGroq().chat.completions.create({
+        model: MODELS.vision,
+        messages: [
+          {
+            role: 'system',
+            content: `You are CourtIQ, an elite NBA 2K26 real-time game coach. The user is pointing their phone at their TV/monitor while playing. Analyze the screenshot and give ONE specific, actionable coaching tip under 25 words. Be brutally specific — call out exact mistakes ("You're driving into help defense, kick it corner", "Release too early — wait for the peak of your jump"). ONLY output valid JSON: {"tip":"...","category":"offense|defense|timing|positioning|takeover","priority":"critical|tip|nice"}. priority=critical for active mistakes costing points, tip for improvements, nice for good plays. If no gameplay visible: {"tip":"Ready when gameplay starts — point your camera at the screen","category":"timing","priority":"nice"}`,
+          },
+          {
+            role: 'user',
+            content: [
+              { type: 'image_url', image_url: { url: base64, detail: 'low' } },
+              { type: 'text', text: `Analyze this NBA 2K26 screenshot and give real-time coaching.${contextNote ? ` Context — ${contextNote}` : ''}` },
+            ],
+          },
+        ],
+        temperature: 0.3,
+        max_tokens: 150,
+        response_format: { type: 'json_object' },
+      })
+
+      const raw = res.choices[0].message.content || '{}'
+      const parsed = await parseVisionJSON(raw, { tip: 'Stay focused and play your game.', category: 'tip', priority: 'tip' })
+
+      return NextResponse.json({
+        tip: parsed.tip,
+        category: parsed.category,
+        priority: parsed.priority,
+      })
+    }
+
     return NextResponse.json({ error: 'Invalid mode.' }, { status: 400 })
   } catch (err) {
     console.error('Vision error:', err)
